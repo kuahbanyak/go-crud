@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"go-crud/entity"
+	"go-crud/service/database"
 	"gorm.io/gorm"
 )
 
@@ -19,10 +20,8 @@ type accountRepository struct {
 }
 
 func NewAccountRepository() AccountRepository {
-
-	return &accountRepository{db: context.db}
+	return &accountRepository{db: database.DB}
 }
-
 func (r *accountRepository) Create(ctx context.Context, account *entity.Account) error {
 	return r.db.WithContext(ctx).Create(account).Error
 }
