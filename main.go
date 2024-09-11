@@ -76,5 +76,5 @@ func main() {
 		ginSwagger.WrapHandler(swaggerFiles.Handler),
 	)
 
-	log.Fatal(router.Run(":8080/swagger/index.html"))
+	log.Fatal(router.Run(":8080"))
 }

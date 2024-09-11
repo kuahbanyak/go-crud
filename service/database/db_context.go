@@ -22,4 +22,6 @@ func Init() {
 			err,
 		)
 	}
+	// Run migrations
+	RunMigrations(dsn)
 }
