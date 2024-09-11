@@ -1,0 +1,147 @@
+basePath: /
+definitions:
+  entity.Account:
+    properties:
+      id:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  http.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is a sample server for managing accounts.
+  title: Account API
+  version: "1.0"
+paths:
+  /accounts:
+    post:
+      consumes:
+      - application/json
+      description: Create a new account with the input payload
+      parameters:
+      - description: Account
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/entity.Account'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entity.Account'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Create a new account
+      tags:
+      - accounts
+  /accounts/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an account by ID
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Delete an account
+      tags:
+      - accounts
+    get:
+      consumes:
+      - application/json
+      description: Get an account by ID
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Account'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Get an account by ID
+      tags:
+      - accounts
+    put:
+      consumes:
+      - application/json
+      description: Update an account with the input payload
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Account
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/entity.Account'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Account'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Update an account
+      tags:
+      - accounts
+swagger: "2.0"
