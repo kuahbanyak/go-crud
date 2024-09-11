@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// AccountRepository is a contract that defines the methods to be implemented by AccountRepository
 type AccountRepository interface {
 	Create(ctx context.Context, account *entity.Account) error
 	GetByID(ctx context.Context, id uuid.UUID) (*entity.Account, error)
