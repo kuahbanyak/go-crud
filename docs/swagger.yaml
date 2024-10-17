@@ -2,9 +2,19 @@ basePath: /
 definitions:
   entity.Account:
     properties:
+      created_at:
+        type: string
+      created_by:
+        type: string
       id:
         type: string
       password:
+        type: string
+      repeat_password:
+        type: string
+      updated_at:
+        type: string
+      updated_by:
         type: string
       username:
         type: string
@@ -142,6 +152,40 @@ paths:
           schema:
             $ref: '#/definitions/http.ErrorResponse'
       summary: Update an account
+      tags:
+      - accounts
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Login with the input payload
+      parameters:
+      - description: Username
+        in: query
+        name: username
+        required: true
+        type: string
+      - description: Password
+        in: query
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Account'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Login
       tags:
       - accounts
 swagger: "2.0"

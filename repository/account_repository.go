@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"go-crud/entity"
 	"go-crud/service/database"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -24,6 +25,14 @@ func NewAccountRepository() AccountRepository {
 	return &accountRepository{db: database.DB}
 }
 func (r *accountRepository) Create(ctx context.Context, account *entity.Account) error {
+	hashedPassword, err := bcrypt.GenerateFromPassword(
+		[]byte(account.Password),
+		bcrypt.DefaultCost,
+	)
+	if err != nil {
+		return err
+	}
+	account.Password = string(hashedPassword)
 	return r.db.WithContext(ctx).Create(account).Error
 }
 
