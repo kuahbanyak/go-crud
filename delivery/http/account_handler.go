@@ -175,3 +175,36 @@ func (h *AccountHandler) DeleteAccount(c *gin.Context) {
 		map[string]string{"message": "Account deleted"},
 	)
 }
+
+// Login godoc
+// @Summary Login
+// @Description Login with the input payload
+// @Tags accounts
+// @Accept  json
+// @Produce  json
+// @Param username query string true "Username"
+// @Param password query string true "Password"
+// @Success 200 {object} entity.Account
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /login [post]
+func (h *AccountHandler) Login(c *gin.Context) {
+	username := c.Query("username")
+	password := c.Query("password")
+	account, err := h.accountUsecase.Login(
+		context.Background(),
+		username,
+		password,
+	)
+	if err != nil {
+		c.JSON(
+			http.StatusInternalServerError,
+			ErrorResponse{Error: err.Error()},
+		)
+		return
+	}
+	c.JSON(
+		http.StatusOK,
+		account,
+	)
+}
