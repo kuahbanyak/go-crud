@@ -10,11 +10,7 @@ import (
 )
 
 type AccountHandler struct {
-	accountUsecase usecase.AccountUsecase
-}
-
-func NewAccountHandler(uc usecase.AccountUsecase) *AccountHandler {
-	return &AccountHandler{accountUsecase: uc}
+	AccountUsecase usecase.AccountUsecase
 }
 
 type ErrorResponse struct {
@@ -50,7 +46,7 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 		Username: req.Username,
 	}
 
-	if err := h.accountUsecase.CreateAccount(
+	if err := h.AccountUsecase.CreateAccount(
 		context.Background(),
 		&account,
 	); err != nil {
@@ -86,7 +82,7 @@ func (h *AccountHandler) GetAccountByID(c *gin.Context) {
 		)
 		return
 	}
-	account, err := h.accountUsecase.GetAccountByID(
+	account, err := h.AccountUsecase.GetAccountByID(
 		context.Background(),
 		id,
 	)
@@ -124,7 +120,7 @@ func (h *AccountHandler) UpdateAccount(c *gin.Context) {
 		)
 		return
 	}
-	if err := h.accountUsecase.UpdateAccount(
+	if err := h.AccountUsecase.UpdateAccount(
 		context.Background(),
 		&account,
 	); err != nil {
@@ -160,7 +156,7 @@ func (h *AccountHandler) DeleteAccount(c *gin.Context) {
 		)
 		return
 	}
-	if err := h.accountUsecase.DeleteAccount(
+	if err := h.AccountUsecase.DeleteAccount(
 		context.Background(),
 		id,
 	); err != nil {
@@ -173,38 +169,5 @@ func (h *AccountHandler) DeleteAccount(c *gin.Context) {
 	c.JSON(
 		http.StatusOK,
 		map[string]string{"message": "Account deleted"},
-	)
-}
-
-// Login godoc
-// @Summary Login
-// @Description Login with the input payload
-// @Tags accounts
-// @Accept  json
-// @Produce  json
-// @Param username query string true "Username"
-// @Param password query string true "Password"
-// @Success 200 {object} entity.Account
-// @Failure 400 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /login [post]
-func (h *AccountHandler) Login(c *gin.Context) {
-	username := c.Query("username")
-	password := c.Query("password")
-	account, err := h.accountUsecase.Login(
-		context.Background(),
-		username,
-		password,
-	)
-	if err != nil {
-		c.JSON(
-			http.StatusInternalServerError,
-			ErrorResponse{Error: err.Error()},
-		)
-		return
-	}
-	c.JSON(
-		http.StatusOK,
-		account,
 	)
 }
