@@ -26,7 +26,7 @@ func main() {
 
 	accountRepo := repository.NewAccountRepository(database.DB)
 	accountUsecase := usecase.NewAccountUsecase(accountRepo)
-	accountHandler := http.NewAccountHandler(accountUsecase)
+	accountHandler := http.AccountHandler{AccountUsecase: accountUsecase}
 
 	router := gin.Default()
 
