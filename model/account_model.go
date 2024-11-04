@@ -1,5 +1,7 @@
 package model
 
+import "github.com/google/uuid"
+
 type CreateAccountRequest struct {
 	Username       string `json:"username"`
 	Password       string `json:"password"`
@@ -7,6 +9,6 @@ type CreateAccountRequest struct {
 }
 
 type ResponseAccount struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
+	ID       uuid.UUID `json:"id"`
+	Username string    `json:"username"`
 }

@@ -8,6 +8,7 @@ import (
 	"go-crud/delivery/http"
 	_ "go-crud/docs"
 	"go-crud/repository"
+	"go-crud/service/database"
 	"go-crud/usecase"
 	"log"
 	"time"
@@ -21,9 +22,9 @@ import (
 
 func main() {
 
-	// Auto-migrate the Account model
+	database.Init()
 
-	accountRepo := repository.NewAccountRepository()
+	accountRepo := repository.NewAccountRepository(database.DB)
 	accountUsecase := usecase.NewAccountUsecase(accountRepo)
 	accountHandler := http.NewAccountHandler(accountUsecase)
 
