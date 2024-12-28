@@ -2,16 +2,14 @@ package entity
 
 import (
 	"github.com/google/uuid"
+	"time"
 )
 
-// Account represents a user management.
 type Account struct {
-	ID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key" json:"id"`
-	Username       string    `json:"username"`
-	Password       string    `json:"password"`
-	RepeatPassword string    `json:"repeat_password"`
-	CreatedAt      uuid.Time `json:"created_at"`
-	CreatedBy      string    `json:"created_by"`
-	UpdatedAt      uuid.Time `json:"updated_at"`
-	UpdatedBy      string    `json:"updated_by"`
+	Id             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()" json:"id" `
+	Username       string    `json:"username" `
+	Password       string    `json:"password" `
+	RepeatPassword string    `json:"repeat_password" `
+	CreatedAt      time.Time `json:"created_at" `
+	UpdateAt       time.Time `json:"updated_at" `
 }

@@ -35,7 +35,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entity.Account"
+                            "$ref": "#/definitions/model.CreateAccountRequest"
                         }
                     }
                 ],
@@ -130,7 +130,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entity.Account"
+                            "$ref": "#/definitions/model.CreateAccountRequest"
                         }
                     }
                 ],
@@ -236,6 +236,20 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.CreateAccountRequest": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "repeat_password": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }

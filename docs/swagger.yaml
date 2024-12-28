@@ -24,6 +24,15 @@ definitions:
       error:
         type: string
     type: object
+  model.CreateAccountRequest:
+    properties:
+      password:
+        type: string
+      repeat_password:
+        type: string
+      username:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -42,7 +51,7 @@ paths:
         name: account
         required: true
         schema:
-          $ref: '#/definitions/entity.Account'
+          $ref: '#/definitions/model.CreateAccountRequest'
       produces:
       - application/json
       responses:
@@ -135,7 +144,7 @@ paths:
         name: account
         required: true
         schema:
-          $ref: '#/definitions/entity.Account'
+          $ref: '#/definitions/model.CreateAccountRequest'
       produces:
       - application/json
       responses:

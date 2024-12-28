@@ -17,7 +17,6 @@ func Init() {
 		log.Fatal("Error loading .env file")
 	}
 
-	// Get environment variables
 	dsn := "host=" + os.Getenv("DB_HOST") +
 		" user=" + os.Getenv("DB_USER") +
 		" password=" + os.Getenv("DB_PASSWORD") +
@@ -29,6 +28,5 @@ func Init() {
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}
-	// Run migrations
-	RunMigrations(dsn)
+	RunMigrations(DB)
 }
