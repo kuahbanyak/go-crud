@@ -4,8 +4,6 @@ definitions:
     properties:
       created_at:
         type: string
-      created_by:
-        type: string
       id:
         type: string
       password:
@@ -13,8 +11,6 @@ definitions:
       repeat_password:
         type: string
       updated_at:
-        type: string
-      updated_by:
         type: string
       username:
         type: string
