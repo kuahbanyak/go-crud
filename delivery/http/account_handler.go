@@ -5,7 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"go-crud/entity"
+	"go-crud/model"
 	"go-crud/usecase"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 )
 
@@ -14,7 +16,7 @@ type AccountHandler struct {
 }
 
 type ErrorResponse struct {
-	Error string
+	Error string `json:"error"`
 }
 
 // CreateAccount godoc
@@ -23,43 +25,40 @@ type ErrorResponse struct {
 // @Tags accounts
 // @Accept  json
 // @Produce  json
-// @Param account body entity.Account true "Account"
+// @Param account body model.CreateAccountRequest true "Account"
 // @Success 201 {object} entity.Account
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /accounts [post]
 func (h *AccountHandler) CreateAccount(c *gin.Context) {
-	var req struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
+	var req model.CreateAccountRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(
-			http.StatusBadRequest,
-			ErrorResponse{Error: err.Error()},
-		)
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
 		return
 	}
 
+	hashPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to hash password"})
+		return
+	}
 	account := entity.Account{
-		ID:       uuid.New(), // Auto-generate the ID
-		Username: req.Username,
+		Id:             uuid.New(),
+		Username:       req.Username,
+		Password:       string(hashPassword),
+		RepeatPassword: string(hashPassword),
 	}
 
-	if err := h.AccountUsecase.CreateAccount(
-		context.Background(),
-		&account,
-	); err != nil {
-		c.JSON(
-			http.StatusInternalServerError,
-			ErrorResponse{Error: err.Error()},
-		)
+	if err := h.AccountUsecase.CreateAccount(context.Background(), &account); err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: err.Error()})
 		return
 	}
-	c.JSON(
-		http.StatusCreated,
-		account,
-	)
+
+	response := model.ResponseAccount{
+		Username: account.Username,
+		Password: account.Password,
+	}
+	c.JSON(http.StatusCreated, response)
 }
 
 // GetAccountByID godoc
@@ -76,27 +75,15 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 func (h *AccountHandler) GetAccountByID(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		c.JSON(
-			http.StatusBadRequest,
-			ErrorResponse{Error: err.Error()},
-		)
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
 		return
 	}
-	account, err := h.AccountUsecase.GetAccountByID(
-		context.Background(),
-		id,
-	)
+	account, err := h.AccountUsecase.GetAccountByID(context.Background(), id)
 	if err != nil {
-		c.JSON(
-			http.StatusInternalServerError,
-			ErrorResponse{Error: err.Error()},
-		)
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: err.Error()})
 		return
 	}
-	c.JSON(
-		http.StatusOK,
-		account,
-	)
+	c.JSON(http.StatusOK, account)
 }
 
 // UpdateAccount godoc
@@ -106,34 +93,36 @@ func (h *AccountHandler) GetAccountByID(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param id path string true "Account ID"
-// @Param account body entity.Account true "Account"
+// @Param account body model.CreateAccountRequest true "Account"
 // @Success 200 {object} entity.Account
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /accounts/{id} [put]
 func (h *AccountHandler) UpdateAccount(c *gin.Context) {
-	var account entity.Account
-	if err := c.ShouldBindJSON(&account); err != nil {
-		c.JSON(
-			http.StatusBadRequest,
-			ErrorResponse{Error: err.Error()},
-		)
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid account ID"})
 		return
 	}
-	if err := h.AccountUsecase.UpdateAccount(
-		context.Background(),
-		&account,
-	); err != nil {
-		c.JSON(
-			http.StatusInternalServerError,
-			ErrorResponse{Error: err.Error()},
-		)
+
+	var req model.CreateAccountRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
 		return
 	}
-	c.JSON(
-		http.StatusOK,
-		account,
-	)
+
+	account := entity.Account{
+		Id:             id,
+		Username:       req.Username,
+		Password:       req.Password,
+		RepeatPassword: req.RepeatPassword,
+	}
+
+	if err := h.AccountUsecase.UpdateAccount(context.Background(), &account); err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, account)
 }
 
 // DeleteAccount godoc
@@ -150,24 +139,12 @@ func (h *AccountHandler) UpdateAccount(c *gin.Context) {
 func (h *AccountHandler) DeleteAccount(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		c.JSON(
-			http.StatusBadRequest,
-			ErrorResponse{Error: err.Error()},
-		)
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
 		return
 	}
-	if err := h.AccountUsecase.DeleteAccount(
-		context.Background(),
-		id,
-	); err != nil {
-		c.JSON(
-			http.StatusInternalServerError,
-			ErrorResponse{Error: err.Error()},
-		)
+	if err := h.AccountUsecase.DeleteAccount(context.Background(), id); err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: err.Error()})
 		return
 	}
-	c.JSON(
-		http.StatusOK,
-		map[string]string{"message": "Account deleted"},
-	)
+	c.JSON(http.StatusOK, map[string]string{"message": "Account deleted"})
 }

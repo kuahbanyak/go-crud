@@ -30,11 +30,10 @@ func main() {
 
 	router := gin.Default()
 
-	// CORS middleware
 	router.Use(
 		cors.New(
 			cors.Config{
-				AllowOrigins:     []string{"http://localhost:3000"},
+				AllowOrigins:     []string{"http://localhost:8080"},
 				AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
 				AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 				ExposeHeaders:    []string{"Content-Length"},
@@ -44,7 +43,6 @@ func main() {
 		),
 	)
 
-	// Custom middleware example
 	router.Use(
 		func(c *gin.Context) {
 			// Perform some action before the request

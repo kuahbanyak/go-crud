@@ -29,7 +29,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entity.Account"
+                            "$ref": "#/definitions/model.CreateAccountRequest"
                         }
                     }
                 ],
@@ -124,7 +124,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entity.Account"
+                            "$ref": "#/definitions/model.CreateAccountRequest"
                         }
                     }
                 ],
@@ -203,9 +203,6 @@
                 "created_at": {
                     "type": "string"
                 },
-                "created_by": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "string"
                 },
@@ -218,9 +215,6 @@
                 "updated_at": {
                     "type": "string"
                 },
-                "updated_by": {
-                    "type": "string"
-                },
                 "username": {
                     "type": "string"
                 }
@@ -230,6 +224,20 @@
             "type": "object",
             "properties": {
                 "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.CreateAccountRequest": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "repeat_password": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }

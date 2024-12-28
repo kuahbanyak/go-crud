@@ -23,29 +23,17 @@ func NewAccountUsecase(repo repository.AccountRepository) AccountUsecase {
 }
 
 func (u *accountUsecase) CreateAccount(ctx context.Context, account *entity.Account) error {
-	return u.accountRepo.Create(
-		ctx,
-		account,
-	)
+	return u.accountRepo.Create(ctx, account)
 }
 
 func (u *accountUsecase) GetAccountByID(ctx context.Context, id uuid.UUID) (*entity.Account, error) {
-	return u.accountRepo.GetByID(
-		ctx,
-		id,
-	)
+	return u.accountRepo.GetByID(ctx, id)
 }
 
 func (u *accountUsecase) UpdateAccount(ctx context.Context, account *entity.Account) error {
-	return u.accountRepo.Update(
-		ctx,
-		account,
-	)
+	return u.accountRepo.Update(ctx, account)
 }
 
 func (u *accountUsecase) DeleteAccount(ctx context.Context, id uuid.UUID) error {
-	return u.accountRepo.Delete(
-		ctx,
-		id,
-	)
+	return u.accountRepo.Delete(ctx, id)
 }
