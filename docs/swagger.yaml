@@ -1,68 +1,335 @@
-basePath: /
+basePath: /api/v1
 definitions:
-  entity.Account:
+  entity.AccountResponse:
     properties:
       created_at:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+      email:
+        example: john@example.com
+        type: string
+      first_name:
+        example: John
         type: string
       id:
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
-      password:
+      is_active:
+        example: true
+        type: boolean
+      last_name:
+        example: Doe
         type: string
-      repeat_password:
+      role:
+        example: user
         type: string
       updated_at:
+        example: "2023-01-01T00:00:00Z"
         type: string
       username:
+        example: johndoe
         type: string
     type: object
-  http.ErrorResponse:
+  entity.ChangePasswordRequest:
     properties:
-      error:
+      current_password:
+        example: oldpassword123
         type: string
+      new_password:
+        example: newpassword123
+        minLength: 6
+        type: string
+    required:
+    - current_password
+    - new_password
     type: object
-  model.CreateAccountRequest:
+  entity.CreateAccountRequest:
+    properties:
+      email:
+        example: john@example.com
+        type: string
+      first_name:
+        example: John
+        maxLength: 50
+        minLength: 2
+        type: string
+      last_name:
+        example: Doe
+        maxLength: 50
+        minLength: 2
+        type: string
+      password:
+        example: password123
+        minLength: 6
+        type: string
+      username:
+        example: johndoe
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - password
+    - username
+    type: object
+  entity.CreateProductRequest:
+    properties:
+      category:
+        example: Electronics
+        type: string
+      description:
+        example: Product description
+        type: string
+      name:
+        example: Product Name
+        maxLength: 255
+        minLength: 3
+        type: string
+      price:
+        example: 99.99
+        type: number
+      quantity:
+        example: 100
+        minimum: 0
+        type: integer
+      sku:
+        example: SKU001
+        type: string
+    required:
+    - name
+    - price
+    - sku
+    type: object
+  entity.LoginRequest:
     properties:
       password:
-        type: string
-      repeat_password:
+        example: password123
         type: string
       username:
+        example: johndoe
         type: string
+    required:
+    - password
+    - username
+    type: object
+  entity.LoginResponse:
+    properties:
+      access_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      account:
+        $ref: '#/definitions/entity.AccountResponse'
+      expires_in:
+        example: 3600
+        type: integer
+      token_type:
+        example: Bearer
+        type: string
+    type: object
+  entity.ProductResponse:
+    properties:
+      category:
+        example: Electronics
+        type: string
+      created_at:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+      description:
+        example: Product description
+        type: string
+      id:
+        example: 1
+        type: integer
+      is_active:
+        example: true
+        type: boolean
+      name:
+        example: Product Name
+        type: string
+      price:
+        example: 99.99
+        type: number
+      quantity:
+        example: 100
+        type: integer
+      sku:
+        example: SKU001
+        type: string
+      updated_at:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+    type: object
+  entity.UpdateAccountRequest:
+    properties:
+      email:
+        example: newemail@example.com
+        type: string
+      first_name:
+        example: John
+        maxLength: 50
+        minLength: 2
+        type: string
+      is_active:
+        example: false
+        type: boolean
+      last_name:
+        example: Doe
+        maxLength: 50
+        minLength: 2
+        type: string
+    type: object
+  entity.UpdateProductRequest:
+    properties:
+      category:
+        example: Updated Category
+        type: string
+      description:
+        example: Updated description
+        type: string
+      is_active:
+        example: false
+        type: boolean
+      name:
+        example: Updated Product Name
+        maxLength: 255
+        minLength: 3
+        type: string
+      price:
+        example: 89.99
+        type: number
+      quantity:
+        example: 150
+        minimum: 0
+        type: integer
+    type: object
+  response.PaginatedResponse:
+    properties:
+      data: {}
+      error:
+        type: string
+      message:
+        example: Data retrieved successfully
+        type: string
+      pagination:
+        $ref: '#/definitions/response.Pagination'
+      success:
+        example: true
+        type: boolean
+    type: object
+  response.Pagination:
+    properties:
+      limit:
+        example: 10
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      page:
+        example: 1
+        type: integer
+      pages:
+        example: 10
+        type: integer
+      total:
+        example: 100
+        type: integer
+    type: object
+  response.Response:
+    properties:
+      data: {}
+      error:
+        example: Error description
+        type: string
+      message:
+        example: Operation successful
+        type: string
+      success:
+        example: true
+        type: boolean
     type: object
 host: localhost:8080
 info:
   contact: {}
-  description: This is a sample server for managing accounts.
-  title: Account API
+  description: This is a Product Management API server implementing Clean Architecture
+  title: Product Management API
   version: "1.0"
 paths:
   /accounts:
+    get:
+      consumes:
+      - application/json
+      description: Get all accounts with pagination
+      parameters:
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.PaginatedResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/entity.AccountResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Get all accounts
+      tags:
+      - accounts
     post:
       consumes:
       - application/json
-      description: Create a new account with the input payload
+      description: Create a new account with the provided information
       parameters:
-      - description: Account
+      - description: Account creation data
         in: body
         name: account
         required: true
         schema:
-          $ref: '#/definitions/model.CreateAccountRequest'
+          $ref: '#/definitions/entity.CreateAccountRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/entity.Account'
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/entity.AccountResponse'
+              type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            $ref: '#/definitions/response.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            $ref: '#/definitions/response.Response'
       summary: Create a new account
       tags:
       - accounts
@@ -83,24 +350,28 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/response.Response'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
       summary: Delete an account
       tags:
       - accounts
     get:
       consumes:
       - application/json
-      description: Get an account by ID
+      description: Get an account by its ID
       parameters:
       - description: Account ID
         in: path
@@ -113,50 +384,391 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entity.Account'
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/entity.AccountResponse'
+              type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
-      summary: Get an account by ID
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Get account by ID
       tags:
       - accounts
     put:
       consumes:
       - application/json
-      description: Update an account with the input payload
+      description: Update an account by ID
       parameters:
       - description: Account ID
         in: path
         name: id
         required: true
         type: string
-      - description: Account
+      - description: Account update data
         in: body
         name: account
         required: true
         schema:
-          $ref: '#/definitions/model.CreateAccountRequest'
+          $ref: '#/definitions/entity.UpdateAccountRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entity.Account'
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/entity.AccountResponse'
+              type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
       summary: Update an account
       tags:
       - accounts
+  /accounts/{id}/change-password:
+    put:
+      consumes:
+      - application/json
+      description: Change password for the authenticated account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Password change data
+        in: body
+        name: password
+        required: true
+        schema:
+          $ref: '#/definitions/entity.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Change account password
+      tags:
+      - accounts
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return JWT token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/entity.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/entity.LoginResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Login to account
+      tags:
+      - auth
+  /products:
+    get:
+      consumes:
+      - application/json
+      description: Get all products with pagination
+      parameters:
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.PaginatedResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/entity.ProductResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Get all products
+      tags:
+      - products
+    post:
+      consumes:
+      - application/json
+      description: Create a new product with the provided information
+      parameters:
+      - description: Product creation data
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/entity.CreateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/entity.ProductResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Create a new product
+      tags:
+      - products
+  /products/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a product by ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Delete a product
+      tags:
+      - products
+    get:
+      consumes:
+      - application/json
+      description: Get a product by its ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/entity.ProductResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Get product by ID
+      tags:
+      - products
+    put:
+      consumes:
+      - application/json
+      description: Update a product by ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Product update data
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/entity.UpdateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/entity.ProductResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Update a product
+      tags:
+      - products
+  /products/category/{category}:
+    get:
+      consumes:
+      - application/json
+      description: Get products filtered by category with pagination
+      parameters:
+      - description: Product Category
+        in: path
+        name: category
+        required: true
+        type: string
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/entity.ProductResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Get products by category
+      tags:
+      - products
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"
