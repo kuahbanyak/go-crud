@@ -1192,7 +1192,7 @@ var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
 	BasePath:         "/api/v1",
-	Schemes:          []string{"https"},
+	Schemes:          []string{"http", "https"},
 	Title:            "Product Management API",
 	Description:      "This is a Product Management API server implementing Clean Architecture",
 	InfoInstanceName: "swagger",
