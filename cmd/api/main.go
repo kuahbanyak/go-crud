@@ -50,6 +50,8 @@ func main() {
 	productHandler := handler.NewProductHandler(productUsecase)
 	accountHandler := handler.NewAccountHandler(accountUsecase)
 
+	config.SetupSwagger() // Initialize Swagger documentation
+
 	// Initialize router
 	router := setupRouter(productHandler, accountHandler, jwtService)
 
