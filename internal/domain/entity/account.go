@@ -8,7 +8,7 @@ import (
 
 // Account represents an account entity
 type Account struct {
-	ID        uuid.UUID      `json:"id" gorm:"type:uuid;primary_key;default:gen_random_uuid()" example:"550e8400-e29b-41d4-a716-446655440000"`
+	ID        uuid.UUID      `json:"id" gorm:"type:uniqueidentifier;primary_key;default:NEWID()" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Username  string         `json:"username" gorm:"unique;not null;size:50" example:"johndoe"`
 	Email     string         `json:"email" gorm:"unique;not null;size:100" example:"john@example.com"`
 	Password  string         `json:"-" gorm:"not null"` // Never expose password in JSON

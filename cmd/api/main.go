@@ -1,13 +1,9 @@
 package main
 
 import (
-	"log"
-	"strconv"
-
 	"github.com/gin-gonic/gin"
 	"github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
-
 	_ "go-crud/docs" // Swagger docs
 	"go-crud/internal/delivery/http/handler"
 	"go-crud/internal/delivery/http/middleware"
@@ -16,6 +12,7 @@ import (
 	"go-crud/internal/usecase"
 	"go-crud/pkg/auth"
 	"go-crud/pkg/config"
+	"log"
 )
 
 // @title Product Management API
