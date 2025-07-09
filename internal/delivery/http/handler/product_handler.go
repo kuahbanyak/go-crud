@@ -1,12 +1,11 @@
 package handler
 
 import (
-	"net/http"
-	"strconv"
-
 	"go-crud/internal/domain/entity"
 	"go-crud/internal/usecase"
 	"go-crud/pkg/response"
+	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )

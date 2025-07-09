@@ -3,9 +3,8 @@ package postgres
 import (
 	"context"
 	"github.com/google/uuid"
-	"go-cr
 	"go-crud/internal/domain/entity"
-	"github.com/google/uuid"
+	"go-crud/internal/domain/repository"
 	"gorm.io/gorm"
 )
 

@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"github.com/google/uuid"
-	
+	"go-crud/internal/domain/entity"
 )
 
 // AccountRepository defines the interface for account data access
