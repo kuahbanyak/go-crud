@@ -530,6 +530,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Create a new product with the provided information",
                 "consumes": [
                     "application/json"
@@ -721,6 +726,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Update a product by ID",
                 "consumes": [
                     "application/json"
@@ -790,6 +800,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Delete a product by ID",
                 "consumes": [
                     "application/json"
@@ -1192,7 +1207,7 @@ var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
 	BasePath:         "/api/v1",
-	Schemes:          []string{"http"},
+	Schemes:          []string{},
 	Title:            "Product Management API",
 	Description:      "This is a Product Management API server implementing Clean Architecture",
 	InfoInstanceName: "swagger",

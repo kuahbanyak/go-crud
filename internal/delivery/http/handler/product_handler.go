@@ -27,6 +27,7 @@ func NewProductHandler(productUsecase usecase.ProductUsecase) *ProductHandler {
 // @Tags products
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param product body entity.CreateProductRequest true "Product creation data"
 // @Success 201 {object} response.Response{data=entity.ProductResponse}
 // @Failure 400 {object} response.Response
@@ -122,6 +123,7 @@ func (h *ProductHandler) GetProducts(c *gin.Context) {
 // @Tags products
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param id path int true "Product ID"
 // @Param product body entity.UpdateProductRequest true "Product update data"
 // @Success 200 {object} response.Response{data=entity.ProductResponse}
@@ -162,6 +164,7 @@ func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 // @Tags products
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param id path int true "Product ID"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response

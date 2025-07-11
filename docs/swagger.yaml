@@ -604,6 +604,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
       summary: Create a new product
       tags:
       - products
@@ -637,6 +639,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
       summary: Delete a product
       tags:
       - products
@@ -717,6 +721,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
       summary: Update a product
       tags:
       - products
