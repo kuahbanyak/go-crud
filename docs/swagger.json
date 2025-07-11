@@ -524,6 +524,11 @@
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Create a new product with the provided information",
                 "consumes": [
                     "application/json"
@@ -715,6 +720,11 @@
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Update a product by ID",
                 "consumes": [
                     "application/json"
@@ -784,6 +794,11 @@
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Delete a product by ID",
                 "consumes": [
                     "application/json"

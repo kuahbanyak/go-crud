@@ -57,7 +57,7 @@ func main() {
 	serverPort := cfg.Server.Port
 	log.Printf("Server starting on port %s", serverPort)
 	log.Printf("Swagger documentation available at: http://localhost:%s/swagger/index.html", serverPort)
-	if err := router.Run(":" + serverPort); err != nil {
+	if err := router.Run("0.0.0.0:" + serverPort); err != nil {
 		log.Fatalf("Failed to run server: %v", err)
 	}
 }
@@ -115,6 +115,9 @@ func setupRouter(productHandler *handler.ProductHandler, accountHandler *handler
 
 	// Swagger documentation route
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "healthy"})
+	})
 
 	return router
 }
