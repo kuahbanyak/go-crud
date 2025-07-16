@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// RateLimiter represents a simple in-memory rate limiter
 type RateLimiter struct {
 	visitors map[string]*visitor
 	mu       sync.RWMutex
@@ -23,7 +22,6 @@ type visitor struct {
 	tokens   int
 }
 
-// NewRateLimiter creates a new rate limiter
 func NewRateLimiter(rate time.Duration, capacity int) *RateLimiter {
 	rl := &RateLimiter{
 		visitors: make(map[string]*visitor),
@@ -37,7 +35,6 @@ func NewRateLimiter(rate time.Duration, capacity int) *RateLimiter {
 	return rl
 }
 
-// Allow checks if a request should be allowed
 func (rl *RateLimiter) Allow(ip string) bool {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
@@ -51,7 +48,6 @@ func (rl *RateLimiter) Allow(ip string) bool {
 		return true
 	}
 
-	// Refill tokens based on time passed
 	now := time.Now()
 	elapsed := now.Sub(v.lastSeen)
 	tokensToAdd := int(elapsed / rl.rate)
@@ -72,7 +68,6 @@ func (rl *RateLimiter) Allow(ip string) bool {
 	return false
 }
 
-// cleanupVisitors removes old visitor entries
 func (rl *RateLimiter) cleanupVisitors() {
 	for {
 		time.Sleep(time.Minute)
@@ -86,7 +81,6 @@ func (rl *RateLimiter) cleanupVisitors() {
 	}
 }
 
-// RateLimit middleware
 func RateLimit(requestsPerMinute int) gin.HandlerFunc {
 	limiter := NewRateLimiter(time.Minute/time.Duration(requestsPerMinute), requestsPerMinute)
 

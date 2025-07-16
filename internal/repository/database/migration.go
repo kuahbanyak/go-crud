@@ -7,14 +7,12 @@ import (
 	"log"
 )
 
-// AutoMigrate runs database migrations
 func AutoMigrate(db *gorm.DB) error {
 	log.Println("Running database migrations...")
 
 	err := db.AutoMigrate(
 		&entity.Account{},
 		&entity.Product{},
-		// Add other entities here
 	)
 
 	if err != nil {
@@ -26,13 +24,11 @@ func AutoMigrate(db *gorm.DB) error {
 	return nil
 }
 
-// DropTables drops all tables (use with caution)
 func DropTables(db *gorm.DB) error {
 	log.Println("Dropping database tables...")
 
 	err := db.Migrator().DropTable(
 		&entity.Product{},
-		// Add other entities here
 	)
 
 	if err != nil {
@@ -44,7 +40,6 @@ func DropTables(db *gorm.DB) error {
 	return nil
 }
 
-// CreateIndexes creates additional database indexes
 func CreateIndexes(db *gorm.DB) error {
 	log.Println("Creating database indexes...")
 

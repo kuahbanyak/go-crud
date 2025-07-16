@@ -21,14 +21,12 @@ type productUsecase struct {
 	productRepo repository.ProductRepository
 }
 
-// NewProductUsecase creates a new product usecase
 func NewProductUsecase(productRepo repository.ProductRepository) ProductUsecase {
 	return &productUsecase{
 		productRepo: productRepo,
 	}
 }
 
-// CreateProduct creates a new product
 func (u *productUsecase) CreateProduct(ctx context.Context, req *entity.CreateProductRequest) (*entity.ProductResponse, error) {
 	// Check if SKU already exists
 	existingProduct, err := u.productRepo.GetBySKU(ctx, req.SKU)
@@ -56,7 +54,6 @@ func (u *productUsecase) CreateProduct(ctx context.Context, req *entity.CreatePr
 	return u.mapToResponse(product), nil
 }
 
-// GetProductByID retrieves a product by ID
 func (u *productUsecase) GetProductByID(ctx context.Context, id uint) (*entity.ProductResponse, error) {
 	product, err := u.productRepo.GetByID(ctx, id)
 	if err != nil {
@@ -69,7 +66,6 @@ func (u *productUsecase) GetProductByID(ctx context.Context, id uint) (*entity.P
 	return u.mapToResponse(product), nil
 }
 
-// GetProducts retrieves all products with pagination
 func (u *productUsecase) GetProducts(ctx context.Context, limit, offset int) ([]*entity.ProductResponse, int64, error) {
 	products, err := u.productRepo.GetAll(ctx, limit, offset)
 	if err != nil {
@@ -89,7 +85,6 @@ func (u *productUsecase) GetProducts(ctx context.Context, limit, offset int) ([]
 	return responses, total, nil
 }
 
-// UpdateProduct updates a product
 func (u *productUsecase) UpdateProduct(ctx context.Context, id uint, req *entity.UpdateProductRequest) (*entity.ProductResponse, error) {
 	// Check if product exists
 	_, err := u.productRepo.GetByID(ctx, id)

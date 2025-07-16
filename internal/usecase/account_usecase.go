@@ -27,7 +27,6 @@ type accountUsecase struct {
 	jwtService  *auth.JWTService
 }
 
-// NewAccountUsecase creates a new account usecase
 func NewAccountUsecase(accountRepo repository.AccountRepository, jwtService *auth.JWTService) AccountUsecase {
 	return &accountUsecase{
 		accountRepo: accountRepo,
@@ -35,7 +34,6 @@ func NewAccountUsecase(accountRepo repository.AccountRepository, jwtService *aut
 	}
 }
 
-// CreateAccount creates a new account
 func (u *accountUsecase) CreateAccount(ctx context.Context, req *entity.CreateAccountRequest) (*entity.AccountResponse, error) {
 	// Check if username already exists
 	existingByUsername, err := u.accountRepo.GetByUsername(ctx, req.Username)

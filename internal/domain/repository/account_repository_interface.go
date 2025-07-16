@@ -6,7 +6,6 @@ import (
 	"go-crud/internal/domain/entity"
 )
 
-// AccountRepository defines the interface for account data access
 type AccountRepository interface {
 	Create(ctx context.Context, account *entity.Account) error
 	GetByID(ctx context.Context, id uuid.UUID) (*entity.Account, error)

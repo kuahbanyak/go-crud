@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-// Account represents an account entity
 type Account struct {
 	ID        uuid.UUID      `json:"id" gorm:"type:uniqueidentifier;primary_key;default:NEWID()" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Username  string         `json:"username" gorm:"unique;not null;size:50" example:"johndoe"`
@@ -21,12 +20,10 @@ type Account struct {
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
-// TableName returns the table name for Account
 func (Account) TableName() string {
 	return "accounts"
 }
 
-// CreateAccountRequest represents the request for creating an account
 type CreateAccountRequest struct {
 	Username  string `json:"username" validate:"required,min=3,max=50" example:"johndoe"`
 	Email     string `json:"email" validate:"required,email" example:"john@example.com"`

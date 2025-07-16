@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// JWTAuth provides JWT authentication middleware
 func JWTAuth(jwtService *auth.JWTService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
@@ -45,7 +44,6 @@ func JWTAuth(jwtService *auth.JWTService) gin.HandlerFunc {
 	}
 }
 
-// OptionalAuth middleware that doesn't require authentication but extracts user info if present
 func OptionalAuth(jwtService *auth.JWTService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
@@ -65,7 +63,6 @@ func OptionalAuth(jwtService *auth.JWTService) gin.HandlerFunc {
 	}
 }
 
-// AdminOnly middleware that requires admin role
 func AdminOnly() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userRole, exists := c.Get("user_role")

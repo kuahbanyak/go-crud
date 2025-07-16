@@ -11,7 +11,6 @@ import (
 	"time"
 )
 
-// Init initializes the database connection
 func Init() *gorm.DB {
 	// Database configuration using environment variables
 	config := DatabaseConfig{
@@ -22,22 +21,19 @@ func Init() *gorm.DB {
 		DBName:   getEnv("DB_NAME", "sqldev"),
 	}
 
-	// Create SQL Server connection string
 	dsn := fmt.Sprintf("server=%s;user id=%s;password=%s;port=%s;database=%s;",
 		config.Host, config.User, config.Password, config.Port, config.DBName)
 
-	// Configure GORM logger
 	newLogger := logger.New(
-		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+		log.New(os.Stdout, "\r\n", log.LstdFlags),
 		logger.Config{
-			SlowThreshold:             time.Second,   // Slow SQL threshold
-			LogLevel:                  logger.Silent, // Log level
-			IgnoreRecordNotFoundError: true,          // Ignore ErrRecordNotFound error for logger
-			Colorful:                  false,         // Disable color
+			SlowThreshold:             time.Second,
+			LogLevel:                  logger.Silent,
+			IgnoreRecordNotFoundError: true,
+			Colorful:                  false,
 		},
 	)
 
-	// Open database connection with SQL Server dialect
 	db, err := gorm.Open(sqlserver.Open(dsn), &gorm.Config{
 		Logger: newLogger,
 	})
@@ -70,7 +66,6 @@ type DatabaseConfig struct {
 	DBName   string
 }
 
-// getEnv gets environment variable with fallback
 func getEnv(key string, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
