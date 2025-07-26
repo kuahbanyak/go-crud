@@ -12,7 +12,6 @@ import (
 )
 
 func Init() *gorm.DB {
-	// Database configuration using environment variables
 	config := DatabaseConfig{
 		Host:     getEnv("DB_HOST", "devdbsql.database.windows.net"),
 		Port:     getEnv("DB_PORT", "1433"),
@@ -57,7 +56,6 @@ func Init() *gorm.DB {
 	return db
 }
 
-// DatabaseConfig holds database configuration
 type DatabaseConfig struct {
 	Host     string
 	Port     string

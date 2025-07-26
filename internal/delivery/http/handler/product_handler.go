@@ -14,7 +14,6 @@ type ProductHandler struct {
 	productUsecase usecase.ProductUsecase
 }
 
-// NewProductHandler creates a new product handler
 func NewProductHandler(productUsecase usecase.ProductUsecase) *ProductHandler {
 	return &ProductHandler{
 		productUsecase: productUsecase,

@@ -23,7 +23,6 @@ func (Product) TableName() string {
 	return "products"
 }
 
-// CreateProductRequest represents the request for creating a product
 type CreateProductRequest struct {
 	Name        string  `json:"name" validate:"required,min=3,max=255" example:"Product Name"`
 	Description string  `json:"description" example:"Product description"`

@@ -24,15 +24,12 @@ func Logger() gin.HandlerFunc {
 
 func CustomLogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Start timer
 		start := time.Now()
 		path := c.Request.URL.Path
 		raw := c.Request.URL.RawQuery
 
-		// Process request
 		c.Next()
 
-		// Log format
 		param := gin.LogFormatterParams{
 			Request:      c.Request,
 			TimeStamp:    time.Now(),

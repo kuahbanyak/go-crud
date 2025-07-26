@@ -19,7 +19,6 @@ func JWTAuth(jwtService *auth.JWTService) gin.HandlerFunc {
 			return
 		}
 
-		// Check if the header starts with "Bearer "
 		bearerToken := strings.Split(authHeader, " ")
 		if len(bearerToken) != 2 || bearerToken[0] != "Bearer" {
 			response.Error(c, http.StatusUnauthorized, "Invalid authorization header", "Authorization header must be Bearer token")
@@ -35,7 +34,6 @@ func JWTAuth(jwtService *auth.JWTService) gin.HandlerFunc {
 			return
 		}
 
-		// Set user context for downstream handlers
 		c.Set("user_id", claims.UserID)
 		c.Set("username", claims.Username)
 		c.Set("user_role", claims.Role)

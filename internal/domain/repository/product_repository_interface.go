@@ -5,7 +5,6 @@ import (
 	"go-crud/internal/domain/entity"
 )
 
-// ProductRepository defines the interface for product data access
 type ProductRepository interface {
 	Create(ctx context.Context, product *entity.Product) error
 	GetByID(ctx context.Context, id uint) (*entity.Product, error)

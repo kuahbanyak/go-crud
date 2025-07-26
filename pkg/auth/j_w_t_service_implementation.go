@@ -24,7 +24,6 @@ type JWTClaims struct {
 	jwt.RegisteredClaims
 }
 
-// NewJWTService creates a new JWT service
 func NewJWTService(secretKey, issuer string) *JWTService {
 	return &JWTService{
 		secretKey: []byte(secretKey),
@@ -74,7 +73,6 @@ func (j *JWTService) RefreshToken(tokenString string, duration time.Duration) (s
 		return "", err
 	}
 
-	// Create new claims with updated expiration time
 	newClaims := JWTClaims{
 		UserID:   claims.UserID,
 		Username: claims.Username,

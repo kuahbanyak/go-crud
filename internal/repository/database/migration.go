@@ -43,7 +43,6 @@ func DropTables(db *gorm.DB) error {
 func CreateIndexes(db *gorm.DB) error {
 	log.Println("Creating database indexes...")
 
-	// Create indexes for better performance
 	if err := db.Exec("CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_products_category ON products(category)").Error; err != nil {
 		log.Printf("Failed to create category index: %v", err)
 	}

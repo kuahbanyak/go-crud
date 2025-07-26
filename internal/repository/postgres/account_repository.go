@@ -58,24 +58,20 @@ func (r *accountRepository) GetAll(ctx context.Context, limit, offset int) ([]*e
 	return accounts, err
 }
 
-// Update updates an account
 func (r *accountRepository) Update(ctx context.Context, id uuid.UUID, account *entity.Account) error {
 	return r.db.WithContext(ctx).Model(&entity.Account{}).Where("id = ?", id).Updates(account).Error
 }
 
-// Delete soft deletes an account
 func (r *accountRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Delete(&entity.Account{}, "id = ?", id).Error
 }
 
-// Count returns the total count of accounts
 func (r *accountRepository) Count(ctx context.Context) (int64, error) {
 	var count int64
 	err := r.db.WithContext(ctx).Model(&entity.Account{}).Count(&count).Error
 	return count, err
 }
 
-// UpdatePassword updates an account's password
 func (r *accountRepository) UpdatePassword(ctx context.Context, id uuid.UUID, hashedPassword string) error {
 	return r.db.WithContext(ctx).Model(&entity.Account{}).Where("id = ?", id).Update("password", hashedPassword).Error
 }

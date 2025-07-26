@@ -24,36 +24,22 @@ import (
 // @in header
 // @name Authorization
 func main() {
-	// Load configuration
 	cfg := config.Load()
 
-	// Initialize database
 	db := database.Init()
 
-	// Run migrations
 	if err := database.AutoMigrate(db); err != nil {
 		log.Fatalf("Failed to run migrations: %v", err)
 	}
-
-	// Initialize JWT service
 	jwtService := auth.NewJWTService(cfg.JWT.SecretKey, cfg.JWT.Issuer)
-
-	// Initialize repositories
 	productRepo := postgres.NewProductRepository(db)
 	accountRepo := postgres.NewAccountRepository(db)
-
-	// Initialize use cases
 	productUsecase := usecase.NewProductUsecase(productRepo)
 	accountUsecase := usecase.NewAccountUsecase(accountRepo, jwtService)
-
-	// Initialize handlers
 	productHandler := handler.NewProductHandler(productUsecase)
 	accountHandler := handler.NewAccountHandler(accountUsecase)
-
-	// Initialize router
 	router := setupRouter(productHandler, accountHandler, jwtService)
 
-	// Start server
 	serverPort := cfg.Server.Port
 	log.Printf("Server starting on port %s", serverPort)
 	log.Printf("Swagger documentation available at: http://localhost:%s/swagger/index.html", serverPort)
@@ -65,25 +51,21 @@ func main() {
 func setupRouter(productHandler *handler.ProductHandler, accountHandler *handler.AccountHandler, jwtService *auth.JWTService) *gin.Engine {
 	router := gin.Default()
 
-	// Apply global middleware
 	router.Use(middleware.CORS())
 	router.Use(middleware.Logger())
 
-	// API v1 routes
 	apiV1 := router.Group("/api/v1")
 	{
-		// Auth routes (public)
+
 		auth := apiV1.Group("/auth")
 		{
 			auth.POST("/login", accountHandler.Login)
 		}
 
-		// Account routes
 		accounts := apiV1.Group("/accounts")
 		{
 			accounts.POST("", accountHandler.CreateAccount) // Public registration
 
-			// Protected routes
 			protected := accounts.Group("")
 			protected.Use(middleware.JWTAuth(jwtService))
 			{
@@ -95,14 +77,12 @@ func setupRouter(productHandler *handler.ProductHandler, accountHandler *handler
 			}
 		}
 
-		// Product routes
 		products := apiV1.Group("/products")
 		{
 			products.GET("", productHandler.GetProducts)                              // Public
 			products.GET("/:id", productHandler.GetProductByID)                       // Public
 			products.GET("/category/:category", productHandler.GetProductsByCategory) // Public
 
-			// Protected routes
 			protected := products.Group("")
 			protected.Use(middleware.JWTAuth(jwtService))
 			{

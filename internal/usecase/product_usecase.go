@@ -28,7 +28,7 @@ func NewProductUsecase(productRepo repository.ProductRepository) ProductUsecase 
 }
 
 func (u *productUsecase) CreateProduct(ctx context.Context, req *entity.CreateProductRequest) (*entity.ProductResponse, error) {
-	// Check if SKU already exists
+
 	existingProduct, err := u.productRepo.GetBySKU(ctx, req.SKU)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
@@ -86,7 +86,7 @@ func (u *productUsecase) GetProducts(ctx context.Context, limit, offset int) ([]
 }
 
 func (u *productUsecase) UpdateProduct(ctx context.Context, id uint, req *entity.UpdateProductRequest) (*entity.ProductResponse, error) {
-	// Check if product exists
+
 	_, err := u.productRepo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -95,7 +95,6 @@ func (u *productUsecase) UpdateProduct(ctx context.Context, id uint, req *entity
 		return nil, err
 	}
 
-	// Update fields if provided
 	updateProduct := &entity.Product{}
 	if req.Name != nil {
 		updateProduct.Name = *req.Name
@@ -120,7 +119,6 @@ func (u *productUsecase) UpdateProduct(ctx context.Context, id uint, req *entity
 		return nil, err
 	}
 
-	// Get updated product
 	updatedProduct, err := u.productRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -129,9 +127,8 @@ func (u *productUsecase) UpdateProduct(ctx context.Context, id uint, req *entity
 	return u.mapToResponse(updatedProduct), nil
 }
 
-// DeleteProduct deletes a product
 func (u *productUsecase) DeleteProduct(ctx context.Context, id uint) error {
-	// Check if product exists
+
 	_, err := u.productRepo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -143,7 +140,6 @@ func (u *productUsecase) DeleteProduct(ctx context.Context, id uint) error {
 	return u.productRepo.Delete(ctx, id)
 }
 
-// GetProductsByCategory retrieves products by category
 func (u *productUsecase) GetProductsByCategory(ctx context.Context, category string, limit, offset int) ([]*entity.ProductResponse, error) {
 	products, err := u.productRepo.GetByCategory(ctx, category, limit, offset)
 	if err != nil {
@@ -158,7 +154,6 @@ func (u *productUsecase) GetProductsByCategory(ctx context.Context, category str
 	return responses, nil
 }
 
-// mapToResponse maps product entity to response
 func (u *productUsecase) mapToResponse(product *entity.Product) *entity.ProductResponse {
 	return &entity.ProductResponse{
 		ID:          product.ID,

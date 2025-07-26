@@ -29,7 +29,6 @@ func NewRateLimiter(rate time.Duration, capacity int) *RateLimiter {
 		capacity: capacity,
 	}
 
-	// Clean up old visitors every minute
 	go rl.cleanupVisitors()
 
 	return rl
