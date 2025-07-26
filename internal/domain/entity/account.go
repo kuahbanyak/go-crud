@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-// Account represents an account entity
 type Account struct {
 	ID        uuid.UUID      `json:"id" gorm:"type:uniqueidentifier;primary_key;default:NEWID()" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Username  string         `json:"username" gorm:"unique;not null;size:50" example:"johndoe"`
@@ -21,12 +20,10 @@ type Account struct {
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
-// TableName returns the table name for Account
 func (Account) TableName() string {
 	return "accounts"
 }
 
-// CreateAccountRequest represents the request for creating an account
 type CreateAccountRequest struct {
 	Username  string `json:"username" validate:"required,min=3,max=50" example:"johndoe"`
 	Email     string `json:"email" validate:"required,email" example:"john@example.com"`
@@ -35,13 +32,11 @@ type CreateAccountRequest struct {
 	LastName  string `json:"last_name" validate:"required,min=2,max=50" example:"Doe"`
 }
 
-// LoginRequest represents the login request
 type LoginRequest struct {
 	Username string `json:"username" validate:"required" example:"johndoe"`
 	Password string `json:"password" validate:"required" example:"password123"`
 }
 
-// UpdateAccountRequest represents the request for updating an account
 type UpdateAccountRequest struct {
 	Email     *string `json:"email,omitempty" validate:"omitempty,email" example:"newemail@example.com"`
 	FirstName *string `json:"first_name,omitempty" validate:"omitempty,min=2,max=50" example:"John"`
@@ -49,13 +44,11 @@ type UpdateAccountRequest struct {
 	IsActive  *bool   `json:"is_active,omitempty" example:"false"`
 }
 
-// ChangePasswordRequest represents the request for changing password
 type ChangePasswordRequest struct {
 	CurrentPassword string `json:"current_password" validate:"required" example:"oldpassword123"`
 	NewPassword     string `json:"new_password" validate:"required,min=6" example:"newpassword123"`
 }
 
-// AccountResponse represents the response for account operations
 type AccountResponse struct {
 	ID        uuid.UUID `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Username  string    `json:"username" example:"johndoe"`
@@ -68,7 +61,6 @@ type AccountResponse struct {
 	UpdatedAt time.Time `json:"updated_at" example:"2023-01-01T00:00:00Z"`
 }
 
-// LoginResponse represents the login response
 type LoginResponse struct {
 	Account     *AccountResponse `json:"account"`
 	AccessToken string           `json:"access_token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`

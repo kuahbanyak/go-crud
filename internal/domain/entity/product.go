@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-// Product represents a product entity
 type Product struct {
 	ID          uint           `json:"id" gorm:"primarykey" example:"1"`
 	Name        string         `json:"name" gorm:"not null;size:255" validate:"required,min=3,max=255" example:"Product Name"`
@@ -20,12 +19,10 @@ type Product struct {
 	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
-// TableName returns the table name for Product
 func (Product) TableName() string {
 	return "products"
 }
 
-// CreateProductRequest represents the request for creating a product
 type CreateProductRequest struct {
 	Name        string  `json:"name" validate:"required,min=3,max=255" example:"Product Name"`
 	Description string  `json:"description" example:"Product description"`
@@ -35,7 +32,6 @@ type CreateProductRequest struct {
 	SKU         string  `json:"sku" validate:"required" example:"SKU001"`
 }
 
-// UpdateProductRequest represents the request for updating a product
 type UpdateProductRequest struct {
 	Name        *string  `json:"name,omitempty" validate:"omitempty,min=3,max=255" example:"Updated Product Name"`
 	Description *string  `json:"description,omitempty" example:"Updated description"`
@@ -45,7 +41,6 @@ type UpdateProductRequest struct {
 	IsActive    *bool    `json:"is_active,omitempty" example:"false"`
 }
 
-// ProductResponse represents the response for product operations
 type ProductResponse struct {
 	ID          uint      `json:"id" example:"1"`
 	Name        string    `json:"name" example:"Product Name"`

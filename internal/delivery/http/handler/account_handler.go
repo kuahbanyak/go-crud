@@ -14,7 +14,6 @@ type AccountHandler struct {
 	accountUsecase usecase.AccountUsecase
 }
 
-// NewAccountHandler creates a new account handler
 func NewAccountHandler(accountUsecase usecase.AccountUsecase) *AccountHandler {
 	return &AccountHandler{
 		accountUsecase: accountUsecase,

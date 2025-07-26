@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-// Logger middleware for request logging
 func Logger() gin.HandlerFunc {
 	return gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
 		return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
@@ -23,18 +22,14 @@ func Logger() gin.HandlerFunc {
 	})
 }
 
-// CustomLogger provides more detailed logging
 func CustomLogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Start timer
 		start := time.Now()
 		path := c.Request.URL.Path
 		raw := c.Request.URL.RawQuery
 
-		// Process request
 		c.Next()
 
-		// Log format
 		param := gin.LogFormatterParams{
 			Request:      c.Request,
 			TimeStamp:    time.Now(),

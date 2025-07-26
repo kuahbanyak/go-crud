@@ -7,14 +7,12 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// Config holds all application configuration
 type Config struct {
 	Database DatabaseConfig
 	Server   ServerConfig
 	JWT      JWTConfig
 }
 
-// DatabaseConfig holds database configuration
 type DatabaseConfig struct {
 	Host     string
 	Port     string
@@ -25,18 +23,15 @@ type DatabaseConfig struct {
 	TimeZone string
 }
 
-// ServerConfig holds server configuration
 type ServerConfig struct {
 	Port string
 }
 
-// JWTConfig holds JWT configuration
 type JWTConfig struct {
 	SecretKey string
 	Issuer    string
 }
 
-// Load loads configuration from environment variables
 func Load() *Config {
 	// Load .env file if it exists
 	if err := godotenv.Load(); err != nil {
@@ -61,7 +56,6 @@ func Load() *Config {
 	}
 }
 
-// getEnv gets environment variable with fallback
 func getEnv(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
