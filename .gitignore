@@ -19,7 +19,7 @@
 # vendor/
 
 # Go workspace file
-go.work
+.env
 .idea
 .vscode/
 *.iml
