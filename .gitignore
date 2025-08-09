@@ -9,8 +9,7 @@
 *.so
 *.dylib
 
-# Test binary, built with `go test -c`
-*.test
+
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
@@ -19,7 +18,12 @@
 # vendor/
 
 # Go workspace file
-.env
 .idea
-.vscode/
+.vscode
 *.iml
+.env
+# Go modules files
+go.sum
+go.mod
+# Test binary, build with `go test -c`
+*.test
