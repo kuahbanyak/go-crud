@@ -41,13 +41,11 @@ func Init() *gorm.DB {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	// Get underlying SQL DB to configure connection pool
 	sqlDB, err := db.DB()
 	if err != nil {
 		log.Fatalf("Failed to get underlying SQL DB: %v", err)
 	}
 
-	// Configure connection pool
 	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetMaxOpenConns(100)
 	sqlDB.SetConnMaxLifetime(time.Hour)

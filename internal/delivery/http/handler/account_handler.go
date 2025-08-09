@@ -1,13 +1,14 @@
 package handler
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"go-crud/internal/domain/entity"
 	"go-crud/internal/usecase"
 	"go-crud/pkg/response"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type AccountHandler struct {

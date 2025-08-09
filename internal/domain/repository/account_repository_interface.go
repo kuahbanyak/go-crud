@@ -2,8 +2,9 @@ package repository
 
 import (
 	"context"
-	"github.com/google/uuid"
 	"go-crud/internal/domain/entity"
+
+	"github.com/google/uuid"
 )
 
 type AccountRepository interface {

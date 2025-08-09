@@ -36,7 +36,7 @@ func JWTAuth(jwtService *auth.JWTService) gin.HandlerFunc {
 
 		c.Set("user_id", claims.UserID)
 		c.Set("username", claims.Username)
-		c.Set("user_role", claims.Role)
+		c.Set("role", claims.Role)
 
 		c.Next()
 	}
@@ -53,7 +53,7 @@ func OptionalAuth(jwtService *auth.JWTService) gin.HandlerFunc {
 				if err == nil {
 					c.Set("user_id", claims.UserID)
 					c.Set("username", claims.Username)
-					c.Set("user_role", claims.Role)
+					c.Set("role", claims.Role)
 				}
 			}
 		}
@@ -63,7 +63,7 @@ func OptionalAuth(jwtService *auth.JWTService) gin.HandlerFunc {
 
 func AdminOnly() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userRole, exists := c.Get("user_role")
+		userRole, exists := c.Get("role")
 		if !exists || userRole != "admin" {
 			response.Error(c, http.StatusForbidden, "Admin access required", "This endpoint requires admin privileges")
 			c.Abort()

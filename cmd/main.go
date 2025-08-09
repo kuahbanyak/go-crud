@@ -64,7 +64,7 @@ func setupRouter(productHandler *handler.ProductHandler, accountHandler *handler
 
 		accounts := apiV1.Group("/accounts")
 		{
-			accounts.POST("", accountHandler.CreateAccount) // Public registration
+			accounts.POST("", accountHandler.CreateAccount)
 
 			protected := accounts.Group("")
 			protected.Use(middleware.JWTAuth(jwtService))
@@ -79,9 +79,9 @@ func setupRouter(productHandler *handler.ProductHandler, accountHandler *handler
 
 		products := apiV1.Group("/products")
 		{
-			products.GET("", productHandler.GetProducts)                              // Public
-			products.GET("/:id", productHandler.GetProductByID)                       // Public
-			products.GET("/category/:category", productHandler.GetProductsByCategory) // Public
+			products.GET("", productHandler.GetProducts)
+			products.GET("/:id", productHandler.GetProductByID)
+			products.GET("/category/:category", productHandler.GetProductsByCategory)
 
 			protected := products.Group("")
 			protected.Use(middleware.JWTAuth(jwtService))
