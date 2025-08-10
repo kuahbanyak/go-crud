@@ -1,8 +1,9 @@
 package vehicle
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Vehicle struct {

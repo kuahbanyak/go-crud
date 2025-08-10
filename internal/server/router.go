@@ -2,7 +2,6 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/kuahbanyak/go-crud/config"
 	"gorm.io/gorm"
 
 	"os"
@@ -17,7 +16,7 @@ import (
 	"github.com/kuahbanyak/go-crud/pkg/middleware"
 )
 
-func NewServer(db *gorm.DB, cfg *config.Config) *gin.Engine {
+func NewServer(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
 	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
 	if len(jwtSecret) == 0 {

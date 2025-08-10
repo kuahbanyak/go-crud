@@ -1,8 +1,9 @@
 package inventory
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Part struct {

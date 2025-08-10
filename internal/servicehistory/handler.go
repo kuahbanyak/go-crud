@@ -31,7 +31,10 @@ func (h *Handler) List(c *gin.Context) {
 		return
 	}
 	var vid uint
-	fmt.Sscanf(vehicleID, "%d", &vid)
+	_, err := fmt.Sscanf(vehicleID, "%d", &vid)
+	if err != nil {
+		return
+	}
 	ss, err := h.repo.ListByVehicle(vid)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

@@ -18,7 +18,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	r := server.NewServer(gdb, cfg)
+	r := server.NewServer(gdb)
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
