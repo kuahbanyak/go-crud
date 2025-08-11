@@ -17,10 +17,10 @@ import (
 )
 
 func ConnectAndMigrate(cfg *config.Config) (*gorm.DB, error) {
-	if cfg.DB_DSN == "" {
+	if cfg.DbDsn == "" {
 		return nil, errors.New("DB_DSN is required")
 	}
-	db, err := gorm.Open(sqlserver.Open(cfg.DB_DSN), &gorm.Config{})
+	db, err := gorm.Open(sqlserver.Open(cfg.DbDsn), &gorm.Config{})
 	if err != nil {
 		return nil, fmt.Errorf("connect db: %w", err)
 	}

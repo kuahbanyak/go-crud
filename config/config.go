@@ -1,17 +1,17 @@
 package config
 
 import (
-    "os"
+	"os"
 )
 
 type Config struct {
-    DB_DSN string
-    JWTSecret string
+	DbDsn     string
+	JWTSecret string
 }
 
 func Load() *Config {
-    return &Config{
-        DB_DSN: os.Getenv("DB_DSN"),
-        JWTSecret: os.Getenv("JWT_SECRET"),
-    }
+	return &Config{
+		DbDsn:     os.Getenv("DB_DSN"),
+		JWTSecret: os.Getenv("JWT_SECRET"),
+	}
 }

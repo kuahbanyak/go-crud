@@ -18,3 +18,11 @@ Instructions:
 5. `go run ./cmd/server`
 
 This scaffold is intentionally compact; replace placeholders and improve security for production.
+PORT=8080
+DB_DSN=sqlserver://devsql:Kuahpisah1@devdbsql.database.windows.net:1433?database=sqldev
+JWT_SECRET=replace_with_secret
+STORAGE_PATH=./uploads
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASS=

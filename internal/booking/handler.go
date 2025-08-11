@@ -45,6 +45,17 @@ func (h *Handler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, req)
 }
 
+func (h *Handler) GetId(c *gin.Context) {
+	idStr := c.Param("id")
+	id, _ := strconv.Atoi(idStr)
+	b, err := h.repo.GetId(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+		return
+	}
+	c.JSON(http.StatusOK, b)
+}
+
 func (h *Handler) List(c *gin.Context) {
 	claims := c.MustGet("claims").(map[string]interface{})
 	uid := uint(claims["sub"].(float64))
