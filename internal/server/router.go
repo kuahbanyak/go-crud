@@ -18,6 +18,8 @@ import (
 
 func NewServer(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
+	// Register CORS middleware globally
+	r.Use(middleware.CORSMiddleware())
 	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
 	if len(jwtSecret) == 0 {
 		jwtSecret = []byte("dev_secret")

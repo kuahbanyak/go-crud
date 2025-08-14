@@ -38,3 +38,19 @@ func JWTAuthMiddleware(secret []byte) gin.HandlerFunc {
 		c.Next()
 	}
 }
+func AdminAuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		claims, exists := c.Get("claims")
+		if !exists {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing claims"})
+			return
+		}
+		m := claims.(map[string]interface{})
+		role, ok := m["role"].(string)
+		if !ok || role != "admin" {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+			return
+		}
+		c.Next()
+	}
+}
