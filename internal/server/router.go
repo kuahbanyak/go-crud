@@ -61,7 +61,7 @@ func NewServer(db *gorm.DB) *gin.Engine {
 
 		api.POST("/bookings", bookingH.Create)
 		api.GET("/bookings", bookingH.List)
-		api.GET("/bookings/:id", bookingH.GetId())
+		api.GET("/bookings/:id", bookingH.GetId)
 		api.PUT("/bookings/:id/status", bookingH.UpdateStatus)
 
 		api.POST("/service-records", serviceH.Create)
