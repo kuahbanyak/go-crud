@@ -11,6 +11,7 @@ type Repository interface {
 	FindByEmail(email string) (*User, error)
 	FindByID(id uint) (*User, error)
 	Update(u *User) error
+	FindAll() ([]*User, error)
 }
 
 type repo struct{ db *gorm.DB }
@@ -39,4 +40,11 @@ func (r *repo) Update(u *User) error {
 		return errors.New("missing id")
 	}
 	return r.db.Save(u).Error
+}
+func (r *repo) FindAll() ([]*User, error) {
+	var users []*User
+	if err := r.db.Find(&users).Error; err != nil {
+		return nil, err
+	}
+	return users, nil
 }
