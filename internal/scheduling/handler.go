@@ -138,7 +138,6 @@ func (h *Handler) GetDueReminders(c *gin.Context) {
 	c.JSON(http.StatusOK, reminders)
 }
 
-// Waitlist endpoints
 func (h *Handler) AddToWaitlist(c *gin.Context) {
 	var waitlist BookingWaitlist
 	if err := c.ShouldBindJSON(&waitlist); err != nil {
