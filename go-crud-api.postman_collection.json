@@ -1,0 +1,921 @@
+{
+  "info": {
+    "name": "Go CRUD - Vehicle Service Management API",
+    "description": "Complete API collection for Vehicle Service Management System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "go-crud-vehicle-service-api",
+    "version": {
+      "major": 1,
+      "minor": 0,
+      "patch": 0
+    }
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"john_doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"John Doe\",\n  \"phone\": \"+1234567890\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (responseCode.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"jwt_token\", jsonData.token);",
+                  "    pm.globals.set(\"jwt_token\", jsonData.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User Management",
+      "item": [
+        {
+          "name": "Get Current User Profile",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "me"]
+            }
+          }
+        },
+        {
+          "name": "Update User Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Updated\",\n  \"phone\": \"+1234567899\",\n  \"email\": \"john.updated@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Vehicle Management",
+      "item": [
+        {
+          "name": "Get All Vehicles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/vehicles",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "vehicles"]
+            }
+          }
+        },
+        {
+          "name": "Create Vehicle",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"make\": \"Toyota\",\n  \"model\": \"Camry\",\n  \"year\": 2020,\n  \"license_plate\": \"ABC123\",\n  \"vin\": \"1234567890ABCDEF\",\n  \"color\": \"Blue\",\n  \"mileage\": 25000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/vehicles",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "vehicles"]
+            }
+          }
+        },
+        {
+          "name": "Get Vehicle by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/vehicles/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "vehicles", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Vehicle",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mileage\": 26000,\n  \"color\": \"Red\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/vehicles/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "vehicles", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Vehicle",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/v1/vehicles/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "vehicles", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Booking Management",
+      "item": [
+        {
+          "name": "Create Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle_id\": 1,\n  \"service_type\": \"Oil Change\",\n  \"scheduled_date\": \"2025-09-01T10:00:00Z\",\n  \"description\": \"Regular oil change service\",\n  \"estimated_duration\": 60\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "bookings"]
+            }
+          }
+        },
+        {
+          "name": "Get All Bookings",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "bookings"]
+            }
+          }
+        },
+        {
+          "name": "Get Booking by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/bookings/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "bookings", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Booking Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"completed\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/bookings/:id/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "bookings", ":id", "status"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Service Records",
+      "item": [
+        {
+          "name": "Create Service Record",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle_id\": 1,\n  \"booking_id\": 1,\n  \"service_type\": \"Oil Change\",\n  \"description\": \"Changed oil and filter\",\n  \"cost\": 49.99,\n  \"mechanic_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/service-records",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "service-records"]
+            }
+          }
+        },
+        {
+          "name": "Get All Service Records",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/service-records",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "service-records"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inventory Management",
+      "item": [
+        {
+          "name": "Get All Parts",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/parts",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "parts"]
+            }
+          }
+        },
+        {
+          "name": "Create Part",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Oil Filter\",\n  \"part_number\": \"OF-123\",\n  \"price\": 15.99,\n  \"quantity\": 50,\n  \"supplier\": \"AutoParts Inc\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/parts",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "parts"]
+            }
+          }
+        },
+        {
+          "name": "Update Part",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 45,\n  \"price\": 16.99\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/parts/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "parts", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invoice & Reports",
+      "item": [
+        {
+          "name": "Generate Invoice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": 1,\n  \"items\": [\n    {\n      \"description\": \"Oil Change\",\n      \"quantity\": 1,\n      \"price\": 49.99\n    },\n    {\n      \"description\": \"Oil Filter\",\n      \"quantity\": 1,\n      \"price\": 15.99\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices/generate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "invoices", "generate"]
+            }
+          }
+        },
+        {
+          "name": "Get Reports Summary",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/reports/summary",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "reports", "summary"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Real-time Communications",
+      "item": [
+        {
+          "name": "WebSocket Connection",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/ws",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "ws"]
+            }
+          }
+        },
+        {
+          "name": "Create Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": 1,\n  \"recipient_id\": 2,\n  \"content\": \"Your vehicle service is ready for pickup\",\n  \"message_type\": \"notification\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/messages",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "messages"]
+            }
+          }
+        },
+        {
+          "name": "Get Messages by Booking",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/messages/booking/:booking_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "messages", "booking", ":booking_id"],
+              "variable": [
+                {
+                  "key": "booking_id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Conversation",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/messages/conversation/:booking_id/:user_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "messages", "conversation", ":booking_id", ":user_id"],
+              "variable": [
+                {
+                  "key": "booking_id",
+                  "value": "1"
+                },
+                {
+                  "key": "user_id",
+                  "value": "2"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark Message as Read",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{base_url}}/api/v1/messages/:message_id/read",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "messages", ":message_id", "read"],
+              "variable": [
+                {
+                  "key": "message_id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Unread Count",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/messages/unread-count",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "messages", "unread-count"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Scheduling & Calendar",
+      "item": [
+        {
+          "name": "Create Mechanic Availability",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mechanic_id\": 1,\n  \"date\": \"2025-09-01\",\n  \"start_time\": \"09:00\",\n  \"end_time\": \"17:00\",\n  \"is_available\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/scheduling/availability",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "scheduling", "availability"]
+            }
+          }
+        },
+        {
+          "name": "Get Mechanic Availability",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/scheduling/availability/mechanic/:mechanic_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "scheduling", "availability", "mechanic", ":mechanic_id"],
+              "variable": [
+                {
+                  "key": "mechanic_id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Service Type",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Oil Change\",\n  \"description\": \"Regular oil and filter change\",\n  \"estimated_duration\": 60,\n  \"price\": 49.99\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/scheduling/service-types",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "scheduling", "service-types"]
+            }
+          }
+        },
+        {
+          "name": "Get Service Types",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/scheduling/service-types",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "scheduling", "service-types"]
+            }
+          }
+        },
+        {
+          "name": "Create Maintenance Reminder",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle_id\": 1,\n  \"service_type\": \"Oil Change\",\n  \"due_date\": \"2025-12-01\",\n  \"due_mileage\": 30000,\n  \"description\": \"Next oil change due\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/scheduling/reminders",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "scheduling", "reminders"]
+            }
+          }
+        },
+        {
+          "name": "Get Vehicle Reminders",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/scheduling/reminders/vehicle/:vehicle_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "scheduling", "reminders", "vehicle", ":vehicle_id"],
+              "variable": [
+                {
+                  "key": "vehicle_id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Due Reminders",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/scheduling/reminders/due",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "scheduling", "reminders", "due"]
+            }
+          }
+        },
+        {
+          "name": "Add to Waitlist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": 1,\n  \"vehicle_id\": 1,\n  \"service_type\": \"Brake Repair\",\n  \"preferred_date\": \"2025-09-05\",\n  \"notes\": \"Brake pads need replacement\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/scheduling/waitlist",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "scheduling", "waitlist"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Service Packages",
+      "item": [
+        {
+          "name": "Create Service Package",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Basic Maintenance Package\",\n  \"description\": \"Oil change, filter replacement, and basic inspection\",\n  \"price\": 79.99,\n  \"duration\": 90,\n  \"category_id\": 1,\n  \"services\": [\"Oil Change\", \"Filter Replacement\", \"Basic Inspection\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/packages",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "packages"]
+            }
+          }
+        },
+        {
+          "name": "Get All Packages",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/packages",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "packages"]
+            }
+          }
+        },
+        {
+          "name": "Get Package by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/packages/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "packages", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Service Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Preventive Maintenance\",\n  \"description\": \"Regular maintenance services to prevent major issues\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/packages/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "packages", "categories"]
+            }
+          }
+        },
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/packages/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "packages", "categories"]
+            }
+          }
+        },
+        {
+          "name": "Create Service History",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle_id\": 1,\n  \"package_id\": 1,\n  \"service_date\": \"2025-08-28T10:00:00Z\",\n  \"mechanic_id\": 1,\n  \"notes\": \"Service completed successfully\",\n  \"cost\": 79.99\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/packages/history",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "packages", "history"]
+            }
+          }
+        },
+        {
+          "name": "Get Vehicle Service History",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/packages/history/vehicle/:vehicle_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "packages", "history", "vehicle", ":vehicle_id"],
+              "variable": [
+                {
+                  "key": "vehicle_id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customer Dashboard",
+      "item": [
+        {
+          "name": "Get Customer Dashboard",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/dashboard/customer",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "dashboard", "customer"]
+            }
+          }
+        },
+        {
+          "name": "Get Vehicle Dashboard",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/dashboard/vehicle/:vehicle_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "dashboard", "vehicle", ":vehicle_id"],
+              "variable": [
+                {
+                  "key": "vehicle_id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Vehicle Health",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle_id\": 1,\n  \"health_score\": 85,\n  \"battery_health\": 90,\n  \"tire_health\": 80,\n  \"engine_health\": 85,\n  \"brake_health\": 75\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/dashboard/vehicle-health",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "dashboard", "vehicle-health"]
+            }
+          }
+        },
+        {
+          "name": "Create Recommendation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle_id\": 1,\n  \"service_type\": \"Brake Pad Replacement\",\n  \"priority\": \"medium\",\n  \"estimated_cost\": 299.99,\n  \"description\": \"Brake pads are getting thin and should be replaced soon\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/dashboard/recommendations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "dashboard", "recommendations"]
+            }
+          }
+        },
+        {
+          "name": "Update Budget",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": 1,\n  \"monthly_budget\": 200.00,\n  \"yearly_budget\": 2000.00\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/dashboard/budget",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "dashboard", "budget"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+

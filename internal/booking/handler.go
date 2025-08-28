@@ -28,7 +28,6 @@ func (h *Handler) Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	// verify vehicle exists (best-effort)
 	if _, err := h.vehicleRepo.Get(req.VehicleID); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "vehicle not found"})
 		return
