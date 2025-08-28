@@ -1,11 +1,11 @@
 {
   "info": {
-    "name": "Go CRUD - Vehicle Service Management API",
-    "description": "Complete API collection for Vehicle Service Management System",
+    "name": "Go CRUD - Vehicle Service Management API (UUID-Based)",
+    "description": "Complete API collection for Vehicle Service Management System with UUID identifiers for enhanced security and scalability",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_postman_id": "go-crud-vehicle-service-api",
+    "_postman_id": "go-crud-vehicle-service-api-uuid",
     "version": {
-      "major": 1,
+      "major": 2,
       "minor": 0,
       "patch": 0
     }
@@ -30,6 +30,26 @@
       "key": "jwt_token",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "sample_user_id",
+      "value": "550e8400-e29b-41d4-a716-446655440000",
+      "type": "string"
+    },
+    {
+      "key": "sample_vehicle_id",
+      "value": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+      "type": "string"
+    },
+    {
+      "key": "sample_booking_id",
+      "value": "6ba7b811-9dad-11d1-80b4-00c04fd430c8",
+      "type": "string"
+    },
+    {
+      "key": "sample_template_id",
+      "value": "123e4567-e89b-12d3-a456-426614174000",
+      "type": "string"
     }
   ],
   "item": [
@@ -48,14 +68,28 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"john_doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"John Doe\",\n  \"phone\": \"+1234567890\"\n}"
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"John Doe\",\n  \"phone\": \"+1234567890\",\n  \"role\": \"customer\",\n  \"address\": \"123 Main St, City, State 12345\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/register",
               "host": ["{{base_url}}"],
               "path": ["auth", "register"]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (responseCode.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    console.log('User registered with UUID:', jsonData.id);",
+                  "    pm.environment.set('sample_user_id', jsonData.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Login User",
@@ -84,8 +118,9 @@
                 "exec": [
                   "if (responseCode.code === 200) {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.environment.set(\"jwt_token\", jsonData.token);",
-                  "    pm.globals.set(\"jwt_token\", jsonData.token);",
+                  "    pm.environment.set('jwt_token', jsonData.token);",
+                  "    pm.globals.set('jwt_token', jsonData.token);",
+                  "    console.log('JWT Token set successfully');",
                   "}"
                 ]
               }
@@ -120,7 +155,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"John Updated\",\n  \"phone\": \"+1234567899\",\n  \"email\": \"john.updated@example.com\"\n}"
+              "raw": "{\n  \"name\": \"John Updated\",\n  \"phone\": \"+1234567899\",\n  \"address\": \"456 Updated Ave, New City, State 54321\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/me",
@@ -157,29 +192,37 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"make\": \"Toyota\",\n  \"model\": \"Camry\",\n  \"year\": 2020,\n  \"license_plate\": \"ABC123\",\n  \"vin\": \"1234567890ABCDEF\",\n  \"color\": \"Blue\",\n  \"mileage\": 25000\n}"
+              "raw": "{\n  \"brand\": \"Toyota\",\n  \"model\": \"Camry\",\n  \"year\": 2020,\n  \"license_plate\": \"ABC123\",\n  \"vin\": \"1234567890ABCDEF\",\n  \"mileage\": 25000\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/vehicles",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "vehicles"]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (responseCode.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    console.log('Vehicle created with UUID:', jsonData.id);",
+                  "    pm.environment.set('sample_vehicle_id', jsonData.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Get Vehicle by ID",
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/v1/vehicles/:id",
+              "raw": "{{base_url}}/api/v1/vehicles/{{sample_vehicle_id}}",
               "host": ["{{base_url}}"],
-              "path": ["api", "v1", "vehicles", ":id"],
-              "variable": [
-                {
-                  "key": "id",
-                  "value": "1"
-                }
-              ]
+              "path": ["api", "v1", "vehicles", "{{sample_vehicle_id}}"]
             }
           }
         },
@@ -195,18 +238,12 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"mileage\": 26000,\n  \"color\": \"Red\"\n}"
+              "raw": "{\n  \"mileage\": 26000\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/v1/vehicles/:id",
+              "raw": "{{base_url}}/api/v1/vehicles/{{sample_vehicle_id}}",
               "host": ["{{base_url}}"],
-              "path": ["api", "v1", "vehicles", ":id"],
-              "variable": [
-                {
-                  "key": "id",
-                  "value": "1"
-                }
-              ]
+              "path": ["api", "v1", "vehicles", "{{sample_vehicle_id}}"]
             }
           }
         },
@@ -215,15 +252,9 @@
           "request": {
             "method": "DELETE",
             "url": {
-              "raw": "{{base_url}}/api/v1/vehicles/:id",
+              "raw": "{{base_url}}/api/v1/vehicles/{{sample_vehicle_id}}",
               "host": ["{{base_url}}"],
-              "path": ["api", "v1", "vehicles", ":id"],
-              "variable": [
-                {
-                  "key": "id",
-                  "value": "1"
-                }
-              ]
+              "path": ["api", "v1", "vehicles", "{{sample_vehicle_id}}"]
             }
           }
         }
@@ -244,14 +275,28 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"vehicle_id\": 1,\n  \"service_type\": \"Oil Change\",\n  \"scheduled_date\": \"2025-09-01T10:00:00Z\",\n  \"description\": \"Regular oil change service\",\n  \"estimated_duration\": 60\n}"
+              "raw": "{\n  \"vehicle_id\": \"{{sample_vehicle_id}}\",\n  \"scheduled_at\": \"2025-09-01T10:00:00Z\",\n  \"duration_min\": 60,\n  \"notes\": \"Regular oil change service\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/bookings",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "bookings"]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (responseCode.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    console.log('Booking created with UUID:', jsonData.id);",
+                  "    pm.environment.set('sample_booking_id', jsonData.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Get All Bookings",
@@ -269,15 +314,9 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/v1/bookings/:id",
+              "raw": "{{base_url}}/api/v1/bookings/{{sample_booking_id}}",
               "host": ["{{base_url}}"],
-              "path": ["api", "v1", "bookings", ":id"],
-              "variable": [
-                {
-                  "key": "id",
-                  "value": "1"
-                }
-              ]
+              "path": ["api", "v1", "bookings", "{{sample_booking_id}}"]
             }
           }
         },
@@ -296,15 +335,9 @@
               "raw": "{\n  \"status\": \"completed\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/v1/bookings/:id/status",
+              "raw": "{{base_url}}/api/v1/bookings/{{sample_booking_id}}/status",
               "host": ["{{base_url}}"],
-              "path": ["api", "v1", "bookings", ":id", "status"],
-              "variable": [
-                {
-                  "key": "id",
-                  "value": "1"
-                }
-              ]
+              "path": ["api", "v1", "bookings", "{{sample_booking_id}}", "status"]
             }
           }
         }
@@ -325,7 +358,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"vehicle_id\": 1,\n  \"booking_id\": 1,\n  \"service_type\": \"Oil Change\",\n  \"description\": \"Changed oil and filter\",\n  \"cost\": 49.99,\n  \"mechanic_id\": 1\n}"
+              "raw": "{\n  \"vehicle_id\": \"{{sample_vehicle_id}}\",\n  \"booking_id\": \"{{sample_booking_id}}\",\n  \"description\": \"Changed oil and filter\",\n  \"cost\": 4999\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/service-records",
@@ -373,7 +406,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Oil Filter\",\n  \"part_number\": \"OF-123\",\n  \"price\": 15.99,\n  \"quantity\": 50,\n  \"supplier\": \"AutoParts Inc\"\n}"
+              "raw": "{\n  \"sku\": \"OF-123\",\n  \"name\": \"Oil Filter\",\n  \"qty\": 50,\n  \"price\": 1599\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/parts",
@@ -394,16 +427,16 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"quantity\": 45,\n  \"price\": 16.99\n}"
+              "raw": "{\n  \"qty\": 45,\n  \"price\": 1699\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/v1/parts/:id",
+              "raw": "{{base_url}}/api/v1/parts/:part_id",
               "host": ["{{base_url}}"],
-              "path": ["api", "v1", "parts", ":id"],
+              "path": ["api", "v1", "parts", ":part_id"],
               "variable": [
                 {
-                  "key": "id",
-                  "value": "1"
+                  "key": "part_id",
+                  "value": "{{sample_part_id}}"
                 }
               ]
             }
@@ -426,7 +459,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"booking_id\": 1,\n  \"items\": [\n    {\n      \"description\": \"Oil Change\",\n      \"quantity\": 1,\n      \"price\": 49.99\n    },\n    {\n      \"description\": \"Oil Filter\",\n      \"quantity\": 1,\n      \"price\": 15.99\n    }\n  ]\n}"
+              "raw": "{\n  \"booking_id\": \"{{sample_booking_id}}\",\n  \"amount\": 12500,\n  \"customer_email\": \"customer@example.com\",\n  \"description\": \"Oil change and filter replacement service\",\n  \"template_id\": \"{{sample_template_id}}\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/invoices/generate",
@@ -443,6 +476,132 @@
               "raw": "{{base_url}}/api/v1/reports/summary",
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "reports", "summary"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Custom Invoice Templates",
+      "item": [
+        {
+          "name": "Create Custom Template",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Professional Invoice Template\",\n  \"subject\": \"Invoice #{{invoice_id}} - Service Complete\",\n  \"body\": \"<html><body><h1>Vehicle Service Invoice</h1><h2>Invoice #{{invoice_id}}</h2><p>Dear Customer,</p><p>Your vehicle service for booking #{{booking_id}} has been completed.</p><div style='border:1px solid #ccc;padding:10px;margin:10px 0;'><strong>Invoice Details:</strong><br>Amount: {{amount}}<br>Status: {{status}}<br>Description: {{description}}<br>Date: {{created_at}}</div><p>Thank you for choosing our service!</p></body></html>\",\n  \"body_type\": \"html\",\n  \"is_default\": true,\n  \"description\": \"Professional HTML template with styling\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices/templates",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "invoices", "templates"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (responseCode.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    console.log('Template created with UUID:', jsonData.id);",
+                  "    pm.environment.set('sample_template_id', jsonData.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Templates",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices/templates",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "invoices", "templates"]
+            }
+          }
+        },
+        {
+          "name": "Get Template by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices/templates/{{sample_template_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "invoices", "templates", "{{sample_template_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Template",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Professional Template\",\n  \"subject\": \"Updated: Invoice #{{invoice_id}} - {{description}}\",\n  \"body\": \"<html><body><h1>UPDATED Template</h1><h2>Invoice #{{invoice_id}}</h2><p>This template has been updated!</p><p>Amount: {{amount}} | Status: {{status}}</p></body></html>\",\n  \"body_type\": \"html\",\n  \"is_default\": true,\n  \"description\": \"Updated professional template\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices/templates/{{sample_template_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "invoices", "templates", "{{sample_template_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Set Default Template",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices/templates/{{sample_template_id}}/set-default",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "invoices", "templates", "{{sample_template_id}}", "set-default"]
+            }
+          }
+        },
+        {
+          "name": "Delete Template",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices/templates/{{sample_template_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "invoices", "templates", "{{sample_template_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Simple Text Template",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Simple Text Template\",\n  \"subject\": \"Invoice {{invoice_id}} - {{description}}\",\n  \"body\": \"Dear Customer,\\n\\nYour invoice has been generated:\\n\\nInvoice ID: {{invoice_id}}\\nBooking ID: {{booking_id}}\\nAmount: {{amount}}\\nStatus: {{status}}\\nDescription: {{description}}\\nDate: {{created_at}}\\n\\nThank you for your business!\\n\\nBest regards,\\nVehicle Service Team\",\n  \"body_type\": \"text\",\n  \"is_default\": false,\n  \"description\": \"Simple plain text template\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices/templates",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "invoices", "templates"]
             }
           }
         }
@@ -474,7 +633,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"booking_id\": 1,\n  \"recipient_id\": 2,\n  \"content\": \"Your vehicle service is ready for pickup\",\n  \"message_type\": \"notification\"\n}"
+              "raw": "{\n  \"booking_id\": \"{{sample_booking_id}}\",\n  \"receiver_id\": \"{{sample_user_id}}\",\n  \"type\": \"text\",\n  \"content\": \"Your vehicle service is ready for pickup\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/messages",
@@ -488,15 +647,9 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/v1/messages/booking/:booking_id",
+              "raw": "{{base_url}}/api/v1/messages/booking/{{sample_booking_id}}",
               "host": ["{{base_url}}"],
-              "path": ["api", "v1", "messages", "booking", ":booking_id"],
-              "variable": [
-                {
-                  "key": "booking_id",
-                  "value": "1"
-                }
-              ]
+              "path": ["api", "v1", "messages", "booking", "{{sample_booking_id}}"]
             }
           }
         },
@@ -505,19 +658,9 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/v1/messages/conversation/:booking_id/:user_id",
+              "raw": "{{base_url}}/api/v1/messages/conversation/{{sample_booking_id}}/{{sample_user_id}}",
               "host": ["{{base_url}}"],
-              "path": ["api", "v1", "messages", "conversation", ":booking_id", ":user_id"],
-              "variable": [
-                {
-                  "key": "booking_id",
-                  "value": "1"
-                },
-                {
-                  "key": "user_id",
-                  "value": "2"
-                }
-              ]
+              "path": ["api", "v1", "messages", "conversation", "{{sample_booking_id}}", "{{sample_user_id}}"]
             }
           }
         },
@@ -532,7 +675,7 @@
               "variable": [
                 {
                   "key": "message_id",
-                  "value": "1"
+                  "value": "{{sample_message_id}}"
                 }
               ]
             }
@@ -566,7 +709,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"mechanic_id\": 1,\n  \"date\": \"2025-09-01\",\n  \"start_time\": \"09:00\",\n  \"end_time\": \"17:00\",\n  \"is_available\": true\n}"
+              "raw": "{\n  \"mechanic_id\": \"{{sample_user_id}}\",\n  \"date\": \"2025-09-01\",\n  \"start_time\": \"2025-09-01T09:00:00Z\",\n  \"end_time\": \"2025-09-01T17:00:00Z\",\n  \"status\": \"available\",\n  \"notes\": \"Available for regular services\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/scheduling/availability",
@@ -580,13 +723,13 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/v1/scheduling/availability/mechanic/:mechanic_id",
+              "raw": "{{base_url}}/api/v1/scheduling/availability/mechanic/{{sample_user_id}}?date=2025-09-01",
               "host": ["{{base_url}}"],
-              "path": ["api", "v1", "scheduling", "availability", "mechanic", ":mechanic_id"],
-              "variable": [
+              "path": ["api", "v1", "scheduling", "availability", "mechanic", "{{sample_user_id}}"],
+              "query": [
                 {
-                  "key": "mechanic_id",
-                  "value": "1"
+                  "key": "date",
+                  "value": "2025-09-01"
                 }
               ]
             }
@@ -604,7 +747,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Oil Change\",\n  \"description\": \"Regular oil and filter change\",\n  \"estimated_duration\": 60,\n  \"price\": 49.99\n}"
+              "raw": "{\n  \"name\": \"Oil Change\",\n  \"description\": \"Regular oil and filter change\",\n  \"estimated_minutes\": 60,\n  \"base_price\": 4999,\n  \"category\": \"Maintenance\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/scheduling/service-types",
@@ -636,7 +779,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"vehicle_id\": 1,\n  \"service_type\": \"Oil Change\",\n  \"due_date\": \"2025-12-01\",\n  \"due_mileage\": 30000,\n  \"description\": \"Next oil change due\"\n}"
+              "raw": "{\n  \"vehicle_id\": \"{{sample_vehicle_id}}\",\n  \"service_type_id\": \"{{sample_service_type_id}}\",\n  \"due_date\": \"2025-12-01T00:00:00Z\",\n  \"due_mileage\": 30000,\n  \"description\": \"Next oil change due\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/scheduling/reminders",
@@ -650,15 +793,9 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/v1/scheduling/reminders/vehicle/:vehicle_id",
+              "raw": "{{base_url}}/api/v1/scheduling/reminders/vehicle/{{sample_vehicle_id}}",
               "host": ["{{base_url}}"],
-              "path": ["api", "v1", "scheduling", "reminders", "vehicle", ":vehicle_id"],
-              "variable": [
-                {
-                  "key": "vehicle_id",
-                  "value": "1"
-                }
-              ]
+              "path": ["api", "v1", "scheduling", "reminders", "vehicle", "{{sample_vehicle_id}}"]
             }
           }
         },
@@ -685,7 +822,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"customer_id\": 1,\n  \"vehicle_id\": 1,\n  \"service_type\": \"Brake Repair\",\n  \"preferred_date\": \"2025-09-05\",\n  \"notes\": \"Brake pads need replacement\"\n}"
+              "raw": "{\n  \"vehicle_id\": \"{{sample_vehicle_id}}\",\n  \"service_type_id\": \"{{sample_service_type_id}}\",\n  \"preferred_date\": \"2025-09-05T10:00:00Z\",\n  \"notes\": \"Brake pads need replacement\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/scheduling/waitlist",
@@ -711,7 +848,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Basic Maintenance Package\",\n  \"description\": \"Oil change, filter replacement, and basic inspection\",\n  \"price\": 79.99,\n  \"duration\": 90,\n  \"category_id\": 1,\n  \"services\": [\"Oil Change\", \"Filter Replacement\", \"Basic Inspection\"]\n}"
+              "raw": "{\n  \"name\": \"Basic Maintenance Package\",\n  \"description\": \"Oil change, filter replacement, and basic inspection\",\n  \"total_price\": 7999,\n  \"discount_pct\": 10,\n  \"category\": \"Preventive Maintenance\",\n  \"is_active\": true\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/packages",
@@ -736,15 +873,9 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/v1/packages/:id",
+              "raw": "{{base_url}}/api/v1/packages/{{sample_package_id}}",
               "host": ["{{base_url}}"],
-              "path": ["api", "v1", "packages", ":id"],
-              "variable": [
-                {
-                  "key": "id",
-                  "value": "1"
-                }
-              ]
+              "path": ["api", "v1", "packages", "{{sample_package_id}}"]
             }
           }
         },
@@ -760,7 +891,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Preventive Maintenance\",\n  \"description\": \"Regular maintenance services to prevent major issues\"\n}"
+              "raw": "{\n  \"name\": \"Preventive Maintenance\",\n  \"description\": \"Regular maintenance services to prevent major issues\",\n  \"icon\": \"maintenance-icon\",\n  \"color\": \"#007bff\",\n  \"sort_order\": 1\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/packages/categories",
@@ -792,7 +923,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"vehicle_id\": 1,\n  \"package_id\": 1,\n  \"service_date\": \"2025-08-28T10:00:00Z\",\n  \"mechanic_id\": 1,\n  \"notes\": \"Service completed successfully\",\n  \"cost\": 79.99\n}"
+              "raw": "{\n  \"vehicle_id\": \"{{sample_vehicle_id}}\",\n  \"booking_id\": \"{{sample_booking_id}}\",\n  \"package_id\": \"{{sample_package_id}}\",\n  \"mechanic_id\": \"{{sample_user_id}}\",\n  \"completed_at\": \"2025-08-28T10:00:00Z\",\n  \"cost\": 7999,\n  \"mileage\": 25000,\n  \"notes\": \"Service completed successfully\",\n  \"quality_rating\": 5,\n  \"customer_review\": \"Excellent service, very satisfied\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/packages/history",
@@ -806,15 +937,9 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/v1/packages/history/vehicle/:vehicle_id",
+              "raw": "{{base_url}}/api/v1/packages/history/vehicle/{{sample_vehicle_id}}",
               "host": ["{{base_url}}"],
-              "path": ["api", "v1", "packages", "history", "vehicle", ":vehicle_id"],
-              "variable": [
-                {
-                  "key": "vehicle_id",
-                  "value": "1"
-                }
-              ]
+              "path": ["api", "v1", "packages", "history", "vehicle", "{{sample_vehicle_id}}"]
             }
           }
         }
@@ -839,15 +964,9 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/v1/dashboard/vehicle/:vehicle_id",
+              "raw": "{{base_url}}/api/v1/dashboard/vehicle/{{sample_vehicle_id}}",
               "host": ["{{base_url}}"],
-              "path": ["api", "v1", "dashboard", "vehicle", ":vehicle_id"],
-              "variable": [
-                {
-                  "key": "vehicle_id",
-                  "value": "1"
-                }
-              ]
+              "path": ["api", "v1", "dashboard", "vehicle", "{{sample_vehicle_id}}"]
             }
           }
         },
@@ -863,7 +982,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"vehicle_id\": 1,\n  \"health_score\": 85,\n  \"battery_health\": 90,\n  \"tire_health\": 80,\n  \"engine_health\": 85,\n  \"brake_health\": 75\n}"
+              "raw": "{\n  \"vehicle_id\": \"{{sample_vehicle_id}}\",\n  \"overall_score\": 85,\n  \"engine_score\": 90,\n  \"brake_score\": 80,\n  \"tire_score\": 85,\n  \"battery_score\": 75,\n  \"last_updated\": \"2025-08-28T10:00:00Z\",\n  \"recommendations\": \"Consider brake pad replacement soon\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/dashboard/vehicle-health",
@@ -884,7 +1003,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"vehicle_id\": 1,\n  \"service_type\": \"Brake Pad Replacement\",\n  \"priority\": \"medium\",\n  \"estimated_cost\": 299.99,\n  \"description\": \"Brake pads are getting thin and should be replaced soon\"\n}"
+              "raw": "{\n  \"vehicle_id\": \"{{sample_vehicle_id}}\",\n  \"title\": \"Brake Pad Replacement\",\n  \"description\": \"Brake pads are getting thin and should be replaced soon\",\n  \"priority\": \"medium\",\n  \"estimated_cost\": 29999,\n  \"due_in_days\": 30,\n  \"category\": \"Safety\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/dashboard/recommendations",
@@ -905,7 +1024,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"customer_id\": 1,\n  \"monthly_budget\": 200.00,\n  \"yearly_budget\": 2000.00\n}"
+              "raw": "{\n  \"vehicle_id\": \"{{sample_vehicle_id}}\",\n  \"monthly_budget\": 20000,\n  \"yearly_budget\": 200000,\n  \"alert_threshold\": 80\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/dashboard/budget",
@@ -918,4 +1037,3 @@
     }
   ]
 }
-

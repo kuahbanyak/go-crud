@@ -128,7 +128,7 @@ func (h *Handler) GetDueReminders(c *gin.Context) {
 	for _, reminder := range reminders {
 		h.hub.SendNotification(notification.Notification{
 			Type:    notification.BookingReminder,
-			UserID:  reminder.VehicleID, // This should be mapped to owner ID
+			UserID:  reminder.VehicleID, // VehicleID is now string UUID, this should work
 			Title:   "Maintenance Due",
 			Message: "Your vehicle is due for maintenance: " + reminder.Description,
 			Data:    reminder,
@@ -147,7 +147,7 @@ func (h *Handler) AddToWaitlist(c *gin.Context) {
 	}
 
 	claims := c.MustGet("claims").(map[string]interface{})
-	waitlist.CustomerID = uint(claims["sub"].(float64))
+	waitlist.CustomerID = claims["sub"].(string) // JWT sub should be string UUID now
 
 	if err := h.repo.AddToWaitlist(&waitlist); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add to waitlist"})

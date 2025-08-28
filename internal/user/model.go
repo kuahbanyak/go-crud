@@ -3,6 +3,7 @@ package user
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -15,7 +16,7 @@ const (
 )
 
 type User struct {
-	ID        uint           `gorm:"primaryKey" json:"id"`
+	ID        string         `gorm:"type:uniqueidentifier;primaryKey" json:"id"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
@@ -26,4 +27,12 @@ type User struct {
 	Phone    string `json:"phone"`
 	Role     Role   `gorm:"type:varchar(20);default:'customer'" json:"role"`
 	Address  string `json:"address"`
+}
+
+// BeforeCreate will set a UUID rather than numeric ID
+func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
+	if u.ID == "" {
+		u.ID = uuid.New().String()
+	}
+	return
 }

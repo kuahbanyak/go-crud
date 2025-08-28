@@ -99,7 +99,7 @@ func (h *Handler) UpdateBudget(c *gin.Context) {
 	}
 
 	claims := c.MustGet("claims").(map[string]interface{})
-	budget.CustomerID = uint(claims["sub"].(float64))
+	budget.CustomerID = claims["sub"].(string) // JWT sub should be string UUID now
 
 	if err := h.repo.UpdateBudget(&budget); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update budget"})

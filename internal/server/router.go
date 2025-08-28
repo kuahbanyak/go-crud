@@ -95,6 +95,14 @@ func NewServer(db *gorm.DB) *gin.Engine {
 
 		api.POST("/invoices/generate", invoiceH.Generate)
 		api.GET("/reports/summary", invoiceH.Summary)
+
+		// Custom invoice body templates
+		api.POST("/invoices/templates", invoiceH.CreateCustomBody)
+		api.GET("/invoices/templates", invoiceH.GetCustomBodies)
+		api.GET("/invoices/templates/:id", invoiceH.GetCustomBody)
+		api.PUT("/invoices/templates/:id", invoiceH.UpdateCustomBody)
+		api.DELETE("/invoices/templates/:id", invoiceH.DeleteCustomBody)
+		api.PUT("/invoices/templates/:id/set-default", invoiceH.SetDefaultCustomBody)
 	}
 
 	// Enhanced Feature 1: Real-time Notifications & Communication

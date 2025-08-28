@@ -2,8 +2,6 @@ package user
 
 import (
 	"net/http"
-	"strconv"
-	_ "strconv"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -15,7 +13,7 @@ func NewHandler(r Repository) *Handler { return &Handler{repo: r} }
 
 func (h *Handler) Me(c *gin.Context) {
 	claims := c.MustGet("claims").(map[string]interface{})
-	uid := uint(claims["sub"].(float64))
+	uid := claims["sub"].(string) // JWT sub should be string UUID now
 	u, err := h.repo.FindByID(uid)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
@@ -27,7 +25,7 @@ func (h *Handler) Me(c *gin.Context) {
 
 func (h *Handler) UpdateProfile(c *gin.Context) {
 	claims := c.MustGet("claims").(map[string]interface{})
-	uid := uint(claims["sub"].(float64))
+	uid := claims["sub"].(string) // JWT sub should be string UUID now
 	var req struct {
 		Name    string `json:"name"`
 		Phone   string `json:"phone"`
@@ -55,7 +53,7 @@ func (h *Handler) UpdateProfile(c *gin.Context) {
 
 func (h *Handler) UpdatePassword(c *gin.Context) {
 	claims := c.MustGet("claims").(map[string]interface{})
-	uid := uint(claims["sub"].(float64))
+	uid := claims["sub"].(string) // JWT sub should be string UUID now
 	var req struct {
 		OldPassword string `json:"old_password" binding:"required"`
 		NewPassword string `json:"new_password" binding:"required,min=6"`
@@ -84,7 +82,7 @@ func (h *Handler) UpdatePassword(c *gin.Context) {
 }
 func (h *Handler) DeleteAccount(c *gin.Context) {
 	claims := c.MustGet("claims").(map[string]interface{})
-	uid := uint(claims["sub"].(float64))
+	uid := claims["sub"].(string) // JWT sub should be string UUID now
 	u, err := h.repo.FindByID(uid)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
@@ -108,9 +106,8 @@ func (h *Handler) ListUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, users)
 }
 func (h *Handler) GetUser(c *gin.Context) {
-	idStr := c.Param("id")
-	id, _ := strconv.Atoi(idStr)
-	u, err := h.repo.FindByID(uint(id))
+	id := c.Param("id")           // Use string directly, no conversion needed
+	u, err := h.repo.FindByID(id) // Pass string UUID directly
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return

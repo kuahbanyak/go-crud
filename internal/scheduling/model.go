@@ -3,6 +3,7 @@ package scheduling
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/user"
 	"github.com/kuahbanyak/go-crud/internal/vehicle"
 	"gorm.io/gorm"
@@ -17,12 +18,12 @@ const (
 )
 
 type MechanicAvailability struct {
-	ID        uint           `gorm:"primaryKey" json:"id"`
+	ID        string         `gorm:"type:uniqueidentifier;primaryKey" json:"id"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
-	MechanicID uint      `json:"mechanic_id" gorm:"index"`
+	MechanicID string    `gorm:"type:uniqueidentifier;index" json:"mechanic_id"`
 	Mechanic   user.User `gorm:"foreignKey:MechanicID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"-"`
 
 	Date      time.Time          `json:"date" gorm:"type:date"`
@@ -32,8 +33,16 @@ type MechanicAvailability struct {
 	Notes     string             `json:"notes"`
 }
 
+// BeforeCreate will set a UUID rather than numeric ID
+func (m *MechanicAvailability) BeforeCreate(tx *gorm.DB) (err error) {
+	if m.ID == "" {
+		m.ID = uuid.New().String()
+	}
+	return
+}
+
 type ServiceType struct {
-	ID        uint           `gorm:"primaryKey" json:"id"`
+	ID        string         `gorm:"type:uniqueidentifier;primaryKey" json:"id"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
@@ -45,16 +54,24 @@ type ServiceType struct {
 	Category         string `json:"category"`
 }
 
+// BeforeCreate will set a UUID rather than numeric ID
+func (s *ServiceType) BeforeCreate(tx *gorm.DB) (err error) {
+	if s.ID == "" {
+		s.ID = uuid.New().String()
+	}
+	return
+}
+
 type MaintenanceReminder struct {
-	ID        uint           `gorm:"primaryKey" json:"id"`
+	ID        string         `gorm:"type:uniqueidentifier;primaryKey" json:"id"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
-	VehicleID uint            `json:"vehicle_id" gorm:"index"`
+	VehicleID string          `gorm:"type:uniqueidentifier;index" json:"vehicle_id"`
 	Vehicle   vehicle.Vehicle `gorm:"foreignKey:VehicleID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"-"`
 
-	ServiceTypeID uint        `json:"service_type_id"`
+	ServiceTypeID string      `gorm:"type:uniqueidentifier" json:"service_type_id"`
 	ServiceType   ServiceType `gorm:"foreignKey:ServiceTypeID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"-"`
 
 	DueDate     time.Time  `json:"due_date"`
@@ -64,22 +81,38 @@ type MaintenanceReminder struct {
 	CompletedAt *time.Time `json:"completed_at"`
 }
 
+// BeforeCreate will set a UUID rather than numeric ID
+func (m *MaintenanceReminder) BeforeCreate(tx *gorm.DB) (err error) {
+	if m.ID == "" {
+		m.ID = uuid.New().String()
+	}
+	return
+}
+
 type BookingWaitlist struct {
-	ID        uint           `gorm:"primaryKey" json:"id"`
+	ID        string         `gorm:"type:uniqueidentifier;primaryKey" json:"id"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
-	CustomerID uint      `json:"customer_id" gorm:"index"`
+	CustomerID string    `gorm:"type:uniqueidentifier;index" json:"customer_id"`
 	Customer   user.User `gorm:"foreignKey:CustomerID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"-"`
 
-	VehicleID uint            `json:"vehicle_id"`
+	VehicleID string          `gorm:"type:uniqueidentifier" json:"vehicle_id"`
 	Vehicle   vehicle.Vehicle `gorm:"foreignKey:VehicleID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"-"`
 
-	ServiceTypeID uint        `json:"service_type_id"`
+	ServiceTypeID string      `gorm:"type:uniqueidentifier" json:"service_type_id"`
 	ServiceType   ServiceType `gorm:"foreignKey:ServiceTypeID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"-"`
 
 	PreferredDate time.Time `json:"preferred_date"`
 	Notes         string    `json:"notes"`
 	IsNotified    bool      `json:"is_notified" gorm:"default:false"`
+}
+
+// BeforeCreate will set a UUID rather than numeric ID
+func (b *BookingWaitlist) BeforeCreate(tx *gorm.DB) (err error) {
+	if b.ID == "" {
+		b.ID = uuid.New().String()
+	}
+	return
 }

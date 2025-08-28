@@ -3,6 +3,7 @@ package servicepackage
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/booking"
 	"github.com/kuahbanyak/go-crud/internal/scheduling"
 	"github.com/kuahbanyak/go-crud/internal/user"
@@ -11,7 +12,7 @@ import (
 )
 
 type ServicePackage struct {
-	ID        uint           `gorm:"primaryKey" json:"id"`
+	ID        string         `gorm:"type:uniqueidentifier;primaryKey" json:"id"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
@@ -24,19 +25,35 @@ type ServicePackage struct {
 	IsActive    bool   `json:"is_active" gorm:"default:true"`
 }
 
+// BeforeCreate will set a UUID rather than numeric ID
+func (s *ServicePackage) BeforeCreate(tx *gorm.DB) (err error) {
+	if s.ID == "" {
+		s.ID = uuid.New().String()
+	}
+	return
+}
+
 type PackageServiceType struct {
-	ID        uint           `gorm:"primaryKey" json:"id"`
-	PackageID uint           `json:"package_id" gorm:"index"`
+	ID        string         `gorm:"type:uniqueidentifier;primaryKey" json:"id"`
+	PackageID string         `gorm:"type:uniqueidentifier;index" json:"package_id"`
 	Package   ServicePackage `gorm:"foreignKey:PackageID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"-"`
 
-	ServiceTypeID uint                   `json:"service_type_id" gorm:"index"`
+	ServiceTypeID string                 `gorm:"type:uniqueidentifier;index" json:"service_type_id"`
 	ServiceType   scheduling.ServiceType `gorm:"foreignKey:ServiceTypeID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"-"`
 
 	Quantity int `json:"quantity" gorm:"default:1"`
 }
 
+// BeforeCreate will set a UUID rather than numeric ID
+func (p *PackageServiceType) BeforeCreate(tx *gorm.DB) (err error) {
+	if p.ID == "" {
+		p.ID = uuid.New().String()
+	}
+	return
+}
+
 type ServiceCategory struct {
-	ID        uint           `gorm:"primaryKey" json:"id"`
+	ID        string         `gorm:"type:uniqueidentifier;primaryKey" json:"id"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
@@ -48,25 +65,33 @@ type ServiceCategory struct {
 	SortOrder   int    `json:"sort_order"`
 }
 
+// BeforeCreate will set a UUID rather than numeric ID
+func (s *ServiceCategory) BeforeCreate(tx *gorm.DB) (err error) {
+	if s.ID == "" {
+		s.ID = uuid.New().String()
+	}
+	return
+}
+
 type VehicleServiceHistory struct {
-	ID        uint           `gorm:"primaryKey" json:"id"`
+	ID        string         `gorm:"type:uniqueidentifier;primaryKey" json:"id"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
-	VehicleID uint            `json:"vehicle_id" gorm:"index"`
+	VehicleID string          `gorm:"type:uniqueidentifier;index" json:"vehicle_id"`
 	Vehicle   vehicle.Vehicle `gorm:"foreignKey:VehicleID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"-"`
 
-	BookingID uint            `json:"booking_id"`
+	BookingID string          `gorm:"type:uniqueidentifier" json:"booking_id"`
 	Booking   booking.Booking `gorm:"foreignKey:BookingID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"-"`
 
-	ServiceTypeID *uint                   `json:"service_type_id"`
+	ServiceTypeID *string                 `gorm:"type:uniqueidentifier" json:"service_type_id"`
 	ServiceType   *scheduling.ServiceType `gorm:"foreignKey:ServiceTypeID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"-"`
 
-	PackageID *uint           `json:"package_id"`
+	PackageID *string         `gorm:"type:uniqueidentifier" json:"package_id"`
 	Package   *ServicePackage `gorm:"foreignKey:PackageID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"-"`
 
-	MechanicID uint      `json:"mechanic_id"`
+	MechanicID string    `gorm:"type:uniqueidentifier" json:"mechanic_id"`
 	Mechanic   user.User `gorm:"foreignKey:MechanicID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"-"`
 
 	CompletedAt    time.Time `json:"completed_at"`
@@ -76,4 +101,12 @@ type VehicleServiceHistory struct {
 	Photos         string    `json:"photos"`         // JSON array of photo URLs
 	QualityRating  int       `json:"quality_rating"` // 1-5 scale
 	CustomerReview string    `json:"customer_review"`
+}
+
+// BeforeCreate will set a UUID rather than numeric ID
+func (v *VehicleServiceHistory) BeforeCreate(tx *gorm.DB) (err error) {
+	if v.ID == "" {
+		v.ID = uuid.New().String()
+	}
+	return
 }

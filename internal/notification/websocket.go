@@ -27,7 +27,7 @@ const (
 
 type Notification struct {
 	Type    NotificationType `json:"type"`
-	UserID  uint             `json:"user_id"`
+	UserID  string           `json:"user_id"` // Changed to string UUID
 	Title   string           `json:"title"`
 	Message string           `json:"message"`
 	Data    interface{}      `json:"data,omitempty"`
@@ -35,12 +35,12 @@ type Notification struct {
 
 type Client struct {
 	conn   *websocket.Conn
-	userID uint
+	userID string // Changed to string UUID
 	send   chan Notification
 }
 
 type Hub struct {
-	clients    map[uint][]*Client
+	clients    map[string][]*Client // Changed key to string UUID
 	register   chan *Client
 	unregister chan *Client
 	broadcast  chan Notification
@@ -49,7 +49,7 @@ type Hub struct {
 
 func NewHub() *Hub {
 	return &Hub{
-		clients:    make(map[uint][]*Client),
+		clients:    make(map[string][]*Client), // Changed to string key
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 		broadcast:  make(chan Notification),
@@ -63,7 +63,7 @@ func (h *Hub) Run() {
 			h.mutex.Lock()
 			h.clients[client.userID] = append(h.clients[client.userID], client)
 			h.mutex.Unlock()
-			log.Printf("Client connected: UserID %d", client.userID)
+			log.Printf("Client connected: UserID %s", client.userID) // Changed format
 
 		case client := <-h.unregister:
 			h.mutex.Lock()
@@ -80,7 +80,7 @@ func (h *Hub) Run() {
 				}
 			}
 			h.mutex.Unlock()
-			log.Printf("Client disconnected: UserID %d", client.userID)
+			log.Printf("Client disconnected: UserID %s", client.userID) // Changed format
 
 		case notification := <-h.broadcast:
 			h.mutex.RLock()
@@ -104,7 +104,7 @@ func (h *Hub) SendNotification(notification Notification) {
 
 func (h *Hub) HandleWebSocket(c *gin.Context) {
 	claims := c.MustGet("claims").(map[string]interface{})
-	userID := uint(claims["sub"].(float64))
+	userID := claims["sub"].(string) // Changed to string UUID
 
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
