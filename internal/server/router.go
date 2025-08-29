@@ -23,18 +23,15 @@ import (
 
 func NewServer(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
-	// Register CORS middleware globally
 	r.Use(middleware.CORSMiddleware())
 	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
 	if len(jwtSecret) == 0 {
 		jwtSecret = []byte("dev_secret")
 	}
 
-	// Initialize notification hub
 	hub := notification.NewHub()
 	go hub.Run()
 
-	// Repos & services
 	uRepo := user.NewRepo(db)
 	vRepo := vehicle.NewRepo(db)
 	bRepo := booking.NewRepo(db)
@@ -46,7 +43,6 @@ func NewServer(db *gorm.DB) *gin.Engine {
 	spRepo := servicepackage.NewRepo(db)
 	dashRepo := dashboard.NewRepo(db)
 
-	// handlers
 	authH := auth.NewHandler(uRepo)
 	userH := user.NewHandler(uRepo)
 	vehicleH := vehicle.NewHandler(vRepo)
@@ -59,18 +55,14 @@ func NewServer(db *gorm.DB) *gin.Engine {
 	servicePackageH := servicepackage.NewHandler(spRepo)
 	dashboardH := dashboard.NewHandler(dashRepo)
 
-	// public
 	r.POST("/auth/register", authH.Register)
 	r.POST("/auth/login", authH.Login)
 
-	// protected
 	authMw := middleware.JWTAuthMiddleware(jwtSecret)
 	api := r.Group("/api/v1", authMw)
 
-	// WebSocket endpoint for real-time notifications
 	api.GET("/ws", hub.HandleWebSocket)
 
-	// existing endpoints
 	{
 		api.GET("/me", userH.Me)
 		api.PUT("/me", userH.UpdateProfile)
@@ -105,7 +97,6 @@ func NewServer(db *gorm.DB) *gin.Engine {
 		api.PUT("/invoices/templates/:id/set-default", invoiceH.SetDefaultCustomBody)
 	}
 
-	// Enhanced Feature 1: Real-time Notifications & Communication
 	messages := api.Group("/messages")
 	{
 		messages.POST("", messageH.Create)

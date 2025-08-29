@@ -28,7 +28,6 @@ type VehicleHealthScore struct {
 	Recommendations string    `json:"recommendations"`
 }
 
-// BeforeCreate will set a UUID rather than numeric ID
 func (v *VehicleHealthScore) BeforeCreate(tx *gorm.DB) (err error) {
 	if v.ID == "" {
 		v.ID = uuid.New().String()
@@ -47,7 +46,7 @@ type MaintenanceRecommendation struct {
 
 	Title         string `json:"title"`
 	Description   string `json:"description"`
-	Priority      string `json:"priority"` // low, medium, high, critical
+	Priority      string `json:"priority"`
 	EstimatedCost int    `json:"estimated_cost"`
 	DueInDays     int    `json:"due_in_days"`
 	Category      string `json:"category"`

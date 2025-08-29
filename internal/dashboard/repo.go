@@ -7,21 +7,17 @@ import (
 )
 
 type Repository interface {
-	// Vehicle Health
 	UpdateVehicleHealth(health *VehicleHealthScore) error
 	GetVehicleHealth(vehicleID uint) (*VehicleHealthScore, error)
 
-	// Recommendations
 	CreateRecommendation(rec *MaintenanceRecommendation) error
 	GetVehicleRecommendations(vehicleID uint) ([]MaintenanceRecommendation, error)
 	GetCustomerRecommendations(customerID uint) ([]MaintenanceRecommendation, error)
 
-	// Budget Tracking
 	UpdateBudget(budget *CustomerBudget) error
 	GetCustomerBudget(customerID uint) (*CustomerBudget, error)
 	UpdateSpending(customerID uint, amount int) error
 
-	// Dashboard Analytics
 	GetCustomerDashboard(customerID uint) (map[string]interface{}, error)
 	GetVehicleDashboard(vehicleID uint) (map[string]interface{}, error)
 }
@@ -117,13 +113,11 @@ func (r *repository) GetCustomerDashboard(customerID uint) (map[string]interface
 func (r *repository) GetVehicleDashboard(vehicleID uint) (map[string]interface{}, error) {
 	dashboard := make(map[string]interface{})
 
-	// Get service history count
 	var serviceCount int64
 	r.db.Model(&struct {
 		VehicleID uint `gorm:"column:vehicle_id"`
 	}{}).Table("vehicle_service_histories").Where("vehicle_id = ?", vehicleID).Count(&serviceCount)
 
-	// Get last service date
 	var lastService struct {
 		CompletedAt time.Time `gorm:"column:completed_at"`
 	}

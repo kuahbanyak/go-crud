@@ -25,11 +25,9 @@ func (h *Handler) GetCustomerDashboard(c *gin.Context) {
 		return
 	}
 
-	// Get customer budget info
 	budget, _ := h.repo.GetCustomerBudget(customerID)
 	dashboard["budget"] = budget
 
-	// Get customer recommendations
 	recommendations, _ := h.repo.GetCustomerRecommendations(customerID)
 	dashboard["recommendations"] = recommendations
 
@@ -50,11 +48,9 @@ func (h *Handler) GetVehicleDashboard(c *gin.Context) {
 		return
 	}
 
-	// Get vehicle health score
 	health, _ := h.repo.GetVehicleHealth(uint(vehicleID))
 	dashboard["health_score"] = health
 
-	// Get vehicle recommendations
 	recommendations, _ := h.repo.GetVehicleRecommendations(uint(vehicleID))
 	dashboard["recommendations"] = recommendations
 
@@ -99,7 +95,7 @@ func (h *Handler) UpdateBudget(c *gin.Context) {
 	}
 
 	claims := c.MustGet("claims").(map[string]interface{})
-	budget.CustomerID = claims["sub"].(string) // JWT sub should be string UUID now
+	budget.CustomerID = claims["sub"].(string)
 
 	if err := h.repo.UpdateBudget(&budget); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update budget"})

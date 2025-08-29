@@ -11,12 +11,12 @@ import (
 type Handler struct {
 	repo        Repository
 	vehicleRepo interface {
-		Get(string) (*vehicle.Vehicle, error) // Updated to use string UUID
+		Get(string) (*vehicle.Vehicle, error)
 	}
 }
 
 func NewHandler(r Repository, vRepo interface {
-	Get(string) (*vehicle.Vehicle, error) // Updated to use string UUID
+	Get(string) (*vehicle.Vehicle, error)
 }) *Handler {
 	return &Handler{repo: r, vehicleRepo: vRepo}
 }
@@ -27,7 +27,7 @@ func (h *Handler) Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if _, err := h.vehicleRepo.Get(req.VehicleID); err != nil { // VehicleID is now string UUID, so this should work
+	if _, err := h.vehicleRepo.Get(req.VehicleID); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "vehicle not found"})
 		return
 	}
@@ -44,8 +44,8 @@ func (h *Handler) Create(c *gin.Context) {
 }
 
 func (h *Handler) GetId(c *gin.Context) {
-	id := c.Param("id")        // Use string directly, no conversion needed
-	b, err := h.repo.GetId(id) // Pass string UUID directly
+	id := c.Param("id")
+	b, err := h.repo.GetId(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
@@ -65,7 +65,7 @@ func (h *Handler) List(c *gin.Context) {
 }
 
 func (h *Handler) UpdateStatus(c *gin.Context) {
-	id := c.Param("id") // Use string directly, no conversion needed
+	id := c.Param("id")
 	var req struct{ Status BookingStatus }
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

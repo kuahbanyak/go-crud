@@ -36,9 +36,7 @@ func ConnectAndMigrate(cfg *config.Config) (*gorm.DB, error) {
 		return nil, fmt.Errorf("migrate to UUID: %w", err)
 	}
 
-	// Create all tables without foreign key constraints first
 	if err := db.AutoMigrate(
-		// Base tables first (no foreign keys to other tables)
 		&user.User{},
 		&vehicle.Vehicle{},
 		&inventory.Part{},

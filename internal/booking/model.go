@@ -31,7 +31,6 @@ type Booking struct {
 	Notes       string        `json:"notes"`
 }
 
-// BeforeCreate will set a UUID rather than numeric ID
 func (b *Booking) BeforeCreate(tx *gorm.DB) (err error) {
 	if b.ID == "" {
 		b.ID = uuid.New().String()
