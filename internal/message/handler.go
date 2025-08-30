@@ -95,9 +95,9 @@ func (h *Handler) GetConversation(c *gin.Context) {
 	}
 
 	claims := c.MustGet("claims").(map[string]interface{})
-	currentUserID := uint(claims["sub"].(float64))
+	currentUserID := claims["sub"].(string)
 
-	messages, err := h.repo.GetConversation(currentUserID, uint(userID), uint(bookingID))
+	messages, err := h.repo.GetConversation(currentUserID, userIDStr, bookingIDStr)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get conversation"})
 		return
