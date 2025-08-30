@@ -95,9 +95,14 @@ func (h *Handler) GetConversation(c *gin.Context) {
 	}
 
 	claims := c.MustGet("claims").(map[string]interface{})
-	currentUserID := claims["sub"].(string)
+	currentUserIDStr := claims["sub"].(string)
+	currentUserID, err := strconv.ParseUint(currentUserIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid current user ID"})
+		return
+	}
 
-	messages, err := h.repo.GetConversation(currentUserID, userIDStr, bookingIDStr)
+	messages, err := h.repo.GetConversation(uint(currentUserID), uint(userID), uint(bookingID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get conversation"})
 		return
