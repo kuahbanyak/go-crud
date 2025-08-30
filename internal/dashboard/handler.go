@@ -17,18 +17,23 @@ func NewHandler(r Repository) *Handler {
 
 func (h *Handler) GetCustomerDashboard(c *gin.Context) {
 	claims := c.MustGet("claims").(map[string]interface{})
-	customerID := claims["sub"].(string)
+	customerIDStr := claims["sub"].(string)
+	customerIDUint, err := strconv.ParseUint(customerIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid customer ID"})
+		return
+	}
 
-	dashboard, err := h.repo.GetCustomerDashboard(customerID)
+	dashboard, err := h.repo.GetCustomerDashboard(uint(customerIDUint))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get dashboard data"})
 		return
 	}
 
-	budget, _ := h.repo.GetCustomerBudget(customerID)
+	budget, _ := h.repo.GetCustomerBudget(uint(customerIDUint))
 	dashboard["budget"] = budget
 
-	recommendations, _ := h.repo.GetCustomerRecommendations(customerID)
+	recommendations, _ := h.repo.GetCustomerRecommendations(uint(customerIDUint))
 	dashboard["recommendations"] = recommendations
 
 	c.JSON(http.StatusOK, dashboard)
