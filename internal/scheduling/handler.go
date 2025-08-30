@@ -34,14 +34,8 @@ func (h *Handler) CreateAvailability(c *gin.Context) {
 }
 
 func (h *Handler) GetMechanicAvailability(c *gin.Context) {
-	mechanicIDStr := c.Param("mechanic_id")
+	mechanicID := c.Param("mechanic_id")
 	dateStr := c.Query("date")
-
-	mechanicID, err := strconv.ParseUint(mechanicIDStr, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid mechanic ID"})
-		return
-	}
 
 	date, err := time.Parse("2006-01-02", dateStr)
 	if err != nil {
@@ -49,7 +43,7 @@ func (h *Handler) GetMechanicAvailability(c *gin.Context) {
 		return
 	}
 
-	availability, err := h.repo.GetMechanicAvailability(uint(mechanicID), date)
+	availability, err := h.repo.GetMechanicAvailability(mechanicID, date)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get availability"})
 		return
