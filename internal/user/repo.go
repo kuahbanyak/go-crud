@@ -9,8 +9,9 @@ import (
 type Repository interface {
 	Create(u *User) error
 	FindByEmail(email string) (*User, error)
-	FindByID(id uint) (*User, error)
+	FindByID(id string) (*User, error)
 	Update(u *User) error
+	FindAll() ([]*User, error)
 }
 
 type repo struct{ db *gorm.DB }
@@ -27,16 +28,23 @@ func (r *repo) FindByEmail(email string) (*User, error) {
 	}
 	return &u, nil
 }
-func (r *repo) FindByID(id uint) (*User, error) {
+func (r *repo) FindByID(id string) (*User, error) {
 	var u User
-	if err := r.db.First(&u, id).Error; err != nil {
+	if err := r.db.Where("id = ?", id).First(&u).Error; err != nil {
 		return nil, err
 	}
 	return &u, nil
 }
 func (r *repo) Update(u *User) error {
-	if u.ID == 0 {
+	if u.ID == "" {
 		return errors.New("missing id")
 	}
 	return r.db.Save(u).Error
+}
+func (r *repo) FindAll() ([]*User, error) {
+	var users []*User
+	if err := r.db.Find(&users).Error; err != nil {
+		return nil, err
+	}
+	return users, nil
 }
