@@ -1,9 +1,10 @@
-package test
+package user_test
 
 import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/user"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -28,7 +29,7 @@ func (m *MockUserRepo) FindByEmail(email string) (*user.User, error) {
 	return args.Get(0).(*user.User), args.Error(1)
 }
 
-func (m *MockUserRepo) FindByID(id uint) (*user.User, error) {
+func (m *MockUserRepo) FindByID(id string) (*user.User, error) {
 	args := m.Called(id)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -124,7 +125,7 @@ func TestUserRepository_FindByEmail(t *testing.T) {
 	mockRepo := new(MockUserRepo)
 
 	expectedUser := &user.User{
-		ID:        1,
+		ID:        uuid.New().String(),
 		Email:     "test@example.com",
 		Name:      "John Doe",
 		Role:      user.RoleCustomer,
@@ -153,9 +154,10 @@ func TestUserRepository_FindByEmail(t *testing.T) {
 
 func TestUserRepository_FindByID(t *testing.T) {
 	mockRepo := new(MockUserRepo)
+	userID := uuid.New().String()
 
 	expectedUser := &user.User{
-		ID:        1,
+		ID:        userID,
 		Email:     "test@example.com",
 		Name:      "John Doe",
 		Role:      user.RoleCustomer,
@@ -163,17 +165,17 @@ func TestUserRepository_FindByID(t *testing.T) {
 		UpdatedAt: time.Now(),
 	}
 
-	mockRepo.On("FindByID", uint(1)).Return(expectedUser, nil)
-	mockRepo.On("FindByID", uint(999)).Return(nil, gorm.ErrRecordNotFound)
+	mockRepo.On("FindByID", userID).Return(expectedUser, nil)
+	mockRepo.On("FindByID", "non-existent-id").Return(nil, gorm.ErrRecordNotFound)
 
 	// Test successful find
-	foundUser, err := mockRepo.FindByID(1)
+	foundUser, err := mockRepo.FindByID(userID)
 	assert.NoError(t, err)
 	assert.NotNil(t, foundUser)
-	assert.Equal(t, uint(1), foundUser.ID)
+	assert.Equal(t, userID, foundUser.ID)
 
 	// Test user not found
-	notFoundUser, err := mockRepo.FindByID(999)
+	notFoundUser, err := mockRepo.FindByID("non-existent-id")
 	assert.Error(t, err)
 	assert.Nil(t, notFoundUser)
 
@@ -184,7 +186,7 @@ func TestUserRepository_Update(t *testing.T) {
 	mockRepo := new(MockUserRepo)
 
 	testUser := &user.User{
-		ID:    1,
+		ID:    uuid.New().String(),
 		Email: "updated@example.com",
 		Name:  "Updated Name",
 		Role:  user.RoleCustomer,
@@ -203,13 +205,13 @@ func TestUserRepository_FindAll(t *testing.T) {
 
 	expectedUsers := []*user.User{
 		{
-			ID:    1,
+			ID:    uuid.New().String(),
 			Email: "user1@example.com",
 			Name:  "User 1",
 			Role:  user.RoleCustomer,
 		},
 		{
-			ID:    2,
+			ID:    uuid.New().String(),
 			Email: "user2@example.com",
 			Name:  "User 2",
 			Role:  user.RoleMechanic,

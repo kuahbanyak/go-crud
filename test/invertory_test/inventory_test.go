@@ -1,9 +1,10 @@
-package test
+package inventory_test
 
 import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/inventory"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -93,7 +94,7 @@ func TestInventoryRepository_List(t *testing.T) {
 
 	expectedParts := []inventory.Part{
 		{
-			ID:        1,
+			ID:        uuid.New().String(),
 			SKU:       "BRK-001",
 			Name:      "Brake Pad",
 			Qty:       50,
@@ -102,7 +103,7 @@ func TestInventoryRepository_List(t *testing.T) {
 			UpdatedAt: time.Now(),
 		},
 		{
-			ID:        2,
+			ID:        uuid.New().String(),
 			SKU:       "OIL-001",
 			Name:      "Engine Oil",
 			Qty:       20,
@@ -129,7 +130,7 @@ func TestInventoryRepository_Update(t *testing.T) {
 	mockRepo := new(MockInventoryRepo)
 
 	testPart := &inventory.Part{
-		ID:    1,
+		ID:    uuid.New().String(),
 		SKU:   "BRK-001",
 		Name:  "Brake Pad Premium",
 		Qty:   45,

@@ -15,7 +15,6 @@ func NewHandler(r Repository) *Handler {
 	return &Handler{repo: r}
 }
 
-// Service Package endpoints
 func (h *Handler) CreatePackage(c *gin.Context) {
 	var pkg ServicePackage
 	if err := c.ShouldBindJSON(&pkg); err != nil {
@@ -58,7 +57,6 @@ func (h *Handler) GetPackageByID(c *gin.Context) {
 	c.JSON(http.StatusOK, pkg)
 }
 
-// Service Category endpoints
 func (h *Handler) CreateCategory(c *gin.Context) {
 	var category ServiceCategory
 	if err := c.ShouldBindJSON(&category); err != nil {

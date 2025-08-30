@@ -16,9 +16,9 @@ func NewHandler(r Repository) *Handler { return &Handler{repo: r} }
 type InvoiceRequest struct {
 	BookingID     string `json:"booking_id" binding:"required"`
 	Amount        int    `json:"amount" binding:"required,min=1"`
-	CustomerEmail string `json:"customer_email,omitempty"` // Optional: if provided, email will be sent
+	CustomerEmail string `json:"customer_email,omitempty"`
 	Description   string `json:"description,omitempty"`
-	TemplateID    string `json:"template_id,omitempty"` // Optional: custom template UUID to use
+	TemplateID    string `json:"template_id,omitempty"`
 }
 
 type CustomBodyRequest struct {
@@ -38,12 +38,10 @@ func (h *Handler) Generate(c *gin.Context) {
 		return
 	}
 
-	// Create invoice record
 	invoice := Invoice{
 		BookingID: req.BookingID,
 		Amount:    req.Amount,
 		Status:    "unpaid",
-		// PDFURL will be set when PDF generation is implemented
 	}
 
 	if err := h.repo.Create(&invoice); err != nil {
@@ -51,7 +49,6 @@ func (h *Handler) Generate(c *gin.Context) {
 		return
 	}
 
-	// Optional: Send email if customer email is provided and SMTP is configured
 	if req.CustomerEmail != "" {
 		go func() {
 			subject := fmt.Sprintf("Invoice #%s - Vehicle Service", invoice.ID)
@@ -72,21 +69,18 @@ Best regards,
 Vehicle Service Team
 			`, req.BookingID, invoice.ID, float64(req.Amount)/100, invoice.Status, req.Description)
 
-			// If template ID is provided, use custom template
 			if req.TemplateID != "" {
 				if template, err := h.repo.GetCustomBodyByID(req.TemplateID); err == nil {
 					subject = h.replaceTemplateVariables(template.Subject, invoice, req)
 					body = h.replaceTemplateVariables(template.Body, invoice, req)
 				}
 			} else {
-				// Try to use default template
 				if defaultTemplate, err := h.repo.GetDefaultCustomBody(); err == nil {
 					subject = h.replaceTemplateVariables(defaultTemplate.Subject, invoice, req)
 					body = h.replaceTemplateVariables(defaultTemplate.Body, invoice, req)
 				}
 			}
 
-			// Send email (will be no-op if SMTP not configured)
 			notification.SendEmail(req.CustomerEmail, subject, body)
 		}()
 	}
@@ -94,7 +88,6 @@ Vehicle Service Team
 	c.JSON(http.StatusCreated, invoice)
 }
 
-// Helper function to replace template variables
 func (h *Handler) replaceTemplateVariables(template string, invoice Invoice, req InvoiceRequest) string {
 	replacer := strings.NewReplacer(
 		"{{invoice_id}}", invoice.ID,

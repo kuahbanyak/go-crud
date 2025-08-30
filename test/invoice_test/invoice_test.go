@@ -1,8 +1,9 @@
-package test
+package invoice_test
 
 import (
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/invoice"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -35,7 +36,7 @@ func TestInvoiceModel_Validation(t *testing.T) {
 		{
 			name: "Valid invoice",
 			invoice: invoice.Invoice{
-				BookingID: 1,
+				BookingID: uuid.New().String(),
 				Amount:    100000,
 				Status:    "pending",
 				PDFURL:    "https://example.com/invoice.pdf",
@@ -45,7 +46,7 @@ func TestInvoiceModel_Validation(t *testing.T) {
 		{
 			name: "Valid paid invoice",
 			invoice: invoice.Invoice{
-				BookingID: 2,
+				BookingID: uuid.New().String(),
 				Amount:    250000,
 				Status:    "paid",
 				PDFURL:    "https://example.com/invoice2.pdf",
@@ -56,7 +57,7 @@ func TestInvoiceModel_Validation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.NotZero(t, tt.invoice.BookingID)
+			assert.NotEmpty(t, tt.invoice.BookingID)
 			assert.Greater(t, tt.invoice.Amount, 0)
 			assert.NotEmpty(t, tt.invoice.Status)
 			assert.Contains(t, []string{"pending", "paid", "cancelled"}, tt.invoice.Status)
@@ -68,7 +69,7 @@ func TestInvoiceRepository_Create(t *testing.T) {
 	mockRepo := new(MockInvoiceRepo)
 
 	testInvoice := &invoice.Invoice{
-		BookingID: 1,
+		BookingID: uuid.New().String(),
 		Amount:    100000,
 		Status:    "pending",
 		PDFURL:    "https://example.com/invoice.pdf",

@@ -29,7 +29,6 @@ type User struct {
 	Address  string `json:"address"`
 }
 
-// BeforeCreate will set a UUID rather than numeric ID
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	if u.ID == "" {
 		u.ID = uuid.New().String()

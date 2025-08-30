@@ -20,7 +20,6 @@ type ServiceRecord struct {
 	ReceiptURL  string `json:"receipt_url"`
 }
 
-// BeforeCreate will set a UUID rather than numeric ID
 func (s *ServiceRecord) BeforeCreate(tx *gorm.DB) (err error) {
 	if s.ID == "" {
 		s.ID = uuid.New().String()

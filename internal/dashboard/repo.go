@@ -83,20 +83,17 @@ func (r *repository) UpdateSpending(customerID uint, amount int) error {
 func (r *repository) GetCustomerDashboard(customerID uint) (map[string]interface{}, error) {
 	dashboard := make(map[string]interface{})
 
-	// Get vehicle count
 	var vehicleCount int64
 	r.db.Model(&struct {
 		OwnerID uint `gorm:"column:owner_id"`
 	}{}).Table("vehicles").Where("owner_id = ?", customerID).Count(&vehicleCount)
 
-	// Get active bookings count
 	var activeBookings int64
 	r.db.Model(&struct {
 		CustomerID uint   `gorm:"column:customer_id"`
 		Status     string `gorm:"column:status"`
 	}{}).Table("bookings").Where("customer_id = ? AND status IN ?", customerID, []string{"scheduled", "in_progress"}).Count(&activeBookings)
 
-	// Get pending recommendations count
 	var pendingRecs int64
 	r.db.Model(&MaintenanceRecommendation{}).
 		Joins("JOIN vehicles ON vehicles.id = maintenance_recommendations.vehicle_id").

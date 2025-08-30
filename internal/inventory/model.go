@@ -19,7 +19,6 @@ type Part struct {
 	Price int    `json:"price"`
 }
 
-// BeforeCreate will set a UUID rather than numeric ID
 func (p *Part) BeforeCreate(tx *gorm.DB) (err error) {
 	if p.ID == "" {
 		p.ID = uuid.New().String()

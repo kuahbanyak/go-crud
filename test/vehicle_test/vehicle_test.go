@@ -1,9 +1,10 @@
-package test
+package vehicle_test
 
 import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/vehicle"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -20,7 +21,7 @@ func (m *MockVehicleRepo) Create(v *vehicle.Vehicle) error {
 	return args.Error(0)
 }
 
-func (m *MockVehicleRepo) ListByOwner(owner uint) ([]vehicle.Vehicle, error) {
+func (m *MockVehicleRepo) ListByOwner(owner string) ([]vehicle.Vehicle, error) {
 	args := m.Called(owner)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -28,7 +29,7 @@ func (m *MockVehicleRepo) ListByOwner(owner uint) ([]vehicle.Vehicle, error) {
 	return args.Get(0).([]vehicle.Vehicle), args.Error(1)
 }
 
-func (m *MockVehicleRepo) Get(id uint) (*vehicle.Vehicle, error) {
+func (m *MockVehicleRepo) Get(id string) (*vehicle.Vehicle, error) {
 	args := m.Called(id)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -41,7 +42,7 @@ func (m *MockVehicleRepo) Update(v *vehicle.Vehicle) error {
 	return args.Error(0)
 }
 
-func (m *MockVehicleRepo) Delete(id uint) error {
+func (m *MockVehicleRepo) Delete(id string) error {
 	args := m.Called(id)
 	return args.Error(0)
 }
@@ -55,7 +56,7 @@ func TestVehicleModel_Validation(t *testing.T) {
 		{
 			name: "Valid vehicle",
 			vehicle: vehicle.Vehicle{
-				OwnerID:      1,
+				OwnerID:      uuid.New().String(),
 				Brand:        "Toyota",
 				Model:        "Camry",
 				Year:         2020,
@@ -68,7 +69,7 @@ func TestVehicleModel_Validation(t *testing.T) {
 		{
 			name: "Valid vehicle with minimal data",
 			vehicle: vehicle.Vehicle{
-				OwnerID: 2,
+				OwnerID: uuid.New().String(),
 				Brand:   "Honda",
 				Model:   "Civic",
 				Year:    2019,
@@ -79,7 +80,7 @@ func TestVehicleModel_Validation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.NotZero(t, tt.vehicle.OwnerID)
+			assert.NotEmpty(t, tt.vehicle.OwnerID)
 			assert.NotEmpty(t, tt.vehicle.Brand)
 			assert.NotEmpty(t, tt.vehicle.Model)
 			assert.Greater(t, tt.vehicle.Year, 1900)
@@ -91,7 +92,7 @@ func TestVehicleRepository_Create(t *testing.T) {
 	mockRepo := new(MockVehicleRepo)
 
 	testVehicle := &vehicle.Vehicle{
-		OwnerID:      1,
+		OwnerID:      uuid.New().String(),
 		Brand:        "Toyota",
 		Model:        "Camry",
 		Year:         2020,
@@ -110,11 +111,12 @@ func TestVehicleRepository_Create(t *testing.T) {
 
 func TestVehicleRepository_ListByOwner(t *testing.T) {
 	mockRepo := new(MockVehicleRepo)
+	ownerID := uuid.New().String()
 
 	expectedVehicles := []vehicle.Vehicle{
 		{
-			ID:           1,
-			OwnerID:      1,
+			ID:           uuid.New().String(),
+			OwnerID:      ownerID,
 			Brand:        "Toyota",
 			Model:        "Camry",
 			Year:         2020,
@@ -123,8 +125,8 @@ func TestVehicleRepository_ListByOwner(t *testing.T) {
 			UpdatedAt:    time.Now(),
 		},
 		{
-			ID:           2,
-			OwnerID:      1,
+			ID:           uuid.New().String(),
+			OwnerID:      ownerID,
 			Brand:        "Honda",
 			Model:        "Civic",
 			Year:         2019,
@@ -134,19 +136,19 @@ func TestVehicleRepository_ListByOwner(t *testing.T) {
 		},
 	}
 
-	mockRepo.On("ListByOwner", uint(1)).Return(expectedVehicles, nil)
-	mockRepo.On("ListByOwner", uint(999)).Return([]vehicle.Vehicle{}, nil)
+	mockRepo.On("ListByOwner", ownerID).Return(expectedVehicles, nil)
+	mockRepo.On("ListByOwner", "non-existent-id").Return([]vehicle.Vehicle{}, nil)
 
 	// Test successful list
-	vehicles, err := mockRepo.ListByOwner(1)
+	vehicles, err := mockRepo.ListByOwner(ownerID)
 	assert.NoError(t, err)
 	assert.NotNil(t, vehicles)
 	assert.Len(t, vehicles, 2)
-	assert.Equal(t, uint(1), vehicles[0].OwnerID)
-	assert.Equal(t, uint(1), vehicles[1].OwnerID)
+	assert.Equal(t, ownerID, vehicles[0].OwnerID)
+	assert.Equal(t, ownerID, vehicles[1].OwnerID)
 
 	// Test empty list
-	emptyVehicles, err := mockRepo.ListByOwner(999)
+	emptyVehicles, err := mockRepo.ListByOwner("non-existent-id")
 	assert.NoError(t, err)
 	assert.Len(t, emptyVehicles, 0)
 
@@ -155,10 +157,11 @@ func TestVehicleRepository_ListByOwner(t *testing.T) {
 
 func TestVehicleRepository_Get(t *testing.T) {
 	mockRepo := new(MockVehicleRepo)
+	vehicleID := uuid.New().String()
 
 	expectedVehicle := &vehicle.Vehicle{
-		ID:           1,
-		OwnerID:      1,
+		ID:           vehicleID,
+		OwnerID:      uuid.New().String(),
 		Brand:        "Toyota",
 		Model:        "Camry",
 		Year:         2020,
@@ -167,18 +170,18 @@ func TestVehicleRepository_Get(t *testing.T) {
 		UpdatedAt:    time.Now(),
 	}
 
-	mockRepo.On("Get", uint(1)).Return(expectedVehicle, nil)
-	mockRepo.On("Get", uint(999)).Return(nil, gorm.ErrRecordNotFound)
+	mockRepo.On("Get", vehicleID).Return(expectedVehicle, nil)
+	mockRepo.On("Get", "non-existent-id").Return(nil, gorm.ErrRecordNotFound)
 
 	// Test successful get
-	foundVehicle, err := mockRepo.Get(1)
+	foundVehicle, err := mockRepo.Get(vehicleID)
 	assert.NoError(t, err)
 	assert.NotNil(t, foundVehicle)
-	assert.Equal(t, uint(1), foundVehicle.ID)
+	assert.Equal(t, vehicleID, foundVehicle.ID)
 	assert.Equal(t, "Toyota", foundVehicle.Brand)
 
 	// Test vehicle not found
-	notFoundVehicle, err := mockRepo.Get(999)
+	notFoundVehicle, err := mockRepo.Get("non-existent-id")
 	assert.Error(t, err)
 	assert.Nil(t, notFoundVehicle)
 	assert.Equal(t, gorm.ErrRecordNotFound, err)
@@ -190,8 +193,8 @@ func TestVehicleRepository_Update(t *testing.T) {
 	mockRepo := new(MockVehicleRepo)
 
 	testVehicle := &vehicle.Vehicle{
-		ID:           1,
-		OwnerID:      1,
+		ID:           uuid.New().String(),
+		OwnerID:      uuid.New().String(),
 		Brand:        "Toyota",
 		Model:        "Camry",
 		Year:         2020,
@@ -209,16 +212,17 @@ func TestVehicleRepository_Update(t *testing.T) {
 
 func TestVehicleRepository_Delete(t *testing.T) {
 	mockRepo := new(MockVehicleRepo)
+	vehicleID := uuid.New().String()
 
-	mockRepo.On("Delete", uint(1)).Return(nil)
-	mockRepo.On("Delete", uint(999)).Return(gorm.ErrRecordNotFound)
+	mockRepo.On("Delete", vehicleID).Return(nil)
+	mockRepo.On("Delete", "non-existent-id").Return(gorm.ErrRecordNotFound)
 
 	// Test successful delete
-	err := mockRepo.Delete(1)
+	err := mockRepo.Delete(vehicleID)
 	assert.NoError(t, err)
 
 	// Test delete not found
-	err = mockRepo.Delete(999)
+	err = mockRepo.Delete("non-existent-id")
 	assert.Error(t, err)
 	assert.Equal(t, gorm.ErrRecordNotFound, err)
 

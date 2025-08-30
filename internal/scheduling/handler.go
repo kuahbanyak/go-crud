@@ -58,7 +58,6 @@ func (h *Handler) GetMechanicAvailability(c *gin.Context) {
 	c.JSON(http.StatusOK, availability)
 }
 
-// Service Types endpoints
 func (h *Handler) CreateServiceType(c *gin.Context) {
 	var serviceType ServiceType
 	if err := c.ShouldBindJSON(&serviceType); err != nil {

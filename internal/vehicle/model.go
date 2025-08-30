@@ -22,7 +22,6 @@ type Vehicle struct {
 	Mileage      int    `json:"mileage"`
 }
 
-// BeforeCreate will set a UUID rather than numeric ID
 func (v *Vehicle) BeforeCreate(tx *gorm.DB) (err error) {
 	if v.ID == "" {
 		v.ID = uuid.New().String()

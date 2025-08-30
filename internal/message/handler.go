@@ -18,8 +18,8 @@ func NewHandler(r Repository, h *notification.Hub) *Handler {
 }
 
 type CreateMessageRequest struct {
-	BookingID  string `json:"booking_id" binding:"required"`  // Changed to string UUID
-	ReceiverID string `json:"receiver_id" binding:"required"` // Changed to string UUID
+	BookingID  string `json:"booking_id" binding:"required"`
+	ReceiverID string `json:"receiver_id" binding:"required"`
 	Type       string `json:"type"`
 	Content    string `json:"content" binding:"required"`
 	FileURL    string `json:"file_url,omitempty"`
@@ -33,12 +33,12 @@ func (h *Handler) Create(c *gin.Context) {
 	}
 
 	claims := c.MustGet("claims").(map[string]interface{})
-	senderID := claims["sub"].(string) // JWT sub should be string UUID now
+	senderID := claims["sub"].(string)
 
 	message := &Message{
-		BookingID:  req.BookingID,  // Now string UUID
-		SenderID:   senderID,       // Now string UUID
-		ReceiverID: req.ReceiverID, // Now string UUID
+		BookingID:  req.BookingID,
+		SenderID:   senderID,
+		ReceiverID: req.ReceiverID,
 		Type:       MessageType(req.Type),
 		Content:    req.Content,
 		FileURL:    req.FileURL,

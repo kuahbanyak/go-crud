@@ -6,7 +6,6 @@ type Repository interface {
 	Create(i *Invoice) error
 	Summary() (map[string]int64, error)
 
-	// Custom invoice body methods
 	CreateCustomBody(body *CustomInvoiceBody) error
 	GetCustomBodies() ([]CustomInvoiceBody, error)
 	GetCustomBodyByID(id string) (*CustomInvoiceBody, error)
@@ -32,7 +31,6 @@ func (r *repo) Summary() (map[string]int64, error) {
 	return map[string]int64{"count": total}, nil
 }
 
-// Custom invoice body repository methods
 func (r *repo) CreateCustomBody(body *CustomInvoiceBody) error {
 	return r.db.Create(body).Error
 }
@@ -70,16 +68,14 @@ func (r *repo) DeleteCustomBody(id string) error {
 }
 
 func (r *repo) SetDefaultCustomBody(id string) error {
-	// Start a transaction
+
 	tx := r.db.Begin()
 
-	// First, unset all defaults
 	if err := tx.Model(&CustomInvoiceBody{}).Where("is_default = ?", true).Update("is_default", false).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	// Then set the new default if id is not empty
 	if id != "" {
 		if err := tx.Model(&CustomInvoiceBody{}).Where("id = ?", id).Update("is_default", true).Error; err != nil {
 			tx.Rollback()

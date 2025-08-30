@@ -38,7 +38,6 @@ type Message struct {
 	IsRead  bool        `json:"is_read" gorm:"default:false"`
 }
 
-// BeforeCreate will set a UUID rather than numeric ID
 func (m *Message) BeforeCreate(tx *gorm.DB) (err error) {
 	if m.ID == "" {
 		m.ID = uuid.New().String()

@@ -5,21 +5,17 @@ import (
 )
 
 type Repository interface {
-	// Service Packages
 	CreatePackage(pkg *ServicePackage) error
 	GetPackages() ([]ServicePackage, error)
 	GetPackageByID(id uint) (*ServicePackage, error)
 	UpdatePackage(pkg *ServicePackage) error
 
-	// Package Service Types
 	AddServiceToPackage(packageServiceType *PackageServiceType) error
 	GetPackageServices(packageID uint) ([]PackageServiceType, error)
 
-	// Service Categories
 	CreateCategory(category *ServiceCategory) error
 	GetCategories() ([]ServiceCategory, error)
 
-	// Service History
 	CreateServiceHistory(history *VehicleServiceHistory) error
 	GetVehicleHistory(vehicleID uint) ([]VehicleServiceHistory, error)
 	GetVehicleHistoryWithDetails(vehicleID uint) ([]VehicleServiceHistory, error)

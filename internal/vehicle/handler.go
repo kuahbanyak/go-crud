@@ -17,7 +17,7 @@ func (h *Handler) Create(c *gin.Context) {
 		return
 	}
 	claims := c.MustGet("claims").(map[string]interface{})
-	uid := claims["sub"].(string) // JWT sub should be string UUID now
+	uid := claims["sub"].(string)
 	v.OwnerID = uid
 	if err := h.repo.Create(&v); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -28,7 +28,7 @@ func (h *Handler) Create(c *gin.Context) {
 
 func (h *Handler) List(c *gin.Context) {
 	claims := c.MustGet("claims").(map[string]interface{})
-	uid := claims["sub"].(string) // JWT sub should be string UUID now
+	uid := claims["sub"].(string)
 	vs, err := h.repo.ListByOwner(uid)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -38,8 +38,8 @@ func (h *Handler) List(c *gin.Context) {
 }
 
 func (h *Handler) Get(c *gin.Context) {
-	id := c.Param("id")      // Use string directly, no conversion needed
-	v, err := h.repo.Get(id) // Pass string UUID directly
+	id := c.Param("id")
+	v, err := h.repo.Get(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
@@ -48,7 +48,7 @@ func (h *Handler) Get(c *gin.Context) {
 }
 
 func (h *Handler) Update(c *gin.Context) {
-	id := c.Param("id") // Use string directly, no conversion needed
+	id := c.Param("id")
 	var v Vehicle
 	if err := c.ShouldBindJSON(&v); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -63,7 +63,7 @@ func (h *Handler) Update(c *gin.Context) {
 }
 
 func (h *Handler) Delete(c *gin.Context) {
-	id := c.Param("id") // Use string directly, no conversion needed
+	id := c.Param("id")
 	if err := h.repo.Delete(id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

@@ -106,7 +106,6 @@ func NewServer(db *gorm.DB) *gin.Engine {
 		messages.GET("/unread-count", messageH.GetUnreadCount)
 	}
 
-	// Enhanced Feature 2: Advanced Scheduling & Calendar Management
 	scheduling := api.Group("/scheduling")
 	{
 		// Mechanic availability
@@ -126,7 +125,6 @@ func NewServer(db *gorm.DB) *gin.Engine {
 		scheduling.POST("/waitlist", schedulingH.AddToWaitlist)
 	}
 
-	// Enhanced Feature 3: Service Categories & Packages
 	packages := api.Group("/packages")
 	{
 		packages.POST("", servicePackageH.CreatePackage)
@@ -140,7 +138,6 @@ func NewServer(db *gorm.DB) *gin.Engine {
 		packages.GET("/history/vehicle/:vehicle_id", servicePackageH.GetVehicleHistory)
 	}
 
-	// Enhanced Feature 4: Customer Portal Enhancements
 	dashboard := api.Group("/dashboard")
 	{
 		dashboard.GET("/customer", dashboardH.GetCustomerDashboard)

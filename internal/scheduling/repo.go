@@ -7,23 +7,19 @@ import (
 )
 
 type Repository interface {
-	// Availability
 	CreateAvailability(availability *MechanicAvailability) error
 	GetMechanicAvailability(mechanicID uint, date time.Time) ([]MechanicAvailability, error)
 	UpdateAvailabilityStatus(id uint, status AvailabilityStatus) error
 
-	// Service Types
 	CreateServiceType(serviceType *ServiceType) error
 	GetServiceTypes() ([]ServiceType, error)
 	GetServiceType(id uint) (*ServiceType, error)
 
-	// Maintenance Reminders
 	CreateReminder(reminder *MaintenanceReminder) error
 	GetVehicleReminders(vehicleID uint) ([]MaintenanceReminder, error)
 	GetDueReminders() ([]MaintenanceReminder, error)
 	CompleteReminder(id uint) error
 
-	// Waitlist
 	AddToWaitlist(waitlist *BookingWaitlist) error
 	GetWaitlistByDate(date time.Time) ([]BookingWaitlist, error)
 	RemoveFromWaitlist(id uint) error

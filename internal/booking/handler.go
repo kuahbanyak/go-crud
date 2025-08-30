@@ -71,7 +71,7 @@ func (h *Handler) UpdateStatus(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := h.repo.UpdateStatus(id, req.Status); err != nil { // Pass string UUID directly
+	if err := h.repo.UpdateStatus(id, req.Status); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

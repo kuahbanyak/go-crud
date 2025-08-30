@@ -25,7 +25,6 @@ type ServicePackage struct {
 	IsActive    bool   `json:"is_active" gorm:"default:true"`
 }
 
-// BeforeCreate will set a UUID rather than numeric ID
 func (s *ServicePackage) BeforeCreate(tx *gorm.DB) (err error) {
 	if s.ID == "" {
 		s.ID = uuid.New().String()
@@ -44,7 +43,6 @@ type PackageServiceType struct {
 	Quantity int `json:"quantity" gorm:"default:1"`
 }
 
-// BeforeCreate will set a UUID rather than numeric ID
 func (p *PackageServiceType) BeforeCreate(tx *gorm.DB) (err error) {
 	if p.ID == "" {
 		p.ID = uuid.New().String()

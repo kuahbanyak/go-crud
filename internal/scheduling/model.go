@@ -33,7 +33,6 @@ type MechanicAvailability struct {
 	Notes     string             `json:"notes"`
 }
 
-// BeforeCreate will set a UUID rather than numeric ID
 func (m *MechanicAvailability) BeforeCreate(tx *gorm.DB) (err error) {
 	if m.ID == "" {
 		m.ID = uuid.New().String()

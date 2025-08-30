@@ -29,7 +29,6 @@ func JWTAuthMiddleware(secret []byte) gin.HandlerFunc {
 			return
 		}
 		claims := token.Claims.(jwt.MapClaims)
-		// normalize map[string]interface{} values for convenience
 		m := map[string]interface{}{}
 		for k, v := range claims {
 			m[k] = v

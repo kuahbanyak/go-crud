@@ -80,7 +80,6 @@ type CustomerBudget struct {
 	AlertThreshold int `json:"alert_threshold"` // percentage
 }
 
-// BeforeCreate will set a UUID rather than numeric ID
 func (c *CustomerBudget) BeforeCreate(tx *gorm.DB) (err error) {
 	if c.ID == "" {
 		c.ID = uuid.New().String()

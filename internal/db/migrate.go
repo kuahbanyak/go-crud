@@ -67,7 +67,6 @@ func ConnectAndMigrate(cfg *config.Config) (*gorm.DB, error) {
 }
 
 func migrateToUniqueIdentifier(db *gorm.DB) error {
-	// Check if we need to migrate by looking at the current column type
 	var columnType string
 	err := db.Raw(`
 		SELECT DATA_TYPE 
@@ -87,7 +86,6 @@ func migrateToUniqueIdentifier(db *gorm.DB) error {
 
 	fmt.Println("Migrating database from integer IDs to uniqueidentifier...")
 
-	// Migration SQL statements
 	migrationSQL := []string{
 		// Drop all foreign key constraints first
 		`DECLARE @sql NVARCHAR(MAX) = '';
@@ -97,10 +95,6 @@ func migrateToUniqueIdentifier(db *gorm.DB) error {
 		INNER JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS PK ON C.UNIQUE_CONSTRAINT_NAME = PK.CONSTRAINT_NAME;
 		EXEC sp_executesql @sql;`,
 
-		// Backup existing data and recreate tables with new schema
-		// This is a simplified approach - in production you'd want more careful data migration
-
-		// Drop and recreate tables in dependency order
 		`IF OBJECT_ID('bookings', 'U') IS NOT NULL DROP TABLE bookings;`,
 		`IF OBJECT_ID('messages', 'U') IS NOT NULL DROP TABLE messages;`,
 		`IF OBJECT_ID('service_records', 'U') IS NOT NULL DROP TABLE service_records;`,
@@ -122,11 +116,9 @@ func migrateToUniqueIdentifier(db *gorm.DB) error {
 		`IF OBJECT_ID('users', 'U') IS NOT NULL DROP TABLE users;`,
 	}
 
-	// Execute migration SQL
 	for _, sql := range migrationSQL {
 		if err := db.Exec(sql).Error; err != nil {
 			fmt.Printf("Warning: Migration SQL failed (this may be expected): %v\n", err)
-			// Continue with migration as some failures are expected
 		}
 	}
 
