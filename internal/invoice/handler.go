@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/kuahbanyak/go-crud/pkg/notification"
+	"github.com/kuahbanyak/go-crud/internal/notification"
 )
 
 type Handler struct{ repo Repository }
