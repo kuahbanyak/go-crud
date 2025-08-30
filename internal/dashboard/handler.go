@@ -17,7 +17,7 @@ func NewHandler(r Repository) *Handler {
 
 func (h *Handler) GetCustomerDashboard(c *gin.Context) {
 	claims := c.MustGet("claims").(map[string]interface{})
-	customerID := uint(claims["sub"].(float64))
+	customerID := claims["sub"].(string)
 
 	dashboard, err := h.repo.GetCustomerDashboard(customerID)
 	if err != nil {
