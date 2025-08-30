@@ -42,13 +42,8 @@ func (h *Handler) GetPackages(c *gin.Context) {
 
 func (h *Handler) GetPackageByID(c *gin.Context) {
 	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid package ID"})
-		return
-	}
 
-	pkg, err := h.repo.GetPackageByID(uint(id))
+	pkg, err := h.repo.GetPackageByID(idStr)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Package not found"})
 		return
