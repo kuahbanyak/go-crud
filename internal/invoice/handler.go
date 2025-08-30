@@ -81,7 +81,8 @@ Vehicle Service Team
 				}
 			}
 
-			notification.SendEmail(req.CustomerEmail, subject, body)
+			// TODO: Implement email sending logic here.
+			// notification.SendEmail(req.CustomerEmail, subject, body)
 		}()
 	}
 
