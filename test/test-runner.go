@@ -18,7 +18,7 @@ func main() {
 	// List of test packages to run
 	testPackages := []string{
 		"./booking_test",
-		"./invertory_test",
+		"./inventory_test",
 		"./invoice_test",
 		"./user_test",
 		"./vehicle_test",
