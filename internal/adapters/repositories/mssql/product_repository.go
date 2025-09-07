@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
+	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"gorm.io/gorm"
 )
 
@@ -25,9 +25,9 @@ func (r *ProductRepository) Create(ctx context.Context, product *entities.Produc
 	return product, nil
 }
 
-func (r *ProductRepository) GetByID(ctx context.Context, id uuid.UUID) (*entities.Product, error) {
+func (r *ProductRepository) GetByID(ctx context.Context, id types.MSSQLUUID) (*entities.Product, error) {
 	var product entities.Product
-	if err := r.db.WithContext(ctx).First(&product, id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&product).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
@@ -74,7 +74,7 @@ func (r *ProductRepository) GetAll(ctx context.Context, filter *entities.Product
 	return products, nil
 }
 
-func (r *ProductRepository) Update(ctx context.Context, id uuid.UUID, product *entities.Product) (*entities.Product, error) {
+func (r *ProductRepository) Update(ctx context.Context, id types.MSSQLUUID, product *entities.Product) (*entities.Product, error) {
 	if err := r.db.WithContext(ctx).Model(&entities.Product{}).Where("id = ?", id).Updates(product).Error; err != nil {
 		return nil, fmt.Errorf("failed to update product: %w", err)
 	}
@@ -83,8 +83,8 @@ func (r *ProductRepository) Update(ctx context.Context, id uuid.UUID, product *e
 	return r.GetByID(ctx, id)
 }
 
-func (r *ProductRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	if err := r.db.WithContext(ctx).Delete(&entities.Product{}, id).Error; err != nil {
+func (r *ProductRepository) Delete(ctx context.Context, id types.MSSQLUUID) error {
+	if err := r.db.WithContext(ctx).Where("id = ?", id).Delete(&entities.Product{}).Error; err != nil {
 		return fmt.Errorf("failed to delete product: %w", err)
 	}
 	return nil
@@ -101,7 +101,7 @@ func (r *ProductRepository) GetBySKU(ctx context.Context, sku string) (*entities
 	return &product, nil
 }
 
-func (r *ProductRepository) UpdateStock(ctx context.Context, id uuid.UUID, stock int) error {
+func (r *ProductRepository) UpdateStock(ctx context.Context, id types.MSSQLUUID, stock int) error {
 	if err := r.db.WithContext(ctx).Model(&entities.Product{}).Where("id = ?", id).Update("stock", stock).Error; err != nil {
 		return fmt.Errorf("failed to update product stock: %w", err)
 	}

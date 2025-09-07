@@ -11,12 +11,10 @@ import (
 
 var authService services.AuthService
 
-// SetAuthService sets the auth service for the auth middleware
 func SetAuthService(service services.AuthService) {
 	authService = service
 }
 
-// Auth is a middleware function that validates JWT tokens
 func Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
@@ -43,9 +41,8 @@ func Auth(next http.Handler) http.Handler {
 			return
 		}
 
-		// Add user info to request context
-		ctx := context.WithValue(r.Context(), "user_id", userID)
-		ctx = context.WithValue(ctx, "user_role", string(role))
+		ctx := context.WithValue(r.Context(), "id", userID)
+		ctx = context.WithValue(ctx, "role", string(role))
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

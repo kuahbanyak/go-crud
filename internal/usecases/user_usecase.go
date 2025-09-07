@@ -67,7 +67,6 @@ func (u *UserUsecase) GetUserByID(ctx context.Context, id types.MSSQLUUID) (*ent
 }
 
 func (u *UserUsecase) UpdateUser(ctx context.Context, id types.MSSQLUUID, updateData *entities.User) (*entities.User, error) {
-	// Check if user exists
 	existingUser, err := u.userRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -76,7 +75,6 @@ func (u *UserUsecase) UpdateUser(ctx context.Context, id types.MSSQLUUID, update
 		return nil, errors.New("user not found")
 	}
 
-	// Update only non-empty fields
 	if updateData.Name != "" {
 		existingUser.Name = updateData.Name
 	}
@@ -98,7 +96,6 @@ func (u *UserUsecase) GetUsers(ctx context.Context, limit, offset int) ([]*entit
 }
 
 func (u *UserUsecase) DeleteUser(ctx context.Context, id types.MSSQLUUID) error {
-	// Check if user exists
 	existingUser, err := u.userRepo.GetByID(ctx, id)
 	if err != nil {
 		return err
@@ -111,7 +108,6 @@ func (u *UserUsecase) DeleteUser(ctx context.Context, id types.MSSQLUUID) error 
 }
 
 func (u *UserUsecase) RefreshToken(ctx context.Context, refreshToken string) (string, error) {
-	// For now, we'll implement a simple refresh by validating the token and generating a new one
 	userID, role, err := u.authService.ValidateToken(refreshToken)
 	if err != nil {
 		return "", errors.New("invalid refresh token")

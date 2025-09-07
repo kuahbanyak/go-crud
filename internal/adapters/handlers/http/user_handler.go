@@ -97,7 +97,7 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("user_id").(types.MSSQLUUID)
+	userID, ok := r.Context().Value("id").(types.MSSQLUUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "User ID not found in context", nil)
 		return
@@ -121,7 +121,7 @@ func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("user_id").(types.MSSQLUUID)
+	userID, ok := r.Context().Value("id").(types.MSSQLUUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "User ID not found in context", nil)
 		return

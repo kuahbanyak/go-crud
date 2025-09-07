@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
+	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"gorm.io/gorm"
 )
 
@@ -22,7 +22,7 @@ func (r *bookingRepository) Create(ctx context.Context, booking *entities.Bookin
 	return r.db.WithContext(ctx).Create(booking).Error
 }
 
-func (r *bookingRepository) GetByID(ctx context.Context, id uuid.UUID) (*entities.Booking, error) {
+func (r *bookingRepository) GetByID(ctx context.Context, id types.MSSQLUUID) (*entities.Booking, error) {
 	var booking entities.Booking
 	err := r.db.WithContext(ctx).
 		Preload("Vehicle").
@@ -35,7 +35,7 @@ func (r *bookingRepository) GetByID(ctx context.Context, id uuid.UUID) (*entitie
 	return &booking, nil
 }
 
-func (r *bookingRepository) GetByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*entities.Booking, error) {
+func (r *bookingRepository) GetByCustomerID(ctx context.Context, customerID types.MSSQLUUID) ([]*entities.Booking, error) {
 	var bookings []*entities.Booking
 	err := r.db.WithContext(ctx).
 		Preload("Vehicle").
@@ -46,7 +46,7 @@ func (r *bookingRepository) GetByCustomerID(ctx context.Context, customerID uuid
 	return bookings, err
 }
 
-func (r *bookingRepository) GetByMechanicID(ctx context.Context, mechanicID uuid.UUID) ([]*entities.Booking, error) {
+func (r *bookingRepository) GetByMechanicID(ctx context.Context, mechanicID types.MSSQLUUID) ([]*entities.Booking, error) {
 	var bookings []*entities.Booking
 	err := r.db.WithContext(ctx).
 		Preload("Vehicle").
@@ -57,7 +57,7 @@ func (r *bookingRepository) GetByMechanicID(ctx context.Context, mechanicID uuid
 	return bookings, err
 }
 
-func (r *bookingRepository) GetByVehicleID(ctx context.Context, vehicleID uuid.UUID) ([]*entities.Booking, error) {
+func (r *bookingRepository) GetByVehicleID(ctx context.Context, vehicleID types.MSSQLUUID) ([]*entities.Booking, error) {
 	var bookings []*entities.Booking
 	err := r.db.WithContext(ctx).
 		Preload("Customer").
@@ -96,8 +96,8 @@ func (r *bookingRepository) Update(ctx context.Context, booking *entities.Bookin
 	return r.db.WithContext(ctx).Save(booking).Error
 }
 
-func (r *bookingRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.db.WithContext(ctx).Delete(&entities.Booking{}, id).Error
+func (r *bookingRepository) Delete(ctx context.Context, id types.MSSQLUUID) error {
+	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&entities.Booking{}).Error
 }
 
 func (r *bookingRepository) List(ctx context.Context, limit, offset int) ([]*entities.Booking, error) {

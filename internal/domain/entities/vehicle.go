@@ -3,31 +3,31 @@ package entities
 import (
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"gorm.io/gorm"
 )
 
 type Vehicle struct {
-	ID        uuid.UUID      `gorm:"type:uniqueidentifier;primary_key;default:newid()" json:"id"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+	ID        types.MSSQLUUID `gorm:"type:uniqueidentifier;primary_key;default:newid()" json:"id"`
+	CreatedAt time.Time       `json:"created_at"`
+	UpdatedAt time.Time       `json:"updated_at"`
+	DeletedAt gorm.DeletedAt  `gorm:"index" json:"-"`
 
-	OwnerID      uuid.UUID `gorm:"type:uniqueidentifier;index" json:"owner_id"`
-	Brand        string    `json:"brand"`
-	Model        string    `json:"model"`
-	Year         int       `json:"year"`
-	LicensePlate string    `json:"license_plate"`
-	VIN          string    `json:"vin"`
-	Mileage      int       `json:"mileage"`
+	OwnerID      types.MSSQLUUID `gorm:"type:uniqueidentifier;index" json:"owner_id"`
+	Brand        string          `json:"brand"`
+	Model        string          `json:"model"`
+	Year         int             `json:"year"`
+	LicensePlate string          `json:"license_plate"`
+	VIN          string          `json:"vin"`
+	Mileage      int             `json:"mileage"`
 
 	Owner    User      `gorm:"foreignKey:OwnerID" json:"owner,omitempty"`
 	Bookings []Booking `gorm:"foreignKey:VehicleID" json:"bookings,omitempty"`
 }
 
-func (v *Vehicle) BeforeCreate(tx *gorm.DB) error {
-	if v.ID == uuid.Nil {
-		v.ID = uuid.New()
+func (v *Vehicle) BeforeCreate(_ *gorm.DB) error {
+	if v.ID.String() == "00000000-0000-0000-0000-000000000000" {
+		v.ID = types.NewMSSQLUUID()
 	}
 	return nil
 }

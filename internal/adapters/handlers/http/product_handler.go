@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
+	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/kuahbanyak/go-crud/pkg/response"
 )
@@ -45,7 +46,7 @@ func (h *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := strconv.Atoi(idStr)
+	id, err := types.ParseMSSQLUUID(idStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid product ID", err)
 		return
@@ -126,7 +127,7 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := strconv.Atoi(idStr)
+	id, err := types.ParseMSSQLUUID(idStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid product ID", err)
 		return
@@ -138,7 +139,6 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set the ID from the URL
 	product.ID = id
 
 	updatedProduct, err := h.productUsecase.UpdateProduct(r.Context(), id, &product)
@@ -158,7 +158,7 @@ func (h *ProductHandler) UpdateProductStock(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	id, err := strconv.Atoi(idStr)
+	id, err := types.ParseMSSQLUUID(idStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid product ID", err)
 		return
@@ -192,7 +192,7 @@ func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := strconv.Atoi(idStr)
+	id, err := types.ParseMSSQLUUID(idStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid product ID", err)
 		return

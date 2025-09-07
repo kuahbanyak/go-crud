@@ -92,9 +92,9 @@ func (s *HTTPServer) setupRoutes() {
 	adminRoutes.Use(middleware.Auth)
 	adminProductRoutes := adminRoutes.PathPrefix("/products").Subrouter()
 	adminProductRoutes.HandleFunc("", s.productHandler.CreateProduct).Methods("POST")
-	adminProductRoutes.HandleFunc("/{id:[0-9]+}", s.productHandler.UpdateProduct).Methods("PUT")
-	adminProductRoutes.HandleFunc("/{id:[0-9]+}/stock", s.productHandler.UpdateProductStock).Methods("PATCH")
-	adminProductRoutes.HandleFunc("/{id:[0-9]+}", s.productHandler.DeleteProduct).Methods("DELETE")
+	adminProductRoutes.HandleFunc("/{id}", s.productHandler.UpdateProduct).Methods("PUT")
+	adminProductRoutes.HandleFunc("/{id}/stock", s.productHandler.UpdateProductStock).Methods("PATCH")
+	adminProductRoutes.HandleFunc("/{id}", s.productHandler.DeleteProduct).Methods("DELETE")
 
 	// Booking routes (all protected)
 	bookingRoutes := api.PathPrefix("/bookings").Subrouter()

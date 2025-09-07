@@ -3,7 +3,7 @@ package entities
 import (
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"gorm.io/gorm"
 )
 
@@ -17,18 +17,18 @@ const (
 )
 
 type Booking struct {
-	ID        uuid.UUID      `gorm:"type:uniqueidentifier;primary_key;default:newid()" json:"id"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+	ID        types.MSSQLUUID `gorm:"type:uniqueidentifier;primary_key;default:newid()" json:"id"`
+	CreatedAt time.Time       `json:"created_at"`
+	UpdatedAt time.Time       `json:"updated_at"`
+	DeletedAt gorm.DeletedAt  `gorm:"index" json:"-"`
 
-	VehicleID   uuid.UUID     `gorm:"type:uniqueidentifier" json:"vehicle_id"`
-	CustomerID  uuid.UUID     `gorm:"type:uniqueidentifier" json:"customer_id"`
-	MechanicID  *uuid.UUID    `gorm:"type:uniqueidentifier" json:"mechanic_id"`
-	ScheduledAt time.Time     `json:"scheduled_at"`
-	DurationMin int           `json:"duration_min"`
-	Status      BookingStatus `gorm:"type:varchar(30);default:'scheduled'" json:"status"`
-	Notes       string        `json:"notes"`
+	VehicleID   types.MSSQLUUID  `gorm:"type:uniqueidentifier" json:"vehicle_id"`
+	CustomerID  types.MSSQLUUID  `gorm:"type:uniqueidentifier" json:"customer_id"`
+	MechanicID  *types.MSSQLUUID `gorm:"type:uniqueidentifier" json:"mechanic_id"`
+	ScheduledAt time.Time        `json:"scheduled_at"`
+	DurationMin int              `json:"duration_min"`
+	Status      BookingStatus    `gorm:"type:varchar(30);default:'scheduled'" json:"status"`
+	Notes       string           `json:"notes"`
 
 	Vehicle  Vehicle   `gorm:"foreignKey:VehicleID" json:"vehicle,omitempty"`
 	Customer User      `gorm:"foreignKey:CustomerID" json:"customer,omitempty"`
@@ -36,9 +36,9 @@ type Booking struct {
 	Invoices []Invoice `gorm:"foreignKey:BookingID" json:"invoices,omitempty"`
 }
 
-func (b *Booking) BeforeCreate(tx *gorm.DB) error {
-	if b.ID == uuid.Nil {
-		b.ID = uuid.New()
+func (i *Booking) BeforeCreate(_ *gorm.DB) error {
+	if i.ID.String() == "00000000-0000-0000-0000-000000000000" {
+		i.ID = types.NewMSSQLUUID()
 	}
 	return nil
 }

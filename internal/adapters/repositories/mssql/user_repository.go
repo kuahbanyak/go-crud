@@ -44,7 +44,7 @@ func (r *userRepository) Update(ctx context.Context, user *entities.User) error 
 }
 
 func (r *userRepository) Delete(ctx context.Context, id types.MSSQLUUID) error {
-	return r.db.WithContext(ctx).Delete(&entities.User{}, id).Error
+	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&entities.User{}).Error
 }
 
 func (r *userRepository) GetByUsername(ctx context.Context, username string) (*entities.User, error) {

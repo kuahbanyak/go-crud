@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
+	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/kuahbanyak/go-crud/pkg/response"
 )
@@ -30,7 +30,7 @@ func (h *BookingHandler) CreateBooking(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, ok := r.Context().Value("user_id").(uuid.UUID)
+	userID, ok := r.Context().Value("id").(types.MSSQLUUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "Unauthorized", "User ID not found")
 		return
@@ -80,7 +80,7 @@ func (h *BookingHandler) GetAllBookings(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Get user ID from context for filtering user's own bookings
-	userID, ok := r.Context().Value("user_id").(uuid.UUID)
+	userID, ok := r.Context().Value("id").(types.MSSQLUUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "Unauthorized", "User ID not found")
 		return
@@ -99,28 +99,15 @@ func (h *BookingHandler) GetBooking(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 
-	id, err := uuid.Parse(idStr)
+	id, err := types.ParseMSSQLUUID(idStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid booking ID", err)
-		return
-	}
-
-	// Get user ID from context to ensure user can only access their own bookings
-	userID, ok := r.Context().Value("user_id").(uuid.UUID)
-	if !ok {
-		response.Error(w, http.StatusUnauthorized, "Unauthorized", "User ID not found")
 		return
 	}
 
 	booking, err := h.bookingUsecase.GetBooking(r.Context(), id)
 	if err != nil {
 		response.Error(w, http.StatusNotFound, "Booking not found", err)
-		return
-	}
-
-	// Ensure user can only access their own booking
-	if booking.CustomerID != userID {
-		response.Error(w, http.StatusForbidden, "Forbidden", "You can only access your own bookings")
 		return
 	}
 
@@ -131,7 +118,7 @@ func (h *BookingHandler) UpdateBooking(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 
-	id, err := uuid.Parse(idStr)
+	id, err := types.ParseMSSQLUUID(idStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid booking ID", err)
 		return
@@ -144,7 +131,7 @@ func (h *BookingHandler) UpdateBooking(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get user ID from context
-	userID, ok := r.Context().Value("user_id").(uuid.UUID)
+	userID, ok := r.Context().Value("user_id").(types.MSSQLUUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "Unauthorized", "User ID not found")
 		return
@@ -210,14 +197,14 @@ func (h *BookingHandler) DeleteBooking(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 
-	id, err := uuid.Parse(idStr)
+	id, err := types.ParseMSSQLUUID(idStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid booking ID", err)
 		return
 	}
 
 	// Get user ID from context
-	userID, ok := r.Context().Value("user_id").(uuid.UUID)
+	userID, ok := r.Context().Value("user_id").(types.MSSQLUUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "Unauthorized", "User ID not found")
 		return

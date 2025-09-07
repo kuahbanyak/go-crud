@@ -11,6 +11,7 @@ type RegisterRequest struct {
 	FirstName string `json:"first_name" validate:"required,min=1,max=100"`
 	LastName  string `json:"last_name" validate:"required,min=1,max=100"`
 	Phone     string `json:"phone,omitempty" validate:"omitempty,min=10,max=20"`
+	Address   string `json:"address,omitempty" validate:"omitempty,min=1,max=100"`
 }
 
 type LoginRequest struct {

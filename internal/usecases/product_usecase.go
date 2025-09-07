@@ -8,6 +8,7 @@ import (
 
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
+	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"github.com/kuahbanyak/go-crud/internal/shared/utils"
 )
 
@@ -40,8 +41,8 @@ func (uc *ProductUsecase) CreateProduct(ctx context.Context, product *entities.P
 	return uc.productRepo.Create(ctx, product)
 }
 
-func (uc *ProductUsecase) GetProductByID(ctx context.Context, id int) (*entities.Product, error) {
-	if id <= 0 {
+func (uc *ProductUsecase) GetProductByID(ctx context.Context, id types.MSSQLUUID) (*entities.Product, error) {
+	if id.String() == "00000000-0000-0000-0000-000000000000" {
 		return nil, errors.New("invalid product ID")
 	}
 
@@ -64,8 +65,8 @@ func (uc *ProductUsecase) GetProducts(ctx context.Context, filter *entities.Prod
 	return uc.productRepo.GetAll(ctx, filter)
 }
 
-func (uc *ProductUsecase) UpdateProduct(ctx context.Context, id int, product *entities.Product) (*entities.Product, error) {
-	if id <= 0 {
+func (uc *ProductUsecase) UpdateProduct(ctx context.Context, id types.MSSQLUUID, product *entities.Product) (*entities.Product, error) {
+	if id.String() == "00000000-0000-0000-0000-000000000000" {
 		return nil, errors.New("invalid product ID")
 	}
 
@@ -85,8 +86,8 @@ func (uc *ProductUsecase) UpdateProduct(ctx context.Context, id int, product *en
 	return uc.productRepo.Update(ctx, id, product)
 }
 
-func (uc *ProductUsecase) DeleteProduct(ctx context.Context, id int) error {
-	if id <= 0 {
+func (uc *ProductUsecase) DeleteProduct(ctx context.Context, id types.MSSQLUUID) error {
+	if id.String() == "00000000-0000-0000-0000-000000000000" {
 		return errors.New("invalid product ID")
 	}
 
@@ -102,13 +103,22 @@ func (uc *ProductUsecase) DeleteProduct(ctx context.Context, id int) error {
 	return uc.productRepo.Delete(ctx, id)
 }
 
-func (uc *ProductUsecase) UpdateProductStock(ctx context.Context, id int, stock int) error {
-	if id <= 0 {
+func (uc *ProductUsecase) UpdateProductStock(ctx context.Context, id types.MSSQLUUID, stock int) error {
+	if id.String() == "00000000-0000-0000-0000-000000000000" {
 		return errors.New("invalid product ID")
 	}
 
 	if stock < 0 {
 		return errors.New("stock cannot be negative")
+	}
+
+	// Check if product exists
+	existing, err := uc.productRepo.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if existing == nil {
+		return errors.New("product not found")
 	}
 
 	return uc.productRepo.UpdateStock(ctx, id, stock)
@@ -139,7 +149,6 @@ func (uc *ProductUsecase) validateProduct(product *entities.Product) error {
 }
 
 func (uc *ProductUsecase) generateSKU(name, category string) string {
-	// Simple SKU generation: first 3 letters of category + first 3 letters of name + random suffix
 	categoryCode := strings.ToUpper(category)
 	if len(categoryCode) > 3 {
 		categoryCode = categoryCode[:3]
