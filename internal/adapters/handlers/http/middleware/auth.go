@@ -48,11 +48,10 @@ func Auth(next http.Handler) http.Handler {
 	})
 }
 
-// RequireRole middleware to check if user has required role
 func RequireRole(roles ...string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			userRole, ok := r.Context().Value("user_role").(string)
+			userRole, ok := r.Context().Value("role").(string)
 			if !ok {
 				response.Error(w, http.StatusUnauthorized, "User role not found in context", nil)
 				return

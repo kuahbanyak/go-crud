@@ -15,11 +15,9 @@ const (
 	DefaultWriteTimeout = 15 // seconds
 	DefaultIdleTimeout  = 60 // seconds
 
-	// Cache constants
-	DefaultCacheExpiration = 300 // seconds (5 minutes)
+	DefaultCacheExpiration = 300
 	CacheKeyPrefix         = "go-crud:"
 
-	// Validation constants
 	MinPasswordLength    = 8
 	MaxNameLength        = 255
 	MaxDescriptionLength = 1000
@@ -28,12 +26,10 @@ const (
 	DefaultPageSize = 10
 	MaxPageSize     = 100
 
-	// User roles
 	RoleAdmin   = "admin"
 	RoleUser    = "user"
 	RoleManager = "manager"
 
-	// Product categories
 	CategoryElectronics = "electronics"
 	CategoryClothing    = "clothing"
 	CategoryBooks       = "books"

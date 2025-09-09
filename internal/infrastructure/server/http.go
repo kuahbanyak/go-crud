@@ -56,40 +56,32 @@ func NewHTTPServer(
 }
 
 func (s *HTTPServer) setupRoutes() {
-	// Health check endpoint
 	s.router.HandleFunc("/health", s.healthCheck).Methods("GET")
-
-	// API v1 routes
 	api := s.router.PathPrefix("/api/v1").Subrouter()
 
-	// Authentication routes (no auth required)
 	authRoutes := api.PathPrefix("/auth").Subrouter()
 	authRoutes.HandleFunc("/register", s.userHandler.Register).Methods("POST")
 	authRoutes.HandleFunc("/login", s.userHandler.Login).Methods("POST")
 	authRoutes.HandleFunc("/refresh", s.userHandler.RefreshToken).Methods("POST")
 
-	// Product routes (public read access)
 	productRoutes := api.PathPrefix("/products").Subrouter()
 	productRoutes.HandleFunc("", s.productHandler.GetAllProducts).Methods("GET")
 	productRoutes.HandleFunc("/{id:[0-9]+}", s.productHandler.GetProduct).Methods("GET")
 
-	// User routes (protected)
 	userRoutes := api.PathPrefix("/users").Subrouter()
 	userRoutes.Use(middleware.Auth)
 
-	// Profile routes (user can access their own profile)
 	userRoutes.HandleFunc("/profile", s.userHandler.GetProfile).Methods("GET")
 	userRoutes.HandleFunc("/profile", s.userHandler.UpdateProfile).Methods("PUT")
 
-	// Admin user management routes
 	userRoutes.HandleFunc("", s.userHandler.GetUsers).Methods("GET")
 	userRoutes.HandleFunc("/{id}", s.userHandler.GetUser).Methods("GET")
 	userRoutes.HandleFunc("/{id}", s.userHandler.UpdateUser).Methods("PUT")
 	userRoutes.HandleFunc("/{id}", s.userHandler.DeleteUser).Methods("DELETE")
 
-	// Admin product management routes
 	adminRoutes := api.PathPrefix("/admin").Subrouter()
 	adminRoutes.Use(middleware.Auth)
+	adminRoutes.Use(middleware.RequireRole(constants.RoleAdmin))
 	adminProductRoutes := adminRoutes.PathPrefix("/products").Subrouter()
 	adminProductRoutes.HandleFunc("", s.productHandler.CreateProduct).Methods("POST")
 	adminProductRoutes.HandleFunc("/{id}", s.productHandler.UpdateProduct).Methods("PUT")
@@ -109,7 +101,10 @@ func (s *HTTPServer) setupRoutes() {
 func (s *HTTPServer) healthCheck(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"status":"ok","message":"Server is running"}`))
+	write, err := w.Write([]byte(`{"status":"ok","message":"Server is running"}`))
+	if err != nil {
+		return
+	}
 }
 
 func (s *HTTPServer) Start() error {
