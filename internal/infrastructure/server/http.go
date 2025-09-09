@@ -101,7 +101,7 @@ func (s *HTTPServer) setupRoutes() {
 func (s *HTTPServer) healthCheck(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	write, err := w.Write([]byte(`{"status":"ok","message":"Server is running"}`))
+	_, err := w.Write([]byte(`{"status":"ok","message":"Server is running"}`))
 	if err != nil {
 		return
 	}

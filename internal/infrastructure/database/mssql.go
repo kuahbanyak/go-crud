@@ -35,8 +35,6 @@ func NewConnection(config Config) (*gorm.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database connection: %w", err)
 	}
-
-	// Configure connection pool
 	sqlDB, err := db.DB()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get underlying sql.DB: %w", err)
@@ -45,13 +43,9 @@ func NewConnection(config Config) (*gorm.DB, error) {
 	sqlDB.SetMaxOpenConns(constants.MaxDBConnections)
 	sqlDB.SetMaxIdleConns(constants.MaxIdleConnections)
 	sqlDB.SetConnMaxLifetime(time.Hour)
-
-	// Test the connection
 	if err := sqlDB.Ping(); err != nil {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
-
-	// Auto migrate schemas
 	if err := autoMigrate(db); err != nil {
 		return nil, fmt.Errorf("failed to migrate database: %w", err)
 	}
