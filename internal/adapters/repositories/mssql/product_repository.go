@@ -2,6 +2,7 @@ package mssql
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
@@ -28,7 +29,7 @@ func (r *ProductRepository) Create(ctx context.Context, product *entities.Produc
 func (r *ProductRepository) GetByID(ctx context.Context, id types.MSSQLUUID) (*entities.Product, error) {
 	var product entities.Product
 	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&product).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to get product by ID: %w", err)

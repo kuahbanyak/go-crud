@@ -2,6 +2,7 @@ package mssql
 
 import (
 	"context"
+	"errors"
 
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
@@ -51,7 +52,7 @@ func (r *userRepository) GetByUsername(ctx context.Context, username string) (*e
 	var user entities.User
 	err := r.db.WithContext(ctx).Where("username = ?", username).First(&user).Error
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, err

@@ -61,25 +61,23 @@ func (h *BookingHandler) CreateBooking(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *BookingHandler) GetAllBookings(w http.ResponseWriter, r *http.Request) {
-	// Parse query parameters
 	limitStr := r.URL.Query().Get("limit")
 	offsetStr := r.URL.Query().Get("offset")
 
-	limit := 10 // default
+	limit := 10
 	if limitStr != "" {
 		if l, err := strconv.Atoi(limitStr); err == nil {
 			limit = l
 		}
 	}
 
-	offset := 0 // default
+	offset := 0
 	if offsetStr != "" {
 		if o, err := strconv.Atoi(offsetStr); err == nil {
 			offset = o
 		}
 	}
 
-	// Get user ID from context for filtering user's own bookings
 	userID, ok := r.Context().Value("id").(types.MSSQLUUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "Unauthorized", "User ID not found")
@@ -130,27 +128,23 @@ func (h *BookingHandler) UpdateBooking(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get user ID from context
 	userID, ok := r.Context().Value("user_id").(types.MSSQLUUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "Unauthorized", "User ID not found")
 		return
 	}
 
-	// First, get the existing booking to verify ownership
 	existingBooking, err := h.bookingUsecase.GetBooking(r.Context(), id)
 	if err != nil {
 		response.Error(w, http.StatusNotFound, "Booking not found", err)
 		return
 	}
 
-	// Ensure user can only update their own booking
 	if existingBooking.CustomerID != userID {
 		response.Error(w, http.StatusForbidden, "Forbidden", "You can only update your own bookings")
 		return
 	}
 
-	// Convert DTO to entity
 	updatedBooking := &entities.Booking{
 		ID:          id,
 		CustomerID:  userID,
@@ -159,7 +153,6 @@ func (h *BookingHandler) UpdateBooking(w http.ResponseWriter, r *http.Request) {
 		Notes:       req.Notes,
 	}
 
-	// Parse status if provided
 	if req.Status != "" {
 		switch req.Status {
 		case "scheduled":
@@ -183,7 +176,6 @@ func (h *BookingHandler) UpdateBooking(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get the updated booking to return
 	finalBooking, err := h.bookingUsecase.GetBooking(r.Context(), id)
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, "Failed to retrieve updated booking", err)
@@ -203,21 +195,17 @@ func (h *BookingHandler) DeleteBooking(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get user ID from context
 	userID, ok := r.Context().Value("user_id").(types.MSSQLUUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "Unauthorized", "User ID not found")
 		return
 	}
 
-	// First, get the existing booking to verify ownership
 	existingBooking, err := h.bookingUsecase.GetBooking(r.Context(), id)
 	if err != nil {
 		response.Error(w, http.StatusNotFound, "Booking not found", err)
 		return
 	}
-
-	// Ensure user can only delete their own booking
 	if existingBooking.CustomerID != userID {
 		response.Error(w, http.StatusForbidden, "Forbidden", "You can only delete your own bookings")
 		return

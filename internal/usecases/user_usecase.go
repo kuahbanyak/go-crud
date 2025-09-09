@@ -24,36 +24,29 @@ func NewUserUsecase(userRepo repositories.UserRepository, authService services.A
 }
 
 func (u *UserUsecase) Register(ctx context.Context, user *entities.User) error {
-	// Check if user already exists
 	existingUser, _ := u.userRepo.GetByEmail(ctx, user.Email)
 	if existingUser != nil {
 		return errors.New("user with this email already exists")
 	}
 
-	// Hash password
 	hashedPassword, err := u.authService.HashPassword(user.Password)
 	if err != nil {
 		return fmt.Errorf("failed to hash password: %w", err)
 	}
 	user.Password = hashedPassword
 
-	// Create user
 	return u.userRepo.Create(ctx, user)
 }
 
 func (u *UserUsecase) Login(ctx context.Context, email, password string) (*entities.User, string, error) {
-	// Get user by email
 	user, err := u.userRepo.GetByEmail(ctx, email)
 	if err != nil {
 		return nil, "", errors.New("invalid credentials")
 	}
 
-	// Verify password
 	if err := u.authService.ComparePassword(user.Password, password); err != nil {
 		return nil, "", errors.New("invalid credentials")
 	}
-
-	// Generate token
 	token, err := u.authService.GenerateToken(user.ID, user.Role)
 	if err != nil {
 		return nil, "", errors.New("failed to generate token")
@@ -82,7 +75,6 @@ func (u *UserUsecase) UpdateUser(ctx context.Context, id types.MSSQLUUID, update
 		existingUser.Phone = updateData.Phone
 	}
 
-	// Update user
 	err = u.userRepo.Update(ctx, existingUser)
 	if err != nil {
 		return nil, err
@@ -107,13 +99,11 @@ func (u *UserUsecase) DeleteUser(ctx context.Context, id types.MSSQLUUID) error 
 	return u.userRepo.Delete(ctx, id)
 }
 
-func (u *UserUsecase) RefreshToken(ctx context.Context, refreshToken string) (string, error) {
+func (u *UserUsecase) RefreshToken(refreshToken string) (string, error) {
 	userID, role, err := u.authService.ValidateToken(refreshToken)
 	if err != nil {
 		return "", errors.New("invalid refresh token")
 	}
-
-	// Generate new token
 	return u.authService.GenerateToken(userID, role)
 }
 

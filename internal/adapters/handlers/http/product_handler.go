@@ -69,7 +69,6 @@ func (h *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
 func (h *ProductHandler) GetAllProducts(w http.ResponseWriter, r *http.Request) {
 	filter := &entities.ProductFilter{}
 
-	// Parse query parameters
 	if name := r.URL.Query().Get("name"); name != "" {
 		filter.Name = name
 	}
@@ -101,7 +100,7 @@ func (h *ProductHandler) GetAllProducts(w http.ResponseWriter, r *http.Request) 
 			filter.Limit = limit
 		}
 	} else {
-		filter.Limit = 10 // default limit
+		filter.Limit = 10
 	}
 
 	if offsetStr := r.URL.Query().Get("offset"); offsetStr != "" {

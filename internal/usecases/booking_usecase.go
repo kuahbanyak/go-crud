@@ -55,7 +55,6 @@ func (b *BookingUsecase) GetBookingsByCustomer(ctx context.Context, customerID t
 		return nil, err
 	}
 
-	// Apply pagination manually since repository doesn't support it
 	start := offset
 	if start >= len(allBookings) {
 		return []*entities.Booking{}, nil
@@ -77,8 +76,6 @@ func (b *BookingUsecase) UpdateBooking(ctx context.Context, id types.MSSQLUUID, 
 	if existing == nil {
 		return errors.New("booking not found")
 	}
-
-	// Validate vehicle exists if VehicleID is being updated
 	if booking.VehicleID.String() != "00000000-0000-0000-0000-000000000000" && b.vehicleRepo != nil {
 		_, err := b.vehicleRepo.GetByID(ctx, booking.VehicleID)
 		if err != nil {
@@ -106,8 +103,6 @@ func (b *BookingUsecase) AssignMechanic(ctx context.Context, bookingID, mechanic
 	if err != nil {
 		return err
 	}
-
-	// Validate mechanic exists
 	_, err = b.userRepo.GetByID(ctx, mechanicID)
 	if err != nil {
 		return errors.New("mechanic not found")

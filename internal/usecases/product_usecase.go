@@ -59,7 +59,7 @@ func (uc *ProductUsecase) GetProducts(ctx context.Context, filter *entities.Prod
 	}
 
 	if filter.Limit > 100 {
-		filter.Limit = 100 // Max limit
+		filter.Limit = 100
 	}
 
 	return uc.productRepo.GetAll(ctx, filter)
@@ -70,7 +70,6 @@ func (uc *ProductUsecase) UpdateProduct(ctx context.Context, id types.MSSQLUUID,
 		return nil, errors.New("invalid product ID")
 	}
 
-	// Check if product exists
 	existing, err := uc.productRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -91,7 +90,6 @@ func (uc *ProductUsecase) DeleteProduct(ctx context.Context, id types.MSSQLUUID)
 		return errors.New("invalid product ID")
 	}
 
-	// Check if product exists
 	existing, err := uc.productRepo.GetByID(ctx, id)
 	if err != nil {
 		return err
@@ -112,7 +110,6 @@ func (uc *ProductUsecase) UpdateProductStock(ctx context.Context, id types.MSSQL
 		return errors.New("stock cannot be negative")
 	}
 
-	// Check if product exists
 	existing, err := uc.productRepo.GetByID(ctx, id)
 	if err != nil {
 		return err

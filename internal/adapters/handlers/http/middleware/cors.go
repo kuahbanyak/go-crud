@@ -4,7 +4,6 @@ import (
 	"net/http"
 )
 
-// CORS middleware to handle Cross-Origin Resource Sharing
 func CORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Set CORS headers
