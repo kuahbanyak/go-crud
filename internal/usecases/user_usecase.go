@@ -99,7 +99,7 @@ func (u *UserUsecase) DeleteUser(ctx context.Context, id types.MSSQLUUID) error 
 	return u.userRepo.Delete(ctx, id)
 }
 
-func (u *UserUsecase) RefreshToken(refreshToken string) (string, error) {
+func (u *UserUsecase) RefreshToken(ctx context.Context, refreshToken string) (string, error) {
 	userID, role, err := u.authService.ValidateToken(refreshToken)
 	if err != nil {
 		return "", errors.New("invalid refresh token")
