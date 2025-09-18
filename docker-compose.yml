@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # SQL Server Database
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: go-crud-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourPassword123!
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+      - ./internal/infrastructure/database/migrations:/migrations
+    networks:
+      - go-crud-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: go-crud-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - go-crud-network
+
+  # Go CRUD API Application
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go-crud-api
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=sqlserver
+      - DB_PORT=1433
+      - DB_USER=sa
+      - DB_PASSWORD=YourPassword123!
+      - DB_DATABASE=go_crud_dev
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+      - JWT_EXPIRATION=24
+    depends_on:
+      - sqlserver
+      - redis
+    networks:
+      - go-crud-network
+
+volumes:
+  sqlserver_data:
+  redis_data:
+
+networks:
+  go-crud-network:
+    driver: bridge
