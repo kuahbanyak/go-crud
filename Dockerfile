@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.24 AS builder
+FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
 
@@ -12,8 +12,8 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Build the application
-RUN go build -o bin/api ./cmd/api/main.go
+# Build the application with CGO disabled for static binary
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o bin/api ./cmd/api/main.go
 
 # Runtime stage
 FROM alpine:latest
