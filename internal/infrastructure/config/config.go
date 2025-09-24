@@ -39,10 +39,13 @@ type RedisConfig struct {
 }
 
 func Load() *Config {
+	// Railway uses PORT environment variable instead of SERVER_PORT
+	port := getEnv("PORT", getEnv("SERVER_PORT", "8080"))
+
 	return &Config{
 		Server: ServerConfig{
-			Port: getEnv("SERVER_PORT", "8080"),
-			Host: getEnv("SERVER_HOST", "localhost"),
+			Port: port,
+			Host: getEnv("SERVER_HOST", "0.0.0.0"),
 			Mode: getEnv("GIN_MODE", "debug"),
 		},
 		Database: DatabaseConfig{

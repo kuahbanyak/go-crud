@@ -1,0 +1,17 @@
+# Production configuration template for Railway
+server:
+  port: "${PORT}"
+  host: "0.0.0.0"
+  mode: "release"
+
+database:
+  host: "${DB_HOST}"
+  port: "${DB_PORT}"
+  user: "${DB_USER}"
+  password: "${DB_PASSWORD}"
+  database: "${DB_DATABASE}"
+
+jwt:
+  secret: "${JWT_SECRET}"
+  expiration: ${JWT_EXPIRATION}
+

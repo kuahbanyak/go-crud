@@ -1,7 +1,11 @@
 # Build stage
 FROM golang:1.24-alpine AS builder
 
+# Set working directory
 WORKDIR /app
+
+# Install dependencies for CGO (needed for SQL Server driver)
+RUN apk add --no-cache gcc musl-dev
 
 # Copy go mod files
 COPY go.mod go.sum ./
@@ -12,19 +16,20 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Build the application with CGO disabled for static binary
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o bin/api ./cmd/api/main.go
+# Build the application
+RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/api
 
-# Runtime stage
+# Final stage
 FROM alpine:latest
 
-# Install ca-certificates for HTTPS requests
-RUN apk --no-cache add ca-certificates
+# Install ca-certificates for HTTPS requests and timezone data
+RUN apk --no-cache add ca-certificates tzdata
 
+# Create app directory
 WORKDIR /root/
 
-# Copy binary from builder stage
-COPY --from=builder /app/bin/api .
+# Copy the binary from builder stage
+COPY --from=builder /app/main .
 
 # Copy config files
 COPY --from=builder /app/configs ./configs
@@ -33,4 +38,4 @@ COPY --from=builder /app/configs ./configs
 EXPOSE 8080
 
 # Run the application
-CMD ["./api"]
+CMD ["./main"]
