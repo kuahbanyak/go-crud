@@ -1,38 +1,39 @@
-# Build stage
+# Production Dockerfile - Multi-stage build optimized for production
 FROM golang:1.24-alpine AS builder
 
 # Set working directory
 WORKDIR /app
 
-# Install dependencies for CGO (needed for SQL Server driver)
+# Install build dependencies
 RUN apk add --no-cache gcc musl-dev git ca-certificates tzdata
 
-# Copy go mod files
+# Copy go mod files first (for better caching)
 COPY go.mod go.sum ./
 
 # Download dependencies
-RUN go mod download
+RUN go mod download && go mod verify
 
 # Copy source code
 COPY . .
 
 # Build the application with optimizations
-RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -ldflags="-w -s" -o main ./cmd/api
+RUN CGO_ENABLED=1 GOOS=linux go build \
+    -a -installsuffix cgo \
+    -ldflags="-w -s -extldflags '-static'" \
+    -o main ./cmd/api
 
-# Final stage
+# Final production stage
 FROM alpine:latest
 
-# Install ca-certificates for HTTPS requests and timezone data
+# Install runtime dependencies
 RUN apk --no-cache add ca-certificates tzdata wget && \
     adduser -D -s /bin/sh appuser
 
 # Create app directory
 WORKDIR /app
 
-# Copy the binary from builder stage
+# Copy binary and config files
 COPY --from=builder /app/main .
-
-# Copy config files
 COPY --from=builder /app/configs ./configs
 
 # Set proper permissions
