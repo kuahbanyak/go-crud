@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # Go CRUD API Service
+  go-crud-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_PORT=8080
+      - GIN_MODE=release
+      - LOG_LEVEL=info
+      - DB_HOST=sqlserver
+      - DB_PORT=1433
+      - DB_USER=sa
+      - DB_PASSWORD=YourStrong@Passw0rd
+      - DB_DATABASE=gocrud
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=24
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - go-crud-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # SQL Server Database
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Passw0rd
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - go-crud-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -Q 'SELECT 1'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+networks:
+  go-crud-network:
+    driver: bridge
+
+volumes:
+  sqlserver_data:
