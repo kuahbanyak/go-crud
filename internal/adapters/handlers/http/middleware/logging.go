@@ -3,6 +3,7 @@ package middleware
 import (
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -25,12 +26,26 @@ func Logging(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(wrapped, r)
 		duration := time.Since(start)
-		log.Printf("%s %s %d %v %s",
-			r.Method,
-			r.RequestURI,
-			wrapped.statusCode,
-			duration,
-			r.RemoteAddr,
-		)
+
+		// Reduce logging in production to prevent Railway rate limit
+		ginMode := os.Getenv("GIN_MODE")
+		isProduction := ginMode == "release" || os.Getenv("RAILWAY_ENVIRONMENT") != ""
+
+		if isProduction {
+			// Only log errors and slow requests in production
+			if wrapped.statusCode >= 400 || duration > 1*time.Second {
+				log.Printf("ERROR/SLOW: %s %s %d %v",
+					r.Method, r.RequestURI, wrapped.statusCode, duration)
+			}
+		} else {
+			// Full logging in development
+			log.Printf("%s %s %d %v %s",
+				r.Method,
+				r.RequestURI,
+				wrapped.statusCode,
+				duration,
+				r.RemoteAddr,
+			)
+		}
 	})
 }
