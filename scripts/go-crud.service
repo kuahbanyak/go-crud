@@ -1,0 +1,31 @@
+[Unit]
+Description=Go CRUD API Service
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/go-crud
+ExecStart=/opt/go-crud/go-crud-api
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=go-crud-api
+
+# Environment variables
+Environment=GIN_MODE=release
+Environment=CONFIG_ENV=prod
+EnvironmentFile=/opt/go-crud/.env.prod
+
+# Security settings
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/opt/go-crud/logs
+
+[Install]
+WantedBy=multi-user.target

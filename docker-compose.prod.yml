@@ -1,3 +1,6 @@
+# Production Docker Compose Configuration
+# Configured for Azure SQL Database (no local SQL Server needed)
+
 version: '3.8'
 
 services:
@@ -7,53 +10,53 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "8081:8080"  # Changed to 8081 to avoid conflicts
     environment:
-      - SERVER_PORT=8080
-      - GIN_MODE=release
-      - LOG_LEVEL=info
-      - DB_HOST=sqlserver
-      - DB_PORT=1433
-      - DB_USER=sa
-      - DB_PASSWORD=YourStrong@Passw0rd
-      - DB_DATABASE=gocrud
+      - GIN_MODE=${GIN_MODE:-release}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - CONFIG_ENV=${CONFIG_ENV:-prod}
+      - SERVER_PORT=${SERVER_PORT:-8080}
+
+      # Azure SQL Database Configuration
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_ENCRYPT=${DB_ENCRYPT:-true}
+      - DB_TRUST_SERVER_CERTIFICATE=${DB_TRUST_SERVER_CERTIFICATE:-false}
+
+      # Security
       - JWT_SECRET=${JWT_SECRET}
-      - JWT_EXPIRATION=24
+      - JWT_EXPIRATION=${JWT_EXPIRATION:-24}
+
+      # Redis Configuration
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+
     depends_on:
-      sqlserver:
-        condition: service_healthy
+      - redis
     networks:
-      - go-crud-network
+      - app-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-
-  # SQL Server Database
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=YourStrong@Passw0rd
-      - MSSQL_PID=Express
-    ports:
-      - "1433:1433"
-    volumes:
-      - sqlserver_data:/var/opt/mssql
-    networks:
-      - go-crud-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -Q 'SELECT 1'"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
 
 networks:
-  go-crud-network:
+  app-network:
     driver: bridge
 
 volumes:
-  sqlserver_data:
+  redis_data:
