@@ -1,5 +1,5 @@
 # Production Docker Compose Configuration
-# Configured for Azure SQL Database (no local SQL Server needed)
+# Uses external Azure SQL Database (no local SQL Server container)
 
 version: '3.8'
 
@@ -10,31 +10,13 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8081:8080"  # Changed to 8081 to avoid conflicts
+      - "8081:8080"
+    env_file:
+      - .env.prod
     environment:
-      - GIN_MODE=${GIN_MODE:-release}
-      - LOG_LEVEL=${LOG_LEVEL:-info}
-      - CONFIG_ENV=${CONFIG_ENV:-prod}
-      - SERVER_PORT=${SERVER_PORT:-8080}
-
-      # Azure SQL Database Configuration
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_DATABASE=${DB_DATABASE}
-      - DB_ENCRYPT=${DB_ENCRYPT:-true}
-      - DB_TRUST_SERVER_CERTIFICATE=${DB_TRUST_SERVER_CERTIFICATE:-false}
-
-      # Security
-      - JWT_SECRET=${JWT_SECRET}
-      - JWT_EXPIRATION=${JWT_EXPIRATION:-24}
-
-      # Redis Configuration
-      - REDIS_HOST=${REDIS_HOST:-redis}
-      - REDIS_PORT=${REDIS_PORT:-6379}
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-
+      # These will override .env.prod if needed
+      - GIN_MODE=release
+      - LOG_LEVEL=info
     depends_on:
       - redis
     networks:
@@ -51,6 +33,23 @@ services:
           cpus: '1.0'
           memory: 512M
         reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Redis Cache (for application caching)
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
           cpus: '0.5'
           memory: 256M
 
