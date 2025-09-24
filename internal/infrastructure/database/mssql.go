@@ -20,7 +20,8 @@ type Config struct {
 }
 
 func NewConnection(config Config) (*gorm.DB, error) {
-	dsn := fmt.Sprintf("sqlserver://%s:%s@%s:%s?database=%s",
+	// Azure SQL Database requires encrypted connections
+	dsn := fmt.Sprintf("sqlserver://%s:%s@%s:%s?database=%s&encrypt=true&trustServerCertificate=false",
 		config.User,
 		config.Password,
 		config.Host,
