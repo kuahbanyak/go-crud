@@ -17,7 +17,7 @@ services:
       - DB_USER=sa
       - DB_PASSWORD=YourStrong@Passw0rd
       - DB_DATABASE=gocrud
-      - JWT_SECRET=super-secret-production-jwt-key-please-change-this
+      - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRATION=24
     depends_on:
       sqlserver:

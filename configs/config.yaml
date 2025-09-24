@@ -7,7 +7,7 @@ database:
   host: "devdbsql.database.windows.net"
   port: "1433"
   user: "devsql"
-  password: "Kuahpisah1"
+  password: "${DB_PASSWORD}"
   database: "sqldev"
 
 jwt:
