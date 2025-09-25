@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
@@ -28,8 +29,16 @@ func NewConnection(config Config) (*gorm.DB, error) {
 		config.Database,
 	)
 
+	var logLevel logger.LogLevel
+	ginMode := os.Getenv("GIN_MODE")
+	if ginMode == "release" || os.Getenv("RAILWAY_ENVIRONMENT") != "" {
+		logLevel = logger.Error
+	} else {
+		logLevel = logger.Warn
+	}
+
 	db, err := gorm.Open(sqlserver.Open(dsn), &gorm.Config{
-		Logger:                                   logger.Default.LogMode(logger.Info),
+		Logger:                                   logger.Default.LogMode(logLevel),
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	if err != nil {
