@@ -22,13 +22,10 @@ type Invoice struct {
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
-	BookingID uuid.UUID     `gorm:"type:uniqueidentifier" json:"booking_id"`
-	Amount    int           `json:"amount"`
-	Status    InvoiceStatus `gorm:"type:varchar(20);default:'pending'" json:"status"`
-	PDFURL    string        `json:"pdf_url"`
-
-	// Relationships
-	Booking Booking `gorm:"foreignKey:BookingID" json:"booking,omitempty"`
+	WaitingListID *uuid.UUID    `gorm:"type:uniqueidentifier" json:"waiting_list_id,omitempty"`
+	Amount        int           `json:"amount"`
+	Status        InvoiceStatus `gorm:"type:varchar(20);default:'pending'" json:"status"`
+	PDFURL        string        `json:"pdf_url"`
 }
 
 func (i *Invoice) BeforeCreate(tx *gorm.DB) error {

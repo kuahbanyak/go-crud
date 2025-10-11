@@ -6,18 +6,17 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
-	"github.com/kuahbanyak/go-crud/internal/domain/services"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type jwtService struct {
+type JwtService struct {
 	secretKey  string
 	expiration time.Duration
 }
 
-func NewJWTService(secretKey string, expirationHours int) services.AuthService {
-	return &jwtService{
+func NewJWTService(secretKey string, expirationHours int) *JwtService {
+	return &JwtService{
 		secretKey:  secretKey,
 		expiration: time.Duration(expirationHours) * time.Hour,
 	}
@@ -29,7 +28,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func (j *jwtService) GenerateToken(userID types.MSSQLUUID, role entities.Role) (string, error) {
+func (j *JwtService) GenerateToken(userID types.MSSQLUUID, role entities.Role) (string, error) {
 	claims := &Claims{
 		UserID: userID,
 		Role:   role,
@@ -44,7 +43,7 @@ func (j *jwtService) GenerateToken(userID types.MSSQLUUID, role entities.Role) (
 	return token.SignedString([]byte(j.secretKey))
 }
 
-func (j *jwtService) ValidateToken(tokenString string) (types.MSSQLUUID, entities.Role, error) {
+func (j *JwtService) ValidateToken(tokenString string) (types.MSSQLUUID, entities.Role, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(j.secretKey), nil
 	})
@@ -60,7 +59,7 @@ func (j *jwtService) ValidateToken(tokenString string) (types.MSSQLUUID, entitie
 	return types.MSSQLUUID{}, "", errors.New("invalid token")
 }
 
-func (j *jwtService) HashPassword(password string) (string, error) {
+func (j *JwtService) HashPassword(password string) (string, error) {
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err
@@ -68,6 +67,6 @@ func (j *jwtService) HashPassword(password string) (string, error) {
 	return string(hashedBytes), nil
 }
 
-func (j *jwtService) ComparePassword(hashedPassword, password string) error {
+func (j *JwtService) ComparePassword(hashedPassword, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }

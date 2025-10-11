@@ -21,8 +21,8 @@ type Vehicle struct {
 	VIN          string          `json:"vin"`
 	Mileage      int             `json:"mileage"`
 
-	Owner    User      `gorm:"foreignKey:OwnerID" json:"owner,omitempty"`
-	Bookings []Booking `gorm:"foreignKey:VehicleID" json:"bookings,omitempty"`
+	Owner        User          `gorm:"foreignKey:OwnerID" json:"owner,omitempty"`
+	WaitingLists []WaitingList `gorm:"foreignKey:VehicleID" json:"waiting_lists,omitempty"`
 }
 
 func (v *Vehicle) BeforeCreate(_ *gorm.DB) error {
