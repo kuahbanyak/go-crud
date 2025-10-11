@@ -1,0 +1,1314 @@
+{
+	"info": {
+		"name": "Go-CRUD Car Service API",
+		"description": "Complete API collection for Car Service Waiting List Management System with Settings - Updated to match http.go routes exactly",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"version": "2.0.0"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "adminToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "productId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "waitingListId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "settingId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "vehicleId",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "Route: GET /health - Check if the server is running"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"password123\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"phone\": \"+1234567890\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Route: POST /api/v1/auth/register"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.token) {",
+									"        pm.collectionVariables.set('token', jsonData.data.token);",
+									"        pm.collectionVariables.set('adminToken', jsonData.data.token);",
+									"        if (jsonData.data.user && jsonData.data.user.id) {",
+									"            pm.collectionVariables.set('userId', jsonData.data.user.id);",
+									"        }",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Route: POST /api/v1/auth/login - Auto-saves token to both \"token\" and \"adminToken\" variables.\n\nChange credentials for different users:\n- Admin: admin@example.com / admin123\n- Customer: customer@example.com / password123"
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refresh_token\": \"your-refresh-token-here\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/refresh",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"refresh"
+							]
+						},
+						"description": "Route: POST /api/v1/auth/refresh"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Products (Public)",
+			"item": [
+				{
+					"name": "Get All Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/products",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"products"
+							]
+						},
+						"description": "Route: GET /api/v1/products - Public, no auth required"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Product by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/products/{{productId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"products",
+								"{{productId}}"
+							]
+						},
+						"description": "Route: GET /api/v1/products/{id:[0-9]+} - Public, numeric ID only"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"profile"
+							]
+						},
+						"description": "Route: GET /api/v1/users/profile - Requires Auth"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe Updated\",\n  \"phone\": \"+1234567890\",\n  \"address\": \"123 Main St, City, State 12345\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"profile"
+							]
+						},
+						"description": "Route: PUT /api/v1/users/profile - Requires Auth"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Users (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users"
+							]
+						},
+						"description": "Route: GET /api/v1/users - Admin Only"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by ID (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userId}}"
+							]
+						},
+						"description": "Route: GET /api/v1/users/{id} - Admin Only"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User (Admin)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"first_name\": \"Updated\",\n  \"last_name\": \"Name\",\n  \"role\": \"mechanic\",\n  \"email\": \"updated@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userId}}"
+							]
+						},
+						"description": "Route: PUT /api/v1/users/{id} - Admin Only"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User (Admin)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userId}}"
+							]
+						},
+						"description": "Route: DELETE /api/v1/users/{id} - Admin Only"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Waiting List",
+			"item": [
+				{
+					"name": "Take Queue Number",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set('waitingListId', jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"vehicle_id\": \"00000000-0000-0000-0000-000000000000\",\n  \"service_type\": \"Oil Change\",\n  \"service_date\": \"2025-10-09\",\n  \"estimated_time\": 30,\n  \"notes\": \"Regular oil change service\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/waiting-list/take",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"waiting-list",
+								"take"
+							]
+						},
+						"description": "Route: POST /api/v1/waiting-list/take - Requires Auth"
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Queue",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/waiting-list/my-queue",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"waiting-list",
+								"my-queue"
+							]
+						},
+						"description": "Route: GET /api/v1/waiting-list/my-queue - Requires Auth"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Today's Queue",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/waiting-list/today",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"waiting-list",
+								"today"
+							]
+						},
+						"description": "Route: GET /api/v1/waiting-list/today - Requires Auth"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Queue by Date",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/waiting-list/date?date=2025-10-09",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"waiting-list",
+								"date"
+							],
+							"query": [
+								{
+									"key": "date",
+									"value": "2025-10-09",
+									"description": "YYYY-MM-DD format"
+								}
+							]
+						},
+						"description": "Route: GET /api/v1/waiting-list/date - Requires Auth"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Queue by Number",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/waiting-list/number/5?date=2025-10-09",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"waiting-list",
+								"number",
+								"5"
+							],
+							"query": [
+								{
+									"key": "date",
+									"value": "2025-10-09",
+									"description": "Optional: defaults to today"
+								}
+							]
+						},
+						"description": "Route: GET /api/v1/waiting-list/number/{number} - Requires Auth"
+					},
+					"response": []
+				},
+				{
+					"name": "Check Availability",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/waiting-list/availability?date=2025-10-09",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"waiting-list",
+								"availability"
+							],
+							"query": [
+								{
+									"key": "date",
+									"value": "2025-10-09",
+									"description": "Optional: defaults to today"
+								}
+							]
+						},
+						"description": "Route: GET /api/v1/waiting-list/availability - Requires Auth - Check tickets available (max 10/day)"
+					},
+					"response": []
+				},
+				{
+					"name": "Call Customer",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/waiting-list/{{waitingListId}}/call",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"waiting-list",
+								"{{waitingListId}}",
+								"call"
+							]
+						},
+						"description": "Route: PUT /api/v1/admin/waiting-list/{id}/call - Admin Only - Mark customer as called"
+					},
+					"response": []
+				},
+				{
+					"name": "Start Service",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/waiting-list/{{waitingListId}}/start",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"waiting-list",
+								"{{waitingListId}}",
+								"start"
+							]
+						},
+						"description": "Route: PUT /api/v1/admin/waiting-list/{id}/start - Admin Only - Start service for customer"
+					},
+					"response": []
+				},
+				{
+					"name": "Complete Service",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/waiting-list/{{waitingListId}}/complete",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"waiting-list",
+								"{{waitingListId}}",
+								"complete"
+							]
+						},
+						"description": "Route: PUT /api/v1/admin/waiting-list/{id}/complete - Admin Only - Complete service"
+					},
+					"response": []
+				},
+				{
+					"name": "Mark No Show",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/waiting-list/{{waitingListId}}/no-show",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"waiting-list",
+								"{{waitingListId}}",
+								"no-show"
+							]
+						},
+						"description": "Route: PUT /api/v1/admin/waiting-list/{id}/no-show - Admin Only - Mark customer as no-show"
+					},
+					"response": []
+				}
+			],
+			"description": "Admin-only queue management operations"
+		},
+		{
+			"name": "Settings (Public)",
+			"item": [
+				{
+					"name": "Get Public Settings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/settings/public",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"settings",
+								"public"
+							]
+						},
+						"description": "Route: GET /api/v1/settings/public - Requires Auth"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Vehicles",
+			"item": [
+				{
+					"name": "Create Vehicle",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set('vehicleId', jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"brand\": \"Toyota\",\n  \"model\": \"Camry\",\n  \"year\": 2020,\n  \"license_plate\": \"ABC-1234\",\n  \"vin\": \"1HGBH41JXMN109186\",\n  \"mileage\": 50000\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/vehicles",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vehicles"
+							]
+						},
+						"description": "Route: POST /api/v1/vehicles - User creates their own vehicle (requires auth)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Vehicles",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/vehicles",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vehicles"
+							]
+						},
+						"description": "Route: GET /api/v1/vehicles - Get all vehicles owned by current user (requires auth)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Vehicle by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/vehicles/{{vehicleId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vehicles",
+								"{{vehicleId}}"
+							]
+						},
+						"description": "Route: GET /api/v1/vehicles/{id} - Get specific vehicle (must own it)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Vehicle",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"brand\": \"Toyota\",\n  \"model\": \"Camry 2.5\",\n  \"mileage\": 55000\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/vehicles/{{vehicleId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vehicles",
+								"{{vehicleId}}"
+							]
+						},
+						"description": "Route: PUT /api/v1/vehicles/{id} - Update own vehicle (requires auth)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Vehicle",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/vehicles/{{vehicleId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vehicles",
+								"{{vehicleId}}"
+							]
+						},
+						"description": "Route: DELETE /api/v1/vehicles/{id} - Delete own vehicle (requires auth)"
+					},
+					"response": []
+				}
+			],
+			"description": "Vehicle management - Users can CRUD their own vehicles"
+		},
+		{
+			"name": "Admin - Products",
+			"item": [
+				{
+					"name": "Create Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set('productId', jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Engine Oil 5W-30\",\n  \"description\": \"Premium synthetic engine oil\",\n  \"price\": 45.99,\n  \"stock\": 100,\n  \"category\": \"Oil\",\n  \"sku\": \"OIL-5W30-001\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/products",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"products"
+							]
+						},
+						"description": "Route: POST /api/v1/admin/products - Admin Only"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Engine Oil 5W-30 Updated\",\n  \"description\": \"Premium synthetic engine oil - updated\",\n  \"price\": 49.99\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/products/{{productId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"products",
+								"{{productId}}"
+							]
+						},
+						"description": "Route: PUT /api/v1/admin/products/{id} - Admin Only"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product Stock",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"stock\": 150\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/products/{{productId}}/stock",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"products",
+								"{{productId}}",
+								"stock"
+							]
+						},
+						"description": "Route: PATCH /api/v1/admin/products/{id}/stock - Admin Only"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/products/{{productId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"products",
+								"{{productId}}"
+							]
+						},
+						"description": "Route: DELETE /api/v1/admin/products/{id} - Admin Only"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin - Vehicles",
+			"item": [
+				{
+					"name": "Get All Vehicles (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/vehicles",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"vehicles"
+							]
+						},
+						"description": "Route: GET /api/v1/admin/vehicles - Get all vehicles (admin only)"
+					},
+					"response": []
+				}
+			],
+			"description": "Admin vehicle management"
+		},
+		{
+			"name": "Admin - Settings",
+			"item": [
+				{
+					"name": "Get All Settings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/settings",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"settings"
+							]
+						},
+						"description": "Route: GET /api/v1/admin/settings - Admin Only"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Setting",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set('settingId', jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"custom.new_setting\",\n  \"value\": \"100\",\n  \"type\": \"int\",\n  \"description\": \"Custom setting for testing\",\n  \"category\": \"custom\",\n  \"is_editable\": true,\n  \"is_public\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/settings",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"settings"
+							]
+						},
+						"description": "Route: POST /api/v1/admin/settings - Admin Only"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Settings by Category",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/settings/category/waiting_list",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"settings",
+								"category",
+								"waiting_list"
+							]
+						},
+						"description": "Route: GET /api/v1/admin/settings/category/{category} - Admin Only"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Setting by Key",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/settings/key/waiting_list.max_tickets_per_day",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"settings",
+								"key",
+								"waiting_list.max_tickets_per_day"
+							]
+						},
+						"description": "Route: GET /api/v1/admin/settings/key/{key} - Admin Only"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Setting by Key",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"value\": \"15\",\n  \"description\": \"Maximum tickets per day - updated to 15\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/settings/key/waiting_list.max_tickets_per_day",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"settings",
+								"key",
+								"waiting_list.max_tickets_per_day"
+							]
+						},
+						"description": "Route: PUT /api/v1/admin/settings/key/{key} - Admin Only"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Setting by ID",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/settings/{{settingId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"settings",
+								"{{settingId}}"
+							]
+						},
+						"description": "Route: DELETE /api/v1/admin/settings/{id} - Admin Only"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

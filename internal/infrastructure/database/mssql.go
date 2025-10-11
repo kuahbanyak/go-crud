@@ -66,10 +66,11 @@ func autoMigrate(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&entities.User{},
 		&entities.Product{},
-		&entities.Booking{},
+		&entities.WaitingList{},
 		&entities.Vehicle{},
 		&entities.Invoice{},
 		&entities.Part{},
+		&entities.Setting{},
 	)
 }
 
