@@ -26,9 +26,9 @@ const (
 	DefaultPageSize = 10
 	MaxPageSize     = 100
 
-	RoleAdmin   = "admin"
-	RoleUser    = "user"
-	RoleManager = "manager"
+	RoleAdmin    = "admin"
+	RoleUser     = "user"
+	RoleMechanic = "mechanic"
 
 	CategoryElectronics = "electronics"
 	CategoryClothing    = "clothing"
