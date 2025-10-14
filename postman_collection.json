@@ -614,6 +614,60 @@
 					"response": []
 				},
 				{
+					"name": "Cancel Queue",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/waiting-list/{{waitingListId}}/cancel",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"waiting-list",
+								"{{waitingListId}}",
+								"cancel"
+							]
+						},
+						"description": "Route: PUT /api/v1/waiting-list/{id}/cancel - Requires Auth - Cancel your own queue ticket"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Service Progress",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/waiting-list/{{waitingListId}}/progress",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"waiting-list",
+								"{{waitingListId}}",
+								"progress"
+							]
+						},
+						"description": "Route: GET /api/v1/waiting-list/{id}/progress - Requires Auth - Track real-time service progress with queue position, estimated wait time, and status messages"
+					},
+					"response": []
+				},
+				{
 					"name": "Call Customer",
 					"request": {
 						"method": "PUT",
@@ -727,6 +781,289 @@
 				}
 			],
 			"description": "Admin-only queue management operations"
+		},
+		{
+			"name": "Maintenance Items",
+			"item": [
+				{
+					"name": "Add Initial Maintenance Items",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    console.log('Maintenance items created successfully');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  {\n    \"category\": \"Engine\",\n    \"name\": \"Oil Change\",\n    \"description\": \"Regular 5W-30 synthetic oil change\",\n    \"estimated_cost\": 45.00\n  },\n  {\n    \"category\": \"Tires\",\n    \"name\": \"Tire Rotation\",\n    \"description\": \"Rotate all 4 tires\",\n    \"estimated_cost\": 25.00\n  },\n  {\n    \"category\": \"Brakes\",\n    \"name\": \"Brake Inspection\",\n    \"description\": \"Visual inspection of brake pads and rotors\",\n    \"estimated_cost\": 0\n  }\n]"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/maintenance/waiting-list/{{waitingListId}}/items",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"maintenance",
+								"waiting-list",
+								"{{waitingListId}}",
+								"items"
+							]
+						},
+						"description": "Route: POST /api/v1/maintenance/waiting-list/{waiting_list_id}/items - Customer adds initial maintenance items when booking service"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Maintenance Items for Service",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/maintenance/waiting-list/{{waitingListId}}/items",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"maintenance",
+								"waiting-list",
+								"{{waitingListId}}",
+								"items"
+							]
+						},
+						"description": "Route: GET /api/v1/maintenance/waiting-list/{waiting_list_id}/items - Get all maintenance items (initial + discovered) for a service"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Inspection Summary",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/maintenance/waiting-list/{{waitingListId}}/inspection-summary",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"maintenance",
+								"waiting-list",
+								"{{waitingListId}}",
+								"inspection-summary"
+							]
+						},
+						"description": "Route: GET /api/v1/maintenance/waiting-list/{waiting_list_id}/inspection-summary - Customer views inspection results to approve/reject discovered items"
+					},
+					"response": []
+				},
+				{
+					"name": "Approve/Reject Items",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"item_ids\": [\n    \"00000000-0000-0000-0000-000000000000\"\n  ],\n  \"approve\": true,\n  \"notes\": \"Please proceed with the brake pad replacement\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/maintenance/items/approve",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"maintenance",
+								"items",
+								"approve"
+							]
+						},
+						"description": "Route: POST /api/v1/maintenance/items/approve - Customer approves or rejects discovered maintenance items. Set approve to false to reject."
+					},
+					"response": []
+				},
+				{
+					"name": "Add Discovered Item (Mechanic)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"waiting_list_id\": \"{{waitingListId}}\",\n  \"category\": \"Brakes\",\n  \"name\": \"Brake Pad Replacement\",\n  \"description\": \"Front brake pads worn down to 2mm. Urgent replacement needed for safety.\",\n  \"priority\": \"urgent\",\n  \"estimated_cost\": 250.00,\n  \"labor_hours\": 2.0,\n  \"requires_approval\": true,\n  \"image_url\": \"https://example.com/brake-pad-photo.jpg\",\n  \"notes\": \"Customer should not drive more than 100km before replacement\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/maintenance/items/discovered",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"maintenance",
+								"items",
+								"discovered"
+							]
+						},
+						"description": "Route: POST /api/v1/admin/maintenance/items/discovered - Mechanic/Admin adds items found during inspection"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Maintenance Item",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"completed\",\n  \"actual_cost\": 245.00,\n  \"notes\": \"Work completed successfully\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/maintenance/items/{{maintenanceItemId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"maintenance",
+								"items",
+								"{{maintenanceItemId}}"
+							]
+						},
+						"description": "Route: PUT /api/v1/admin/maintenance/items/{id} - Admin/Mechanic updates maintenance item details"
+					},
+					"response": []
+				},
+				{
+					"name": "Complete Maintenance Item",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"actual_cost\": 245.00\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/maintenance/items/{{maintenanceItemId}}/complete",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"maintenance",
+								"items",
+								"{{maintenanceItemId}}",
+								"complete"
+							]
+						},
+						"description": "Route: PUT /api/v1/admin/maintenance/items/{id}/complete - Mark maintenance item as completed with actual cost"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Maintenance Item",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/maintenance/items/{{maintenanceItemId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"maintenance",
+								"items",
+								"{{maintenanceItemId}}"
+							]
+						},
+						"description": "Route: DELETE /api/v1/admin/maintenance/items/{id} - Delete a maintenance item"
+					},
+					"response": []
+				}
+			],
+			"description": "Maintenance checklist system - Track all maintenance and repair items for each service"
 		},
 		{
 			"name": "Settings (Public)",

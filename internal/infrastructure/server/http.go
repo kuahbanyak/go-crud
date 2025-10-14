@@ -14,13 +14,14 @@ import (
 )
 
 type HTTPServer struct {
-	server             *http.Server
-	router             *mux.Router
-	userHandler        *handlers.UserHandler
-	productHandler     *handlers.ProductHandler
-	waitingListHandler *handlers.WaitingListHandler
-	settingHandler     *handlers.SettingHandler
-	vehicleHandler     *handlers.VehicleHandler
+	server                 *http.Server
+	router                 *mux.Router
+	userHandler            *handlers.UserHandler
+	productHandler         *handlers.ProductHandler
+	waitingListHandler     *handlers.WaitingListHandler
+	settingHandler         *handlers.SettingHandler
+	vehicleHandler         *handlers.VehicleHandler
+	maintenanceItemHandler *handlers.MaintenanceItemHandler
 }
 
 func NewHTTPServer(
@@ -30,6 +31,7 @@ func NewHTTPServer(
 	waitingListHandler *handlers.WaitingListHandler,
 	settingHandler *handlers.SettingHandler,
 	vehicleHandler *handlers.VehicleHandler,
+	maintenanceItemHandler *handlers.MaintenanceItemHandler,
 ) *HTTPServer {
 	router := mux.NewRouter()
 	router.Use(middleware.CORS)
@@ -44,13 +46,14 @@ func NewHTTPServer(
 	}
 
 	httpServer := &HTTPServer{
-		server:             server,
-		router:             router,
-		userHandler:        userHandler,
-		productHandler:     productHandler,
-		waitingListHandler: waitingListHandler,
-		settingHandler:     settingHandler,
-		vehicleHandler:     vehicleHandler,
+		server:                 server,
+		router:                 router,
+		userHandler:            userHandler,
+		productHandler:         productHandler,
+		waitingListHandler:     waitingListHandler,
+		settingHandler:         settingHandler,
+		vehicleHandler:         vehicleHandler,
+		maintenanceItemHandler: maintenanceItemHandler,
 	}
 
 	// Setup routes
@@ -112,6 +115,21 @@ func (s *HTTPServer) setupRoutes() {
 	adminWaitingListRoutes.HandleFunc("/{id}/start", s.waitingListHandler.StartService).Methods("PUT")
 	adminWaitingListRoutes.HandleFunc("/{id}/complete", s.waitingListHandler.CompleteService).Methods("PUT")
 	adminWaitingListRoutes.HandleFunc("/{id}/no-show", s.waitingListHandler.MarkNoShow).Methods("PUT")
+
+	// Maintenance Items Routes (Customer)
+	maintenanceRoutes := api.PathPrefix("/maintenance").Subrouter()
+	maintenanceRoutes.Use(middleware.Auth)
+	maintenanceRoutes.HandleFunc("/waiting-list/{waiting_list_id}/items", s.maintenanceItemHandler.CreateInitialItems).Methods("POST")
+	maintenanceRoutes.HandleFunc("/waiting-list/{waiting_list_id}/items", s.maintenanceItemHandler.GetItemsByWaitingList).Methods("GET")
+	maintenanceRoutes.HandleFunc("/waiting-list/{waiting_list_id}/inspection-summary", s.maintenanceItemHandler.GetInspectionSummary).Methods("GET")
+	maintenanceRoutes.HandleFunc("/items/approve", s.maintenanceItemHandler.ApproveItems).Methods("POST")
+
+	// Maintenance Items Routes (Admin/Mechanic)
+	adminMaintenanceRoutes := adminRoutes.PathPrefix("/maintenance").Subrouter()
+	adminMaintenanceRoutes.HandleFunc("/items/discovered", s.maintenanceItemHandler.AddDiscoveredItem).Methods("POST")
+	adminMaintenanceRoutes.HandleFunc("/items/{id}", s.maintenanceItemHandler.UpdateItem).Methods("PUT")
+	adminMaintenanceRoutes.HandleFunc("/items/{id}/complete", s.maintenanceItemHandler.CompleteItem).Methods("PUT")
+	adminMaintenanceRoutes.HandleFunc("/items/{id}", s.maintenanceItemHandler.DeleteItem).Methods("DELETE")
 
 	// Vehicle Routes (User can manage their own vehicles)
 	vehicleRoutes := api.PathPrefix("/vehicles").Subrouter()
