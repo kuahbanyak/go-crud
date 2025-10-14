@@ -34,7 +34,7 @@ func NewConnection(config Config) (*gorm.DB, error) {
 	if ginMode == "release" || os.Getenv("RAILWAY_ENVIRONMENT") != "" {
 		logLevel = logger.Error
 	} else {
-		logLevel = logger.Warn
+		logLevel = logger.Error
 	}
 
 	db, err := gorm.Open(sqlserver.Open(dsn), &gorm.Config{
