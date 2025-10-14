@@ -53,6 +53,7 @@ func main() {
 	vehicleRepo := mssql.NewVehicleRepository(db)
 	waitingListRepo := mssql.NewWaitingListRepository(db)
 	settingRepo := mssql.NewSettingRepository(db)
+	maintenanceItemRepo := mssql.NewMaintenanceItemRepository(db)
 
 	// Initialize use cases
 	settingUsecase := usecases.NewSettingUsecase(settingRepo)
@@ -60,6 +61,7 @@ func main() {
 	productUsecase := usecases.NewProductUsecase(productRepo, validator)
 	vehicleUsecase := usecases.NewVehicleUseCase(vehicleRepo)
 	waitingListUsecase := usecases.NewWaitingListUsecase(waitingListRepo, vehicleRepo, userRepo, settingUsecase)
+	maintenanceItemUsecase := usecases.NewMaintenanceItemUsecase(maintenanceItemRepo, waitingListRepo, userRepo)
 
 	// Seed default settings if not exists
 	ctx := context.Background()
@@ -75,7 +77,8 @@ func main() {
 	waitingListHandler := http.NewWaitingListHandler(waitingListUsecase)
 	settingHandler := http.NewSettingHandler(settingUsecase)
 	vehicleHandler := http.NewVehicleHandler(vehicleUsecase)
-	srv := server.NewHTTPServer(cfg, userHandler, productHandler, waitingListHandler, settingHandler, vehicleHandler)
+	maintenanceItemHandler := http.NewMaintenanceItemHandler(maintenanceItemUsecase)
+	srv := server.NewHTTPServer(cfg, userHandler, productHandler, waitingListHandler, settingHandler, vehicleHandler, maintenanceItemHandler)
 
 	// Initialize and start the job scheduler
 	sched, err := scheduler.NewScheduler()
