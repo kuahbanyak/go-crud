@@ -1,11 +1,8 @@
 package dto
-
 import (
 	"time"
-
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 )
-
 type TakeQueueRequest struct {
 	VehicleID     types.MSSQLUUID `json:"vehicle_id" validate:"required"`
 	ServiceType   string          `json:"service_type" validate:"required"`
@@ -13,14 +10,12 @@ type TakeQueueRequest struct {
 	EstimatedTime int             `json:"estimated_time"`                   // in minutes
 	Notes         string          `json:"notes,omitempty"`
 }
-
 type UpdateWaitingListRequest struct {
 	ServiceType   string `json:"service_type,omitempty"`
 	EstimatedTime int    `json:"estimated_time,omitempty"`
 	Notes         string `json:"notes,omitempty"`
 	Status        string `json:"status,omitempty"`
 }
-
 type WaitingListResponse struct {
 	ID             types.MSSQLUUID `json:"id"`
 	QueueNumber    int             `json:"queue_number"`
@@ -37,7 +32,6 @@ type WaitingListResponse struct {
 	CreatedAt      time.Time       `json:"created_at"`
 	UpdatedAt      time.Time       `json:"updated_at"`
 }
-
 type WaitingListWithDetailsResponse struct {
 	ID             types.MSSQLUUID `json:"id"`
 	QueueNumber    int             `json:"queue_number"`
@@ -59,13 +53,11 @@ type WaitingListWithDetailsResponse struct {
 	CreatedAt      time.Time       `json:"created_at"`
 	UpdatedAt      time.Time       `json:"updated_at"`
 }
-
 type WaitingListListResponse struct {
 	WaitingLists []WaitingListWithDetailsResponse `json:"waiting_lists"`
 	Total        int                              `json:"total"`
 	Date         string                           `json:"date"`
 }
-
 type QueueStatusResponse struct {
 	QueueNumber      int       `json:"queue_number"`
 	Status           string    `json:"status"`
@@ -74,8 +66,6 @@ type QueueStatusResponse struct {
 	EstimatedWaitMin int       `json:"estimated_wait_minutes"`
 	ServiceDate      time.Time `json:"service_date"`
 }
-
-// ServiceProgressResponse provides detailed progress information for customers
 type ServiceProgressResponse struct {
 	ID            types.MSSQLUUID `json:"id"`
 	QueueNumber   int             `json:"queue_number"`
@@ -93,10 +83,10 @@ type ServiceProgressResponse struct {
 	Timeline      Timeline        `json:"timeline"`
 	Notes         string          `json:"notes,omitempty"`
 }
-
 type Timeline struct {
 	QueueTakenAt   time.Time  `json:"queue_taken_at"`
 	CalledAt       *time.Time `json:"called_at,omitempty"`
 	ServiceStartAt *time.Time `json:"service_start_at,omitempty"`
 	ServiceEndAt   *time.Time `json:"service_end_at,omitempty"`
 }
+

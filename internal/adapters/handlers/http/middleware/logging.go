@@ -1,22 +1,18 @@
 package middleware
-
 import (
 	"log"
 	"net/http"
 	"os"
 	"time"
 )
-
 type responseWriter struct {
 	http.ResponseWriter
 	statusCode int
 }
-
 func (rw *responseWriter) WriteHeader(code int) {
 	rw.statusCode = code
 	rw.ResponseWriter.WriteHeader(code)
 }
-
 func Logging(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -26,10 +22,8 @@ func Logging(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(wrapped, r)
 		duration := time.Since(start)
-
 		ginMode := os.Getenv("GIN_MODE")
 		isProduction := ginMode == "release" || os.Getenv("RAILWAY_ENVIRONMENT") != ""
-
 		if isProduction {
 			if wrapped.statusCode >= 400 || duration > 1*time.Second {
 				log.Printf("ERROR/SLOW: %s %s %d %v",
@@ -46,3 +40,4 @@ func Logging(next http.Handler) http.Handler {
 		}
 	})
 }
+

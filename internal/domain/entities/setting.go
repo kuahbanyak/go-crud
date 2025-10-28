@@ -1,27 +1,21 @@
 package entities
-
 import (
 	"time"
-
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"gorm.io/gorm"
 )
-
 type SettingType string
-
 const (
 	SettingTypeInt    SettingType = "int"
 	SettingTypeString SettingType = "string"
 	SettingTypeBool   SettingType = "bool"
 	SettingTypeFloat  SettingType = "float"
 )
-
 type Setting struct {
 	ID        types.MSSQLUUID `gorm:"type:uniqueidentifier;primary_key;default:newid()" json:"id"`
 	CreatedAt time.Time       `json:"created_at"`
 	UpdatedAt time.Time       `json:"updated_at"`
 	DeletedAt gorm.DeletedAt  `gorm:"index" json:"-"`
-
 	Key         string      `gorm:"type:varchar(100);uniqueIndex;not null" json:"key"`
 	Value       string      `gorm:"type:varchar(500);not null" json:"value"`
 	Type        SettingType `gorm:"type:varchar(20);not null" json:"type"`
@@ -30,14 +24,12 @@ type Setting struct {
 	IsEditable  bool        `gorm:"default:true" json:"is_editable"`
 	IsPublic    bool        `gorm:"default:false" json:"is_public"`
 }
-
 func (s *Setting) BeforeCreate(_ *gorm.DB) error {
 	if s.ID.String() == "00000000-0000-0000-0000-000000000000" {
 		s.ID = types.NewMSSQLUUID()
 	}
 	return nil
 }
-
 var DefaultSettings = []Setting{
 	{
 		Key:         "waiting_list.max_tickets_per_day",
@@ -121,3 +113,4 @@ var DefaultSettings = []Setting{
 		IsPublic:    true,
 	},
 }
+
