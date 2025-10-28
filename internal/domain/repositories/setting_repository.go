@@ -1,12 +1,9 @@
 package repositories
-
 import (
 	"context"
-
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 )
-
 type SettingRepository interface {
 	Create(ctx context.Context, setting *entities.Setting) error
 	GetByKey(ctx context.Context, key string) (*entities.Setting, error)
@@ -17,3 +14,4 @@ type SettingRepository interface {
 	Delete(ctx context.Context, id types.MSSQLUUID) error
 	SeedDefaults(ctx context.Context) error
 }
+

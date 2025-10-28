@@ -23,7 +23,9 @@ import (
 
 func main() {
 	if err := godotenv.Load(); err != nil {
-		logger.Info("No .env file found, using system environment variables")
+		if os.Getenv("GIN_MODE") != "release" {
+			logger.Info("No .env file found, using system environment variables")
+		}
 	}
 	cfg := config.Load()
 	db, err := database.NewConnection(database.Config{

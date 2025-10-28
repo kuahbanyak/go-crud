@@ -1,12 +1,9 @@
 package repositories
-
 import (
 	"context"
-
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 )
-
 type ProductRepository interface {
 	Create(ctx context.Context, product *entities.Product) (*entities.Product, error)
 	GetByID(ctx context.Context, id types.MSSQLUUID) (*entities.Product, error)
@@ -18,3 +15,4 @@ type ProductRepository interface {
 	GetByCategory(ctx context.Context, category string) ([]*entities.Product, error)
 	Count(ctx context.Context, filter *entities.ProductFilter) (int, error)
 }
+

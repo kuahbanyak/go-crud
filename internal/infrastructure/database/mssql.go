@@ -1,17 +1,14 @@
 package database
-
 import (
 	"fmt"
 	"os"
 	"time"
-
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/constants"
 	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
-
 type Config struct {
 	Host     string
 	Port     string
@@ -19,7 +16,6 @@ type Config struct {
 	Password string
 	Database string
 }
-
 func NewConnection(config Config) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("sqlserver://%s:%s@%s:%s?database=%s&encrypt=true&trustServerCertificate=false",
 		config.User,
@@ -28,7 +24,6 @@ func NewConnection(config Config) (*gorm.DB, error) {
 		config.Port,
 		config.Database,
 	)
-
 	var logLevel logger.LogLevel
 	ginMode := os.Getenv("GIN_MODE")
 	if ginMode == "release" || os.Getenv("RAILWAY_ENVIRONMENT") != "" {
@@ -36,7 +31,6 @@ func NewConnection(config Config) (*gorm.DB, error) {
 	} else {
 		logLevel = logger.Error
 	}
-
 	db, err := gorm.Open(sqlserver.Open(dsn), &gorm.Config{
 		Logger:                                   logger.Default.LogMode(logLevel),
 		DisableForeignKeyConstraintWhenMigrating: true,
@@ -48,7 +42,6 @@ func NewConnection(config Config) (*gorm.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get underlying sql.DB: %w", err)
 	}
-
 	sqlDB.SetMaxOpenConns(constants.MaxDBConnections)
 	sqlDB.SetMaxIdleConns(constants.MaxIdleConnections)
 	sqlDB.SetConnMaxLifetime(time.Hour)
@@ -58,10 +51,8 @@ func NewConnection(config Config) (*gorm.DB, error) {
 	if err := autoMigrate(db); err != nil {
 		return nil, fmt.Errorf("failed to migrate database: %w", err)
 	}
-
 	return db, nil
 }
-
 func autoMigrate(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&entities.User{},
@@ -73,7 +64,6 @@ func autoMigrate(db *gorm.DB) error {
 		&entities.Setting{},
 	)
 }
-
 func Close(db *gorm.DB) error {
 	sqlDB, err := db.DB()
 	if err != nil {
@@ -81,3 +71,4 @@ func Close(db *gorm.DB) error {
 	}
 	return sqlDB.Close()
 }
+

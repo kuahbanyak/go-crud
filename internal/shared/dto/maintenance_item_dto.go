@@ -1,20 +1,14 @@
 package dto
-
 import (
 	"time"
-
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 )
-
-// CreateMaintenanceItemRequest - Customer selects initial items when booking
 type CreateMaintenanceItemRequest struct {
 	Category      string  `json:"category" validate:"required"` // e.g., "Engine", "Brakes"
 	Name          string  `json:"name" validate:"required"`     // e.g., "Oil Change"
 	Description   string  `json:"description"`
 	EstimatedCost float64 `json:"estimated_cost"`
 }
-
-// AddDiscoveredItemRequest - Mechanic adds items found during inspection
 type AddDiscoveredItemRequest struct {
 	WaitingListID    types.MSSQLUUID `json:"waiting_list_id" validate:"required"`
 	Category         string          `json:"category" validate:"required"`
@@ -27,8 +21,6 @@ type AddDiscoveredItemRequest struct {
 	ImageURL         string          `json:"image_url"`
 	Notes            string          `json:"notes"`
 }
-
-// UpdateMaintenanceItemRequest - Update item details
 type UpdateMaintenanceItemRequest struct {
 	Status        string   `json:"status" validate:"omitempty,oneof=pending inspected approved rejected completed skipped"`
 	Description   string   `json:"description"`
@@ -38,15 +30,11 @@ type UpdateMaintenanceItemRequest struct {
 	Priority      string   `json:"priority" validate:"omitempty,oneof=urgent high normal low"`
 	Notes         string   `json:"notes"`
 }
-
-// ApproveMaintenanceItemRequest - Customer approves/rejects discovered items
 type ApproveMaintenanceItemRequest struct {
 	ItemIDs []types.MSSQLUUID `json:"item_ids" validate:"required,min=1"`
 	Approve bool              `json:"approve"` // true = approve, false = reject
 	Notes   string            `json:"notes"`   // Customer feedback
 }
-
-// MaintenanceItemResponse - Response for single item
 type MaintenanceItemResponse struct {
 	ID               types.MSSQLUUID  `json:"id"`
 	WaitingListID    types.MSSQLUUID  `json:"waiting_list_id"`
@@ -70,8 +58,6 @@ type MaintenanceItemResponse struct {
 	CreatedAt        time.Time        `json:"created_at"`
 	UpdatedAt        time.Time        `json:"updated_at"`
 }
-
-// MaintenanceItemListResponse - List of items with summary
 type MaintenanceItemListResponse struct {
 	Items                []MaintenanceItemResponse `json:"items"`
 	Total                int                       `json:"total"`
@@ -80,8 +66,6 @@ type MaintenanceItemListResponse struct {
 	PendingApprovalCount int                       `json:"pending_approval_count"`
 	CompletedCount       int                       `json:"completed_count"`
 }
-
-// MaintenanceInspectionSummary - Summary for customer to review
 type MaintenanceInspectionSummary struct {
 	WaitingListID      types.MSSQLUUID           `json:"waiting_list_id"`
 	QueueNumber        int                       `json:"queue_number"`
@@ -94,3 +78,4 @@ type MaintenanceInspectionSummary struct {
 	RequiresApproval   bool                      `json:"requires_approval"`
 	InspectedAt        time.Time                 `json:"inspected_at"`
 }
+

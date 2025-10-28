@@ -1,13 +1,10 @@
 package repositories
-
 import (
 	"context"
 	"time"
-
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 )
-
 type WaitingListRepository interface {
 	Create(ctx context.Context, waitingList *entities.WaitingList) error
 	GetByID(ctx context.Context, id types.MSSQLUUID) (*entities.WaitingList, error)
@@ -20,3 +17,4 @@ type WaitingListRepository interface {
 	Delete(ctx context.Context, id types.MSSQLUUID) error
 	List(ctx context.Context, limit, offset int) ([]*entities.WaitingList, error)
 }
+

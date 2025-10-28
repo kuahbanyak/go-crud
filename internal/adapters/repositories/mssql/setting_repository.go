@@ -1,27 +1,21 @@
 package mssql
-
 import (
 	"context"
 	"errors"
-
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"gorm.io/gorm"
 )
-
 type settingRepository struct {
 	db *gorm.DB
 }
-
 func NewSettingRepository(db *gorm.DB) repositories.SettingRepository {
 	return &settingRepository{db: db}
 }
-
 func (r *settingRepository) Create(ctx context.Context, setting *entities.Setting) error {
 	return r.db.WithContext(ctx).Create(setting).Error
 }
-
 func (r *settingRepository) GetByKey(ctx context.Context, key string) (*entities.Setting, error) {
 	var setting entities.Setting
 	err := r.db.WithContext(ctx).Where("key = ?", key).First(&setting).Error
@@ -33,7 +27,6 @@ func (r *settingRepository) GetByKey(ctx context.Context, key string) (*entities
 	}
 	return &setting, nil
 }
-
 func (r *settingRepository) GetByCategory(ctx context.Context, category string) ([]*entities.Setting, error) {
 	var settings []*entities.Setting
 	err := r.db.WithContext(ctx).
@@ -42,7 +35,6 @@ func (r *settingRepository) GetByCategory(ctx context.Context, category string) 
 		Find(&settings).Error
 	return settings, err
 }
-
 func (r *settingRepository) GetAll(ctx context.Context) ([]*entities.Setting, error) {
 	var settings []*entities.Setting
 	err := r.db.WithContext(ctx).
@@ -50,7 +42,6 @@ func (r *settingRepository) GetAll(ctx context.Context) ([]*entities.Setting, er
 		Find(&settings).Error
 	return settings, err
 }
-
 func (r *settingRepository) GetPublic(ctx context.Context) ([]*entities.Setting, error) {
 	var settings []*entities.Setting
 	err := r.db.WithContext(ctx).
@@ -59,33 +50,25 @@ func (r *settingRepository) GetPublic(ctx context.Context) ([]*entities.Setting,
 		Find(&settings).Error
 	return settings, err
 }
-
 func (r *settingRepository) Update(ctx context.Context, setting *entities.Setting) error {
 	return r.db.WithContext(ctx).Save(setting).Error
 }
-
 func (r *settingRepository) Delete(ctx context.Context, id types.MSSQLUUID) error {
 	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&entities.Setting{}).Error
 }
-
 func (r *settingRepository) SeedDefaults(ctx context.Context) error {
-	// Check if settings already exist
 	var count int64
 	if err := r.db.WithContext(ctx).Model(&entities.Setting{}).Count(&count).Error; err != nil {
 		return err
 	}
-
-	// If settings exist, don't seed
 	if count > 0 {
 		return nil
 	}
-
-	// Seed default settings
 	for _, setting := range entities.DefaultSettings {
 		if err := r.Create(ctx, &setting); err != nil {
 			return err
 		}
 	}
-
 	return nil
 }
+
