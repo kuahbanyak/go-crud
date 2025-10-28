@@ -1,3 +1,6 @@
+# Docker Compose Configuration for Production
+# Uses external Azure SQL Database and Redis for caching
+
 version: '3.8'
 
 services:
@@ -8,68 +11,45 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8081:8080"
-    environment:
-      - SERVER_PORT=8080
-      - GIN_MODE=debug
-      - LOG_LEVEL=info
-      - DB_HOST=sqlserver
-      - DB_PORT=1433
-      - DB_USER=sa
-      - DB_PASSWORD=YourStrong@Passw0rd
-      - DB_DATABASE=gocrud
-      - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-      - JWT_EXPIRATION=24
-    depends_on:
-      sqlserver:
-        condition: service_healthy
-      db-init:
-        condition: service_completed_successfully
+    env_file:
+      - .env
     networks:
-      - go-crud-network
-    restart: unless-stopped
-
-  # SQL Server Database
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=YourStrong@Passw0rd
-      - MSSQL_PID=Express
-    ports:
-      - "1433:1433"
-    volumes:
-      - sqlserver_data:/var/opt/mssql
-    networks:
-      - go-crud-network
+      - app-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -C -Q 'SELECT 1' || exit 1"]
-      interval: 10s
-      timeout: 3s
-      retries: 10
-      start_period: 10s
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
 
-  # Database initializer - just create the database, let GORM handle the schema
-  db-init:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    depends_on:
-      sqlserver:
-        condition: service_healthy
+  # Redis Cache (for application caching)
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD:-secure-redis-password-123}
+    ports:
+      - "6379:6379"
     volumes:
-      - ./scripts/init-db-simple.sql:/tmp/init-db.sql
+      - redis_data:/data
     networks:
-      - go-crud-network
-    command: >
-      bash -c "
-        sleep 5 &&
-        /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P YourStrong@Passw0rd -C -i /tmp/init-db.sql &&
-        echo 'Database initialization completed'
-      "
-    restart: "no"
+      - app-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
 
 networks:
-  go-crud-network:
+  app-network:
     driver: bridge
 
 volumes:
-  sqlserver_data:
+  redis_data:
