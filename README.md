@@ -1,6 +1,77 @@
-# Go CRUD API - Clean Architecture
+# 🚗 Car Maintenance Service API
 
-A Go-based REST API built with Clean Architecture principles for managing users, vehicles, bookings, and inventory in an automotive service system.
+A production-ready REST API built with **Clean Architecture** and **Domain-Driven Design** principles for managing car maintenance services with queue management, maintenance tracking, and complete customer service workflow.
+
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
+![Go Version](https://img.shields.io/badge/go-1.21+-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+## ✨ Features
+
+- 🔐 **JWT Authentication** - Secure token-based authentication
+- 👥 **Role-Based Access Control** - Admin, Mechanic, and Customer roles
+- 🚙 **Vehicle Management** - Track customer vehicles and service history
+- 📋 **Smart Queue System** - Automated ticket management with daily limits
+- 🔧 **Maintenance Tracking** - Initial services + discovered issues workflow
+- ✅ **Customer Approval Flow** - Customers approve additional work before proceeding
+- ⏰ **Real-time Progress Tracking** - Customers see their queue position and wait time
+- 🛡️ **Rate Limiting** - 100 requests/minute per IP
+- 📊 **Request Tracing** - Unique ID for every request
+- 🔒 **Production-Safe** - Error sanitization, SQL logging control
+- 📅 **Automated Jobs** - Daily cleanup of old queue entries
+- ⚙️ **Configurable Settings** - Dynamic shop configuration
+
+## 📚 Documentation
+
+- **[Quick Start Guide](QUICK_START.md)** - Get up and running in 5 minutes
+- **[API Documentation](API_DOCUMENTATION.md)** - Complete API reference with examples
+- **[Code Review & Analysis](CODE_REVIEW_ANALYSIS.md)** - Quality assessment and recommendations
+- **[Implementation Summary](IMPLEMENTATION_SUMMARY.md)** - Recent improvements and fixes
+
+## 🚀 Quick Start
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/yourusername/go-crud.git
+cd go-crud
+
+# 2. Install dependencies
+go mod download
+
+# 3. Configure environment (create .env file)
+cp .env.example .env
+# Edit .env with your database credentials
+
+# 4. Build and run
+go build -o api.exe ./cmd/api
+./api.exe
+```
+
+Server will start on `http://localhost:8080`
+
+See [QUICK_START.md](QUICK_START.md) for detailed instructions.
+
+## 🏗️ Architecture
+
+Built with **Clean Architecture** principles:
+
+```
+┌─────────────────────────────────────┐
+│         HTTP Handlers               │  ← Adapters (Controllers)
+├─────────────────────────────────────┤
+│         Use Cases                   │  ← Application Business Rules
+├─────────────────────────────────────┤
+│    Domain (Entities & Services)     │  ← Enterprise Business Rules
+├─────────────────────────────────────┤
+│   Infrastructure (DB, Config, etc)  │  ← Frameworks & Drivers
+└─────────────────────────────────────┘
+```
+
+### Key Design Patterns
+- **Repository Pattern** - Data access abstraction
+- **Dependency Injection** - Loose coupling
+- **Middleware Chain** - Request/response processing
+- **Clean Architecture** - Separation of concerns
 
 ## Project Structure
 
@@ -51,32 +122,230 @@ project-name/
 │   │   └── server/
 │   │       └── http.go
 │   └── shared/                     # Shared utilities
-│       ├── utils/
-│       │   └── jwt.go
-│       ├── dto/
-│       │   └── user_dto.go
-│       └── constants/
-│           └── constants.go
-├── pkg/                           # Public libraries
-│   ├── errors/
-│   │   └── errors.go
-│   └── response/
-│       └── response.go
-├── configs/                       # Configuration files
-│   ├── config.yaml
-│   └── config.dev.yaml
-├── scripts/                       # Build and deployment scripts
-│   ├── build.sh
-│   └── migrate.sh
-├── .env.example
-├── go.mod
-├── go.sum
-├── Dockerfile
-├── docker-compose.yml
-└── Makefile
+│       ├── utils/                  # Utility functions
+│       ├── dto/                    # Data Transfer Objects
+│       ├── constants/              # Application constants
+│       └── types/                  # Custom types
+├── pkg/                            # Public libraries
+│   └── response/                   # Response utilities
+├── tests/                          # Integration tests
+│   └── integration/
+└── docs/                           # Documentation
+    ├── API_DOCUMENTATION.md
+    ├── CODE_REVIEW_ANALYSIS.md
+    ├── IMPLEMENTATION_SUMMARY.md
+    └── QUICK_START.md
 ```
 
-## Key Features
+## 🔑 Core Workflow
+
+### Customer Service Flow
+
+```mermaid
+graph TD
+    A[Customer Books Service] --> B[Selects Initial Services]
+    B --> C[Gets Queue Number]
+    C --> D[Waits in Queue]
+    D --> E[Mechanic Starts Service]
+    E --> F[Mechanic Inspects Vehicle]
+    F --> G{Issues Found?}
+    G -->|Yes| H[Mechanic Adds Discovered Items]
+    H --> I[Customer Reviews & Approves]
+    I --> J[Mechanic Completes Work]
+    G -->|No| J
+    J --> K[Service Complete]
+```
+
+## 🔐 Security Features
+
+- ✅ **JWT Authentication** with configurable expiration
+- ✅ **Role-Based Access Control** (RBAC)
+- ✅ **Rate Limiting** (100 req/min per IP)
+- ✅ **Request Size Limits** (10MB max)
+- ✅ **SQL Injection Protection** (parameterized queries)
+- ✅ **Error Sanitization** (production mode)
+- ✅ **CORS Support** with configurable origins
+- ✅ **Request ID Tracing** for audit trails
+
+## 🛠️ Tech Stack
+
+| Component | Technology |
+|-----------|-----------|
+| Language | Go 1.21+ |
+| Web Framework | Gorilla Mux |
+| Database | Microsoft SQL Server |
+| ORM | GORM |
+| Authentication | JWT (golang-jwt) |
+| Job Scheduler | gocron v2 |
+| Configuration | godotenv |
+| Logging | Custom logger (structured) |
+
+## 📋 API Endpoints
+
+### Authentication
+- `POST /api/v1/auth/register` - Register new customer
+- `POST /api/v1/auth/login` - Login and get JWT token
+- `POST /api/v1/auth/refresh` - Refresh expired token
+
+### Vehicle Management
+- `GET /api/v1/vehicles` - List my vehicles
+- `POST /api/v1/vehicles` - Add new vehicle
+- `PUT /api/v1/vehicles/{id}` - Update vehicle
+- `DELETE /api/v1/vehicles/{id}` - Remove vehicle
+
+### Queue Management
+- `POST /api/v1/waiting-list/take` - Book service and get queue number
+- `GET /api/v1/waiting-list/my-queue` - View my queue entries
+- `GET /api/v1/waiting-list/{id}/progress` - Check service progress
+- `PUT /api/v1/waiting-list/{id}/cancel` - Cancel booking
+- `GET /api/v1/waiting-list/availability` - Check available slots
+
+### Maintenance Items
+- `POST /api/v1/maintenance/waiting-list/{id}/items` - Add initial services
+- `GET /api/v1/maintenance/waiting-list/{id}/items` - List all items
+- `GET /api/v1/maintenance/waiting-list/{id}/inspection-summary` - Get inspection details
+- `POST /api/v1/maintenance/items/approve` - Approve/reject discovered items
+
+### Admin Operations
+- `PUT /api/v1/admin/waiting-list/{id}/call` - Call next customer
+- `PUT /api/v1/admin/waiting-list/{id}/start` - Start service
+- `PUT /api/v1/admin/waiting-list/{id}/complete` - Complete service
+- `POST /api/v1/admin/maintenance/items/discovered` - Add discovered issue
+
+**[See full API documentation →](API_DOCUMENTATION.md)**
+
+## 🧪 Testing
+
+```bash
+# Run unit tests
+go test ./...
+
+# Run with coverage
+go test -cover ./...
+
+# Run specific test
+go test ./internal/usecases -v
+```
+
+## 📦 Deployment
+
+### Docker
+
+```bash
+# Build image
+docker build -t car-maintenance-api .
+
+# Run container
+docker run -p 8080:8080 --env-file .env car-maintenance-api
+```
+
+### Docker Compose
+
+```bash
+# Start all services (API + Database)
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+### Manual Deployment
+
+```bash
+# Build for production
+GIN_MODE=release go build -o api ./cmd/api
+
+# Run
+./api
+```
+
+## ⚙️ Configuration
+
+Environment variables (`.env` file):
+
+```env
+# Server
+PORT=8080
+GIN_MODE=debug                    # or 'release' for production
+
+# Database
+DB_HOST=localhost
+DB_PORT=1433
+DB_USER=sa
+DB_PASSWORD=YourPassword
+DB_DATABASE=car_maintenance_db
+
+# JWT
+JWT_SECRET=your-secret-key-here
+JWT_EXPIRATION=24                 # hours
+
+# Optional
+RAILWAY_ENVIRONMENT=production    # Enables production mode
+```
+
+## 📊 Monitoring & Observability
+
+### Request Tracing
+Every request gets a unique ID in the `X-Request-ID` header for tracing across logs.
+
+### Logging
+- **Development:** All requests logged with full details
+- **Production:** Only errors and slow requests (>1s) logged
+- All logs include Request ID for correlation
+
+### Health Check
+```bash
+curl http://localhost:8080/health
+```
+
+## 🔄 Background Jobs
+
+### Daily Cleanup Job
+- **Schedule:** Every day at midnight (configurable)
+- **Function:** Removes old completed/canceled queue entries
+- **Retention:** 7 days (configurable via settings)
+- **Control:** Can be enabled/disabled via database settings
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Code Style
+- Follow Go conventions and best practices
+- Run `go fmt` before committing
+- Add tests for new features
+- Update documentation
+
+## 📝 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 👥 Authors
+
+- **Your Name** - Initial work
+
+## 🙏 Acknowledgments
+
+- Clean Architecture by Robert C. Martin
+- Domain-Driven Design principles
+- Go community for excellent packages
+
+## 📮 Support
+
+For bugs and feature requests, please create an issue on GitHub.
+
+For questions and discussions, please use GitHub Discussions.
+
+---
+
+**Built with ❤️ using Go and Clean Architecture principles**
 
 - **Clean Architecture**: Follows Uncle Bob's Clean Architecture principles
 - **UUID Primary Keys**: All entities use UUID with SQL Server `uniqueidentifier` type

@@ -27,16 +27,22 @@ func Logging(next http.Handler) http.Handler {
 		next.ServeHTTP(wrapped, r)
 		duration := time.Since(start)
 
+		// Get request ID from context
+		requestID := GetRequestID(r.Context())
+
 		ginMode := os.Getenv("GIN_MODE")
 		isProduction := ginMode == "release" || os.Getenv("RAILWAY_ENVIRONMENT") != ""
 
 		if isProduction {
+			// Only log errors and slow requests in production
 			if wrapped.statusCode >= 400 || duration > 1*time.Second {
-				log.Printf("ERROR/SLOW: %s %s %d %v",
-					r.Method, r.RequestURI, wrapped.statusCode, duration)
+				log.Printf("[%s] ERROR/SLOW: %s %s %d %v",
+					requestID, r.Method, r.RequestURI, wrapped.statusCode, duration)
 			}
 		} else {
-			log.Printf("%s %s %d %v %s",
+			// Log all requests in development with more details
+			log.Printf("[%s] %s %s %d %v %s",
+				requestID,
 				r.Method,
 				r.RequestURI,
 				wrapped.statusCode,

@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -34,8 +35,16 @@ func NewHTTPServer(
 	maintenanceItemHandler *handlers.MaintenanceItemHandler,
 ) *HTTPServer {
 	router := mux.NewRouter()
-	router.Use(middleware.CORS)
-	router.Use(middleware.Logging)
+
+	// Global middleware (order matters!)
+	router.Use(middleware.RequestID)           // 1. Add request ID first for tracing
+	router.Use(middleware.CORS)                // 2. Handle CORS
+	router.Use(middleware.ValidateRequestSize) // 3. Limit request size
+	router.Use(middleware.Logging)             // 4. Log requests (will include request ID)
+
+	// Rate limiting (100 requests per minute per IP)
+	rateLimiter := middleware.NewRateLimiter(100, time.Minute)
+	router.Use(middleware.RateLimit(rateLimiter))
 
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%s", cfg.Server.Port),
@@ -159,13 +168,24 @@ func (s *HTTPServer) setupRoutes() {
 	settingsAdminRoutes.HandleFunc("/{id}", s.settingHandler.DeleteSetting).Methods("DELETE")
 }
 
-func (s *HTTPServer) healthCheck(w http.ResponseWriter, _ *http.Request) {
+func (s *HTTPServer) healthCheck(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_, err := w.Write([]byte(`{"status":"ok","message":"Server is running"}`))
-	if err != nil {
-		return
+
+	// Simple health check response
+	type HealthResponse struct {
+		Status    string `json:"status"`
+		Message   string `json:"message"`
+		Timestamp string `json:"timestamp"`
 	}
+
+	response := HealthResponse{
+		Status:    "ok",
+		Message:   "Server is running",
+		Timestamp: time.Now().UTC().Format(time.RFC3339),
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
 }
 
 func (s *HTTPServer) Start() error {

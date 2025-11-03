@@ -32,9 +32,9 @@ func NewConnection(config Config) (*gorm.DB, error) {
 	var logLevel logger.LogLevel
 	ginMode := os.Getenv("GIN_MODE")
 	if ginMode == "release" || os.Getenv("RAILWAY_ENVIRONMENT") != "" {
-		logLevel = logger.Error
+		logLevel = logger.Silent // Disable SQL logging in production
 	} else {
-		logLevel = logger.Error
+		logLevel = logger.Info // Show SQL queries in development
 	}
 
 	db, err := gorm.Open(sqlserver.Open(dsn), &gorm.Config{
@@ -71,6 +71,7 @@ func autoMigrate(db *gorm.DB) error {
 		&entities.Invoice{},
 		&entities.Part{},
 		&entities.Setting{},
+		&entities.MaintenanceItem{},
 	)
 }
 
