@@ -1,22 +1,18 @@
 package logger
-
 import (
 	"log"
 	"os"
 )
-
 var (
 	infoLogger  *log.Logger
 	errorLogger *log.Logger
 	debugLogger *log.Logger
 )
-
 func init() {
 	infoLogger = log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 	errorLogger = log.New(os.Stderr, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 	debugLogger = log.New(os.Stdout, "DEBUG: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
-
 func Info(message string, args ...interface{}) {
 	if len(args) > 0 {
 		infoLogger.Printf(message+formatArgs(args), args...)
@@ -24,7 +20,6 @@ func Info(message string, args ...interface{}) {
 		infoLogger.Println(message)
 	}
 }
-
 func Error(message string, args ...interface{}) {
 	if len(args) > 0 {
 		errorLogger.Printf(message+formatArgs(args), args...)
@@ -32,7 +27,6 @@ func Error(message string, args ...interface{}) {
 		errorLogger.Println(message)
 	}
 }
-
 func Debug(message string, args ...interface{}) {
 	if len(args) > 0 {
 		debugLogger.Printf(message+formatArgs(args), args...)
@@ -40,7 +34,6 @@ func Debug(message string, args ...interface{}) {
 		debugLogger.Println(message)
 	}
 }
-
 func formatArgs(args []interface{}) string {
 	format := ""
 	for i := 0; i < len(args); i += 2 {
@@ -50,3 +43,4 @@ func formatArgs(args []interface{}) string {
 	}
 	return format
 }
+

@@ -1,26 +1,20 @@
 package mssql
-
 import (
 	"context"
 	"time"
-
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"gorm.io/gorm"
 )
-
 type MaintenanceItemRepositoryImpl struct {
 	db *gorm.DB
 }
-
 func NewMaintenanceItemRepository(db *gorm.DB) *MaintenanceItemRepositoryImpl {
 	return &MaintenanceItemRepositoryImpl{db: db}
 }
-
 func (r *MaintenanceItemRepositoryImpl) Create(ctx context.Context, item *entities.MaintenanceItem) error {
 	return r.db.WithContext(ctx).Create(item).Error
 }
-
 func (r *MaintenanceItemRepositoryImpl) GetByID(ctx context.Context, id types.MSSQLUUID) (*entities.MaintenanceItem, error) {
 	var item entities.MaintenanceItem
 	err := r.db.WithContext(ctx).
@@ -32,15 +26,12 @@ func (r *MaintenanceItemRepositoryImpl) GetByID(ctx context.Context, id types.MS
 	}
 	return &item, nil
 }
-
 func (r *MaintenanceItemRepositoryImpl) Update(ctx context.Context, item *entities.MaintenanceItem) error {
 	return r.db.WithContext(ctx).Save(item).Error
 }
-
 func (r *MaintenanceItemRepositoryImpl) Delete(ctx context.Context, id types.MSSQLUUID) error {
 	return r.db.WithContext(ctx).Delete(&entities.MaintenanceItem{}, "id = ?", id).Error
 }
-
 func (r *MaintenanceItemRepositoryImpl) GetByWaitingListID(ctx context.Context, waitingListID types.MSSQLUUID) ([]*entities.MaintenanceItem, error) {
 	var items []*entities.MaintenanceItem
 	err := r.db.WithContext(ctx).
@@ -50,7 +41,6 @@ func (r *MaintenanceItemRepositoryImpl) GetByWaitingListID(ctx context.Context, 
 		Find(&items).Error
 	return items, err
 }
-
 func (r *MaintenanceItemRepositoryImpl) GetByStatus(ctx context.Context, waitingListID types.MSSQLUUID, status entities.MaintenanceItemStatus) ([]*entities.MaintenanceItem, error) {
 	var items []*entities.MaintenanceItem
 	err := r.db.WithContext(ctx).
@@ -60,7 +50,6 @@ func (r *MaintenanceItemRepositoryImpl) GetByStatus(ctx context.Context, waiting
 		Find(&items).Error
 	return items, err
 }
-
 func (r *MaintenanceItemRepositoryImpl) GetByType(ctx context.Context, waitingListID types.MSSQLUUID, itemType entities.MaintenanceItemType) ([]*entities.MaintenanceItem, error) {
 	var items []*entities.MaintenanceItem
 	err := r.db.WithContext(ctx).
@@ -70,7 +59,6 @@ func (r *MaintenanceItemRepositoryImpl) GetByType(ctx context.Context, waitingLi
 		Find(&items).Error
 	return items, err
 }
-
 func (r *MaintenanceItemRepositoryImpl) GetPendingApproval(ctx context.Context, waitingListID types.MSSQLUUID) ([]*entities.MaintenanceItem, error) {
 	var items []*entities.MaintenanceItem
 	err := r.db.WithContext(ctx).
@@ -81,27 +69,21 @@ func (r *MaintenanceItemRepositoryImpl) GetPendingApproval(ctx context.Context, 
 		Find(&items).Error
 	return items, err
 }
-
 func (r *MaintenanceItemRepositoryImpl) GetInitialItems(ctx context.Context, waitingListID types.MSSQLUUID) ([]*entities.MaintenanceItem, error) {
 	return r.GetByType(ctx, waitingListID, entities.MaintenanceItemTypeInitial)
 }
-
 func (r *MaintenanceItemRepositoryImpl) GetDiscoveredItems(ctx context.Context, waitingListID types.MSSQLUUID) ([]*entities.MaintenanceItem, error) {
 	return r.GetByType(ctx, waitingListID, entities.MaintenanceItemTypeDiscovered)
 }
-
 func (r *MaintenanceItemRepositoryImpl) CreateMany(ctx context.Context, items []*entities.MaintenanceItem) error {
 	return r.db.WithContext(ctx).Create(&items).Error
 }
-
 func (r *MaintenanceItemRepositoryImpl) UpdateStatus(ctx context.Context, id types.MSSQLUUID, status entities.MaintenanceItemStatus) error {
 	now := time.Now()
 	updates := map[string]interface{}{
 		"status":     status,
 		"updated_at": now,
 	}
-
-	// Set appropriate timestamp based on status
 	switch status {
 	case entities.MaintenanceItemStatusInspected:
 		updates["inspected_at"] = now
@@ -110,13 +92,11 @@ func (r *MaintenanceItemRepositoryImpl) UpdateStatus(ctx context.Context, id typ
 	case entities.MaintenanceItemStatusCompleted:
 		updates["completed_at"] = now
 	}
-
 	return r.db.WithContext(ctx).
 		Model(&entities.MaintenanceItem{}).
 		Where("id = ?", id).
 		Updates(updates).Error
 }
-
 func (r *MaintenanceItemRepositoryImpl) ApproveItems(ctx context.Context, ids []types.MSSQLUUID) error {
 	now := time.Now()
 	return r.db.WithContext(ctx).
@@ -128,7 +108,6 @@ func (r *MaintenanceItemRepositoryImpl) ApproveItems(ctx context.Context, ids []
 			"updated_at":  now,
 		}).Error
 }
-
 func (r *MaintenanceItemRepositoryImpl) RejectItems(ctx context.Context, ids []types.MSSQLUUID) error {
 	now := time.Now()
 	return r.db.WithContext(ctx).
@@ -139,13 +118,11 @@ func (r *MaintenanceItemRepositoryImpl) RejectItems(ctx context.Context, ids []t
 			"updated_at": now,
 		}).Error
 }
-
 func (r *MaintenanceItemRepositoryImpl) GetTotalCost(ctx context.Context, waitingListID types.MSSQLUUID) (estimated float64, actual float64, err error) {
 	type Result struct {
 		TotalEstimated float64
 		TotalActual    float64
 	}
-
 	var result Result
 	err = r.db.WithContext(ctx).
 		Model(&entities.MaintenanceItem{}).
@@ -154,16 +131,13 @@ func (r *MaintenanceItemRepositoryImpl) GetTotalCost(ctx context.Context, waitin
 			waitingListID,
 			[]entities.MaintenanceItemStatus{entities.MaintenanceItemStatusRejected, entities.MaintenanceItemStatusSkipped}).
 		Scan(&result).Error
-
 	return result.TotalEstimated, result.TotalActual, err
 }
-
 func (r *MaintenanceItemRepositoryImpl) CountByStatus(ctx context.Context, waitingListID types.MSSQLUUID) (map[string]int, error) {
 	type StatusCount struct {
 		Status string
 		Count  int
 	}
-
 	var results []StatusCount
 	err := r.db.WithContext(ctx).
 		Model(&entities.MaintenanceItem{}).
@@ -171,15 +145,13 @@ func (r *MaintenanceItemRepositoryImpl) CountByStatus(ctx context.Context, waiti
 		Where("waiting_list_id = ?", waitingListID).
 		Group("status").
 		Scan(&results).Error
-
 	if err != nil {
 		return nil, err
 	}
-
 	counts := make(map[string]int)
 	for _, r := range results {
 		counts[r.Status] = r.Count
 	}
-
 	return counts, nil
 }
+

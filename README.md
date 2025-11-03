@@ -444,23 +444,40 @@ This will start:
 ## Configuration
 
 The application supports configuration via:
-- Environment variables (`.env` file)
+- Environment variables (`.env` file for local development)
 - YAML configuration files (`configs/config.yaml`)
-- Command line arguments
+- System environment variables (for production deployment)
 
 ### Environment Variables
 
+For **local development**, create a `.env` file in the project root (see `.env.example`):
+
 ```env
+# Application Configuration
+GIN_MODE=release
 SERVER_PORT=8080
-SERVER_HOST=localhost
-DB_HOST=localhost
+
+# Azure SQL Database Configuration
+DB_HOST=your-server.database.windows.net
 DB_PORT=1433
-DB_USER=sa
-DB_PASSWORD=your_password
-DB_DATABASE=go_crud
-JWT_SECRET=your-jwt-secret
+DB_USER=your-username
+DB_PASSWORD=your-password
+DB_DATABASE=your-database
+
+# JWT Configuration
+JWT_SECRET=your-super-secure-jwt-secret-at-least-32-characters-long
 JWT_EXPIRATION=24
+
+# Redis Configuration (Optional)
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_PASSWORD=your-redis-password
 ```
+
+For **production deployment** (Railway, Docker, etc.):
+- Set these variables in your platform's environment configuration
+- The application will automatically use system environment variables when no `.env` file is present
+- This is the recommended approach for production deployments
 
 ## Development
 

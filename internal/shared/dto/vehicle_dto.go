@@ -1,5 +1,4 @@
 package dto
-
 type CreateVehicleRequest struct {
 	Brand        string `json:"brand" validate:"required"`
 	Model        string `json:"model" validate:"required"`
@@ -8,7 +7,6 @@ type CreateVehicleRequest struct {
 	VIN          string `json:"vin"`
 	Mileage      int    `json:"mileage" validate:"min=0"`
 }
-
 type UpdateVehicleRequest struct {
 	Brand        string `json:"brand"`
 	Model        string `json:"model"`
@@ -17,7 +15,6 @@ type UpdateVehicleRequest struct {
 	VIN          string `json:"vin"`
 	Mileage      int    `json:"mileage" validate:"omitempty,min=0"`
 }
-
 type VehicleResponse struct {
 	ID           string `json:"id"`
 	OwnerID      string `json:"owner_id"`
@@ -30,3 +27,4 @@ type VehicleResponse struct {
 	CreatedAt    string `json:"created_at"`
 	UpdatedAt    string `json:"updated_at"`
 }
+

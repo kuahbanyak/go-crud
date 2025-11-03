@@ -49,3 +49,5 @@ temp/
 
 # Docker volumes
 docker-data/
+
+.env
