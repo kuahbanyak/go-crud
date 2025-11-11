@@ -1,15 +1,19 @@
 package mssql
+
 import (
 	"context"
 	"errors"
+
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"gorm.io/gorm"
 )
+
 type settingRepository struct {
 	db *gorm.DB
 }
+
 func NewSettingRepository(db *gorm.DB) repositories.SettingRepository {
 	return &settingRepository{db: db}
 }
@@ -71,4 +75,3 @@ func (r *settingRepository) SeedDefaults(ctx context.Context) error {
 	}
 	return nil
 }
-

@@ -1,15 +1,19 @@
 package mssql
+
 import (
 	"context"
 	"time"
+
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"gorm.io/gorm"
 )
+
 type waitingListRepository struct {
 	db *gorm.DB
 }
+
 func NewWaitingListRepository(db *gorm.DB) repositories.WaitingListRepository {
 	return &waitingListRepository{db: db}
 }
@@ -102,4 +106,3 @@ func (r *waitingListRepository) List(ctx context.Context, limit, offset int) ([]
 		Find(&waitingLists).Error
 	return waitingLists, err
 }
-

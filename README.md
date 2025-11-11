@@ -1,551 +1,749 @@
-# 🚗 Car Maintenance Service API
+# Car Maintenance Service Management System
 
-A production-ready REST API built with **Clean Architecture** and **Domain-Driven Design** principles for managing car maintenance services with queue management, maintenance tracking, and complete customer service workflow.
+A comprehensive RESTful API service for managing car maintenance operations, built with Go using Clean Architecture principles. This system handles customer queuing, vehicle management, maintenance tracking, and service progress monitoring.
 
-![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Go Version](https://img.shields.io/badge/go-1.21+-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
+## 🚀 Features
 
-## ✨ Features
+### Core Functionality
+- **User Management**: Registration, authentication, and role-based access control (Customer, Mechanic, Admin)
+- **Vehicle Management**: Track customer vehicles with detailed information
+- **Queue Management**: Digital waiting list system with real-time status updates
+- **Maintenance Items**: Track maintenance tasks with approval workflow
+- **Service Progress**: Real-time service progress tracking for customers
+- **Product Management**: Inventory management for parts and products
+- **Settings Management**: Configurable shop settings and business hours
+- **Notification System**: Event-driven notifications via RabbitMQ
 
-- 🔐 **JWT Authentication** - Secure token-based authentication
-- 👥 **Role-Based Access Control** - Admin, Mechanic, and Customer roles
-- 🚙 **Vehicle Management** - Track customer vehicles and service history
-- 📋 **Smart Queue System** - Automated ticket management with daily limits
-- 🔧 **Maintenance Tracking** - Initial services + discovered issues workflow
-- ✅ **Customer Approval Flow** - Customers approve additional work before proceeding
-- ⏰ **Real-time Progress Tracking** - Customers see their queue position and wait time
-- 🛡️ **Rate Limiting** - 100 requests/minute per IP
-- 📊 **Request Tracing** - Unique ID for every request
-- 🔒 **Production-Safe** - Error sanitization, SQL logging control
-- 📅 **Automated Jobs** - Daily cleanup of old queue entries
-- ⚙️ **Configurable Settings** - Dynamic shop configuration
+### Technical Features
+- Clean Architecture with clear separation of concerns
+- RESTful API with consistent response format
+- JWT-based authentication
+- Role-based authorization (Admin, Mechanic, Customer)
+- Request ID tracking for debugging
+- Rate limiting and request size validation
+- CORS support
+- Comprehensive logging
+- Database migrations with GORM
+- Background job scheduling
+- Event-driven architecture with RabbitMQ
+- Docker containerization
 
-## 📚 Documentation
+## 📋 Prerequisites
 
-- **[Quick Start Guide](QUICK_START.md)** - Get up and running in 5 minutes
-- **[API Documentation](API_DOCUMENTATION.md)** - Complete API reference with examples
-- **[Code Review & Analysis](CODE_REVIEW_ANALYSIS.md)** - Quality assessment and recommendations
-- **[Implementation Summary](IMPLEMENTATION_SUMMARY.md)** - Recent improvements and fixes
-
-## 🚀 Quick Start
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/yourusername/go-crud.git
-cd go-crud
-
-# 2. Install dependencies
-go mod download
-
-# 3. Configure environment (create .env file)
-cp .env.example .env
-# Edit .env with your database credentials
-
-# 4. Build and run
-go build -o api.exe ./cmd/api
-./api.exe
-```
-
-Server will start on `http://localhost:8080`
-
-See [QUICK_START.md](QUICK_START.md) for detailed instructions.
-
-## 🏗️ Architecture
-
-Built with **Clean Architecture** principles:
-
-```
-┌─────────────────────────────────────┐
-│         HTTP Handlers               │  ← Adapters (Controllers)
-├─────────────────────────────────────┤
-│         Use Cases                   │  ← Application Business Rules
-├─────────────────────────────────────┤
-│    Domain (Entities & Services)     │  ← Enterprise Business Rules
-├─────────────────────────────────────┤
-│   Infrastructure (DB, Config, etc)  │  ← Frameworks & Drivers
-└─────────────────────────────────────┘
-```
-
-### Key Design Patterns
-- **Repository Pattern** - Data access abstraction
-- **Dependency Injection** - Loose coupling
-- **Middleware Chain** - Request/response processing
-- **Clean Architecture** - Separation of concerns
-
-## Project Structure
-
-```
-project-name/
-├── cmd/
-│   └── api/
-│       └── main.go                 # Application entry point
-├── internal/
-│   ├── domain/                     # Business entities and rules
-│   │   ├── entities/               # Core business entities
-│   │   │   ├── user.go
-│   │   │   ├── vehicle.go
-│   │   │   ├── booking.go
-│   │   │   ├── invoice.go
-│   │   │   └── part.go
-│   │   ├── repositories/           # Repository interfaces
-│   │   │   ├── user_repository.go
-│   │   │   ├── vehicle_repository.go
-│   │   │   ├── booking_repository.go
-│   │   │   └── inventory_repository.go
-│   │   └── services/               # Domain service interfaces
-│   │       ├── user_service.go
-│   │       └── booking_service.go
-│   ├── usecases/                   # Application business rules
-│   │   ├── user_usecase.go
-│   │   └── booking_usecase.go
-│   ├── adapters/
-│   │   ├── handlers/               # HTTP handlers (controllers)
-│   │   │   ├── http/
-│   │   │   │   ├── user_handler.go
-│   │   │   │   ├── booking_handler.go
-│   │   │   │   └── middleware/
-│   │   │   │       ├── auth.go
-│   │   │   │       ├── cors.go
-│   │   │   │       └── logging.go
-│   │   └── repositories/           # Repository implementations
-│   │       └── mssql/
-│   │           ├── user_repository.go
-│   │           └── booking_repository.go
-│   ├── infrastructure/             # Framework and drivers
-│   │   ├── database/
-│   │   │   └── mssql.go
-│   │   ├── config/
-│   │   │   └── config.go
-│   │   ├── logger/
-│   │   │   └── logger.go
-│   │   └── server/
-│   │       └── http.go
-│   └── shared/                     # Shared utilities
-│       ├── utils/                  # Utility functions
-│       ├── dto/                    # Data Transfer Objects
-│       ├── constants/              # Application constants
-│       └── types/                  # Custom types
-├── pkg/                            # Public libraries
-│   └── response/                   # Response utilities
-├── tests/                          # Integration tests
-│   └── integration/
-└── docs/                           # Documentation
-    ├── API_DOCUMENTATION.md
-    ├── CODE_REVIEW_ANALYSIS.md
-    ├── IMPLEMENTATION_SUMMARY.md
-    └── QUICK_START.md
-```
-
-## 🔑 Core Workflow
-
-### Customer Service Flow
-
-```mermaid
-graph TD
-    A[Customer Books Service] --> B[Selects Initial Services]
-    B --> C[Gets Queue Number]
-    C --> D[Waits in Queue]
-    D --> E[Mechanic Starts Service]
-    E --> F[Mechanic Inspects Vehicle]
-    F --> G{Issues Found?}
-    G -->|Yes| H[Mechanic Adds Discovered Items]
-    H --> I[Customer Reviews & Approves]
-    I --> J[Mechanic Completes Work]
-    G -->|No| J
-    J --> K[Service Complete]
-```
-
-## 🔐 Security Features
-
-- ✅ **JWT Authentication** with configurable expiration
-- ✅ **Role-Based Access Control** (RBAC)
-- ✅ **Rate Limiting** (100 req/min per IP)
-- ✅ **Request Size Limits** (10MB max)
-- ✅ **SQL Injection Protection** (parameterized queries)
-- ✅ **Error Sanitization** (production mode)
-- ✅ **CORS Support** with configurable origins
-- ✅ **Request ID Tracing** for audit trails
+- **Go** 1.24 or higher
+- **SQL Server** 2022 or compatible
+- **RabbitMQ** (for message queuing)
+- **Docker & Docker Compose** (optional, for containerized deployment)
 
 ## 🛠️ Tech Stack
 
-| Component | Technology |
-|-----------|-----------|
-| Language | Go 1.21+ |
-| Web Framework | Gorilla Mux |
-| Database | Microsoft SQL Server |
-| ORM | GORM |
-| Authentication | JWT (golang-jwt) |
-| Job Scheduler | gocron v2 |
-| Configuration | godotenv |
-| Logging | Custom logger (structured) |
+### Backend
+- **Go** 1.24
+- **Gorilla Mux** - HTTP router
+- **GORM** - ORM library
+- **JWT** - Authentication
+- **Bcrypt** - Password hashing
+- **RabbitMQ** - Message broker
+- **GoCron** - Job scheduling
 
-## 📋 API Endpoints
+### Database
+- **Microsoft SQL Server** 2022
 
-### Authentication
-- `POST /api/v1/auth/register` - Register new customer
-- `POST /api/v1/auth/login` - Login and get JWT token
-- `POST /api/v1/auth/refresh` - Refresh expired token
+### Infrastructure
+- **Docker** - Containerization
+- **Docker Compose** - Multi-container orchestration
 
-### Vehicle Management
-- `GET /api/v1/vehicles` - List my vehicles
-- `POST /api/v1/vehicles` - Add new vehicle
-- `PUT /api/v1/vehicles/{id}` - Update vehicle
-- `DELETE /api/v1/vehicles/{id}` - Remove vehicle
+## 📁 Project Structure
 
-### Queue Management
-- `POST /api/v1/waiting-list/take` - Book service and get queue number
-- `GET /api/v1/waiting-list/my-queue` - View my queue entries
-- `GET /api/v1/waiting-list/{id}/progress` - Check service progress
-- `PUT /api/v1/waiting-list/{id}/cancel` - Cancel booking
-- `GET /api/v1/waiting-list/availability` - Check available slots
-
-### Maintenance Items
-- `POST /api/v1/maintenance/waiting-list/{id}/items` - Add initial services
-- `GET /api/v1/maintenance/waiting-list/{id}/items` - List all items
-- `GET /api/v1/maintenance/waiting-list/{id}/inspection-summary` - Get inspection details
-- `POST /api/v1/maintenance/items/approve` - Approve/reject discovered items
-
-### Admin Operations
-- `PUT /api/v1/admin/waiting-list/{id}/call` - Call next customer
-- `PUT /api/v1/admin/waiting-list/{id}/start` - Start service
-- `PUT /api/v1/admin/waiting-list/{id}/complete` - Complete service
-- `POST /api/v1/admin/maintenance/items/discovered` - Add discovered issue
-
-**[See full API documentation →](API_DOCUMENTATION.md)**
-
-## 🧪 Testing
-
-```bash
-# Run unit tests
-go test ./...
-
-# Run with coverage
-go test -cover ./...
-
-# Run specific test
-go test ./internal/usecases -v
+```
+go-crud/
+├── cmd/
+│   ├── api/                    # API server entry point
+│   └── worker/                 # Background worker entry point
+├── configs/                    # Configuration files
+│   ├── config.yaml
+│   └── config.prod.yaml
+├── internal/
+│   ├── adapters/              # External adapters
+│   │   ├── handlers/          # HTTP handlers
+│   │   │   └── http/
+│   │   │       ├── middleware/  # HTTP middleware
+│   │   │       ├── *_handler.go # Route handlers
+│   │   ├── repositories/      # Data repositories
+│   │   │   └── mssql/
+│   │   └── external/          # External service clients
+│   │       ├── email/
+│   │       └── payment/
+│   ├── domain/                # Domain layer
+│   │   ├── entities/          # Domain entities
+│   │   ├── repositories/      # Repository interfaces
+│   │   └── services/          # Domain services
+│   ├── infrastructure/        # Infrastructure layer
+│   │   ├── config/            # Config management
+│   │   ├── database/          # Database connection
+│   │   ├── logger/            # Logging
+│   │   ├── messaging/         # RabbitMQ integration
+│   │   ├── scheduler/         # Job scheduler
+│   │   └── server/            # HTTP server
+│   ├── shared/                # Shared utilities
+│   │   ├── constants/         # Application constants
+│   │   ├── dto/               # Data transfer objects
+│   │   ├── types/             # Custom types
+│   │   └── utils/             # Utility functions
+│   └── usecases/              # Business logic
+├── pkg/                       # Public packages
+│   └── response/              # HTTP response utilities
+├── tests/                     # Tests
+│   ├── mocks/                 # Mock implementations
+│   └── unit/                  # Unit tests
+├── docker-compose.yml         # Docker composition
+├── Dockerfile                 # API container
+├── Dockerfile.worker          # Worker container
+└── go.mod                     # Go modules
 ```
 
-## 📦 Deployment
+## 🚦 Getting Started
 
-### Docker
+### Installation
 
+1. **Clone the repository**
 ```bash
-# Build image
-docker build -t car-maintenance-api .
-
-# Run container
-docker run -p 8080:8080 --env-file .env car-maintenance-api
+git clone https://github.com/kuahbanyak/go-crud.git
+cd go-crud
 ```
 
-### Docker Compose
-
+2. **Copy environment configuration**
 ```bash
-# Start all services (API + Database)
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
+cp .env.example .env
 ```
 
-### Manual Deployment
+3. **Configure environment variables**
 
-```bash
-# Build for production
-GIN_MODE=release go build -o api ./cmd/api
-
-# Run
-./api
-```
-
-## ⚙️ Configuration
-
-Environment variables (`.env` file):
-
+Edit `.env` file with your settings:
 ```env
-# Server
-PORT=8080
-GIN_MODE=debug                    # or 'release' for production
+# Server Configuration
+SERVER_PORT=8080
+GIN_MODE=debug
 
-# Database
+# Database Configuration
 DB_HOST=localhost
 DB_PORT=1433
 DB_USER=sa
-DB_PASSWORD=YourPassword
-DB_DATABASE=car_maintenance_db
+DB_PASSWORD=YourStrong@Passw0rd
+DB_DATABASE=gocrud
 
-# JWT
-JWT_SECRET=your-secret-key-here
-JWT_EXPIRATION=24                 # hours
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_EXPIRATION=24
 
-# Optional
-RAILWAY_ENVIRONMENT=production    # Enables production mode
+# RabbitMQ Configuration
+RABBITMQ_HOST=localhost
+RABBITMQ_PORT=5672
+RABBITMQ_USER=admin
+RABBITMQ_PASS=rabbitmq_secure_password_123
 ```
 
-## 📊 Monitoring & Observability
+### Running with Docker Compose (Recommended)
 
-### Request Tracing
-Every request gets a unique ID in the `X-Request-ID` header for tracing across logs.
+```bash
+docker-compose up -d
+```
 
-### Logging
-- **Development:** All requests logged with full details
-- **Production:** Only errors and slow requests (>1s) logged
-- All logs include Request ID for correlation
+This will start:
+- API Server on port 8081
+- SQL Server on port 1433
+- RabbitMQ on port 5672 (Management UI: http://localhost:15672)
+- Notification Worker
+
+### Running Locally
+
+1. **Install dependencies**
+```bash
+go mod download
+```
+
+2. **Ensure SQL Server and RabbitMQ are running**
+
+3. **Run database migrations** (GORM auto-migrate will run on startup)
+
+4. **Start the API server**
+```bash
+go run cmd/api/main.go
+```
+
+5. **Start the worker (optional, in separate terminal)**
+```bash
+go run cmd/worker/main.go
+```
+
+The API will be available at `http://localhost:8080`
+
+## 📚 API Documentation
+
+### Base URL
+```
+http://localhost:8080/api/v1
+```
+
+### Health Check
+```http
+GET /health
+```
+
+### Authentication Endpoints
+
+#### Register
+```http
+POST /api/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password123",
+  "name": "John Doe",
+  "phone": "08123456789",
+  "role": "customer"
+}
+```
+
+#### Login
+```http
+POST /api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
+Response:
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIs...",
+    "user": {
+      "id": "uuid",
+      "email": "user@example.com",
+      "name": "John Doe",
+      "role": "customer"
+    }
+  }
+}
+```
+
+#### Refresh Token
+```http
+POST /api/v1/auth/refresh
+Authorization: Bearer {token}
+```
+
+### User Profile Endpoints
+
+#### Get Profile
+```http
+GET /api/v1/users/profile
+Authorization: Bearer {token}
+```
+
+#### Update Profile
+```http
+PUT /api/v1/users/profile
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "name": "Jane Doe",
+  "phone": "08123456789"
+}
+```
+
+### Vehicle Management
+
+#### Create Vehicle
+```http
+POST /api/v1/vehicles
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "license_plate": "B1234XYZ",
+  "brand": "Toyota",
+  "model": "Avanza",
+  "year": 2022,
+  "color": "Silver"
+}
+```
+
+#### Get My Vehicles
+```http
+GET /api/v1/vehicles
+Authorization: Bearer {token}
+```
+
+#### Get Vehicle by ID
+```http
+GET /api/v1/vehicles/{id}
+Authorization: Bearer {token}
+```
+
+#### Update Vehicle
+```http
+PUT /api/v1/vehicles/{id}
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "color": "Black",
+  "year": 2022
+}
+```
+
+#### Delete Vehicle
+```http
+DELETE /api/v1/vehicles/{id}
+Authorization: Bearer {token}
+```
+
+### Waiting List / Queue Management
+
+#### Take Queue Number
+```http
+POST /api/v1/waiting-list/take
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "vehicle_id": "uuid",
+  "service_date": "2025-11-15",
+  "estimated_time": 120,
+  "notes": "Oil change and tire rotation"
+}
+```
+
+#### Get My Queue
+```http
+GET /api/v1/waiting-list/my-queue
+Authorization: Bearer {token}
+```
+
+#### Get Today's Queue
+```http
+GET /api/v1/waiting-list/today
+Authorization: Bearer {token}
+```
+
+#### Get Queue by Date
+```http
+GET /api/v1/waiting-list/date?date=2025-11-15
+Authorization: Bearer {token}
+```
+
+#### Get Queue by Number
+```http
+GET /api/v1/waiting-list/number/{number}
+Authorization: Bearer {token}
+```
+
+#### Check Availability
+```http
+GET /api/v1/waiting-list/availability?date=2025-11-15
+Authorization: Bearer {token}
+```
+
+#### Cancel Queue
+```http
+PUT /api/v1/waiting-list/{id}/cancel
+Authorization: Bearer {token}
+```
+
+#### Get Service Progress
+```http
+GET /api/v1/waiting-list/{id}/progress
+Authorization: Bearer {token}
+```
+
+### Maintenance Items
+
+#### Create Initial Maintenance Items
+```http
+POST /api/v1/maintenance/waiting-list/{waiting_list_id}/items
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "category": "Engine",
+      "name": "Oil Change",
+      "description": "Change engine oil",
+      "estimated_cost": 150000,
+      "estimated_time": 30
+    }
+  ]
+}
+```
+
+#### Get Items by Waiting List
+```http
+GET /api/v1/maintenance/waiting-list/{waiting_list_id}/items
+Authorization: Bearer {token}
+```
+
+#### Get Inspection Summary
+```http
+GET /api/v1/maintenance/waiting-list/{waiting_list_id}/inspection-summary
+Authorization: Bearer {token}
+```
+
+#### Approve/Reject Maintenance Items
+```http
+POST /api/v1/maintenance/items/approve
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "item_ids": ["uuid1", "uuid2"],
+  "approve": true,
+  "notes": "Approved all items"
+}
+```
+
+### Products
+
+#### Get All Products
+```http
+GET /api/v1/products
+```
+
+#### Get Product by ID
+```http
+GET /api/v1/products/{id}
+```
+
+### Settings
+
+#### Get Public Settings
+```http
+GET /api/v1/settings/public
+Authorization: Bearer {token}
+```
+
+### Admin Endpoints
+
+All admin endpoints require `Authorization: Bearer {admin_token}` and admin role.
+
+#### Waiting List Management
+```http
+PUT /api/v1/admin/waiting-list/{id}/call       # Call customer
+PUT /api/v1/admin/waiting-list/{id}/start      # Start service
+PUT /api/v1/admin/waiting-list/{id}/complete   # Complete service
+PUT /api/v1/admin/waiting-list/{id}/no-show    # Mark no-show
+```
+
+#### Maintenance Items (Mechanic/Admin)
+```http
+POST /api/v1/admin/maintenance/items/discovered  # Add discovered issue
+PUT /api/v1/admin/maintenance/items/{id}         # Update item
+PUT /api/v1/admin/maintenance/items/{id}/complete # Complete item
+DELETE /api/v1/admin/maintenance/items/{id}      # Delete item
+```
+
+#### Product Management
+```http
+POST /api/v1/admin/products           # Create product
+PUT /api/v1/admin/products/{id}       # Update product
+PATCH /api/v1/admin/products/{id}/stock # Update stock
+DELETE /api/v1/admin/products/{id}    # Delete product
+```
+
+#### User Management
+```http
+GET /api/v1/users                     # Get all users
+GET /api/v1/users/{id}                # Get user by ID
+PUT /api/v1/users/{id}                # Update user
+DELETE /api/v1/users/{id}             # Delete user
+```
+
+#### Settings Management
+```http
+GET /api/v1/admin/settings                    # Get all settings
+POST /api/v1/admin/settings                   # Create setting
+GET /api/v1/admin/settings/category/{category} # Get by category
+GET /api/v1/admin/settings/key/{key}          # Get by key
+PUT /api/v1/admin/settings/key/{key}          # Update setting
+DELETE /api/v1/admin/settings/{id}            # Delete setting
+```
+
+#### Vehicle Management (Admin)
+```http
+GET /api/v1/admin/vehicles            # Get all vehicles
+```
+
+## 🔐 Authentication & Authorization
+
+### Roles
+- **Customer**: Can manage their own vehicles, take queue numbers, view progress
+- **Mechanic**: Can update maintenance items, mark service progress
+- **Admin**: Full access to all operations
+
+### JWT Token
+Include the JWT token in the Authorization header:
+```
+Authorization: Bearer {your-jwt-token}
+```
+
+## 📊 Response Format
+
+### Success Response
+```json
+{
+  "success": true,
+  "message": "Operation successful",
+  "data": {
+    ...
+  }
+}
+```
+
+### Error Response
+```json
+{
+  "success": false,
+  "message": "Error description",
+  "error": "Detailed error message"
+}
+```
+
+## 🧪 Testing
+
+### Run Unit Tests
+```bash
+go test ./tests/unit/... -v
+```
+
+### Run All Tests
+```bash
+go test ./... -v
+```
+
+### Run with Coverage
+```bash
+go test ./... -cover
+```
+
+## 🐳 Docker Commands
+
+### Build and Run
+```bash
+docker-compose up --build
+```
+
+### Stop Services
+```bash
+docker-compose down
+```
+
+### View Logs
+```bash
+docker-compose logs -f go-crud-api
+docker-compose logs -f notification-worker
+```
+
+### Rebuild Specific Service
+```bash
+docker-compose up --build go-crud-api
+```
+
+## 📦 Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| SERVER_PORT | HTTP server port | 8080 |
+| GIN_MODE | Gin mode (debug/release) | debug |
+| LOG_LEVEL | Logging level | info |
+| DB_HOST | Database host | localhost |
+| DB_PORT | Database port | 1433 |
+| DB_USER | Database user | sa |
+| DB_PASSWORD | Database password | - |
+| DB_DATABASE | Database name | gocrud |
+| JWT_SECRET | JWT secret key | - |
+| JWT_EXPIRATION | JWT expiration (hours) | 24 |
+| RABBITMQ_HOST | RabbitMQ host | localhost |
+| RABBITMQ_PORT | RabbitMQ port | 5672 |
+| RABBITMQ_USER | RabbitMQ username | admin |
+| RABBITMQ_PASS | RabbitMQ password | - |
+
+## 🔧 Configuration
+
+### Database Connection
+Configure in `.env` or `configs/config.yaml`:
+```yaml
+database:
+  host: "localhost"
+  port: "1433"
+  user: "sa"
+  password: "YourPassword"
+  database: "gocrud"
+```
+
+### JWT Settings
+```yaml
+jwt:
+  secret: "your-secret-key"
+  expiration: 24  # hours
+```
+
+## 📈 Performance & Scalability
+
+- **Connection Pooling**: Configured max connections and idle connections
+- **Rate Limiting**: 100 requests per minute per IP
+- **Request Size Limit**: 10MB maximum
+- **Database Indexes**: Optimized for common queries
+- **Caching**: Ready for Redis integration
+- **Horizontal Scaling**: Stateless API design
+
+## 🛡️ Security Features
+
+- JWT-based authentication
+- Password hashing with bcrypt
+- Role-based access control (RBAC)
+- Request size validation
+- Rate limiting
+- CORS configuration
+- SQL injection protection (via GORM)
+- Environment variable for sensitive data
+
+## 🚀 Deployment
+
+### Deploy to Railway
+```bash
+# Railway will auto-detect Dockerfile
+railway up
+```
+
+### Deploy to Azure
+1. Push to Azure Container Registry
+2. Deploy to Azure App Service or AKS
+
+### Deploy to AWS
+1. Push to ECR
+2. Deploy to ECS or EKS
+
+## 📝 Database Schema
+
+### Main Tables
+- **users**: User accounts and authentication
+- **vehicles**: Customer vehicles
+- **waiting_lists**: Queue management
+- **maintenance_items**: Maintenance tasks and approvals
+- **products**: Parts and service inventory
+- **parts**: Part details
+- **invoices**: Billing information
+- **settings**: Application settings
+
+## 🔄 Architecture
+
+This service follows **Clean Architecture** principles:
+
+1. **Domain Layer**: Business entities and rules
+2. **Use Case Layer**: Application business logic
+3. **Interface Layer**: HTTP handlers and external adapters
+4. **Infrastructure Layer**: Database, messaging, logging
+
+### Design Patterns Used
+- Repository Pattern
+- Dependency Injection
+- Factory Pattern
+- Strategy Pattern
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 👥 Authors
+
+- **kuahbanyak** - *Initial work*
+
+## 🙏 Acknowledgments
+
+- Go community for excellent libraries
+- Clean Architecture by Robert C. Martin
+- Domain-Driven Design principles
+
+## 📞 Support
+
+For support and questions:
+- Create an issue on GitHub
+- Email: support@example.com
+
+## 🗺️ Roadmap
+
+- [ ] Add Redis caching
+- [ ] Implement WebSocket for real-time updates
+- [ ] Add payment gateway integration (Stripe)
+- [ ] Implement email notifications
+- [ ] Add SMS notifications
+- [ ] Mobile app integration
+- [ ] Advanced analytics dashboard
+- [ ] Multi-language support
+- [ ] Export reports (PDF/Excel)
+- [ ] Integration with third-party services
+
+## 📊 Monitoring
 
 ### Health Check
 ```bash
 curl http://localhost:8080/health
 ```
 
-## 🔄 Background Jobs
+### RabbitMQ Management
+Access RabbitMQ management UI:
+```
+http://localhost:15672
+Username: admin
+Password: rabbitmq_secure_password_123
+```
 
-### Daily Cleanup Job
-- **Schedule:** Every day at midnight (configurable)
-- **Function:** Removes old completed/canceled queue entries
-- **Retention:** 7 days (configurable via settings)
-- **Control:** Can be enabled/disabled via database settings
+## 🔍 Troubleshooting
 
-## 🤝 Contributing
+### Database Connection Issues
+- Verify SQL Server is running
+- Check connection string in `.env`
+- Ensure database exists
+- Verify firewall rules
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### RabbitMQ Connection Issues
+- Verify RabbitMQ is running
+- Check credentials in `.env`
+- Ensure port 5672 is accessible
 
-### Code Style
-- Follow Go conventions and best practices
-- Run `go fmt` before committing
-- Add tests for new features
-- Update documentation
+### Docker Issues
+```bash
+# Clean up and rebuild
+docker-compose down -v
+docker-compose up --build
+```
 
-## 📝 License
+## 📚 Additional Resources
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 👥 Authors
-
-- **Your Name** - Initial work
-
-## 🙏 Acknowledgments
-
-- Clean Architecture by Robert C. Martin
-- Domain-Driven Design principles
-- Go community for excellent packages
-
-## 📮 Support
-
-For bugs and feature requests, please create an issue on GitHub.
-
-For questions and discussions, please use GitHub Discussions.
+- [Go Documentation](https://golang.org/doc/)
+- [GORM Documentation](https://gorm.io/)
+- [Gorilla Mux](https://github.com/gorilla/mux)
+- [RabbitMQ Documentation](https://www.rabbitmq.com/documentation.html)
+- [Docker Documentation](https://docs.docker.com/)
 
 ---
 
-**Built with ❤️ using Go and Clean Architecture principles**
+**Built with ❤️ using Go**
 
-- **Clean Architecture**: Follows Uncle Bob's Clean Architecture principles
-- **UUID Primary Keys**: All entities use UUID with SQL Server `uniqueidentifier` type
-- **JWT Authentication**: Secure authentication with role-based access control
-- **Repository Pattern**: Interface-based repository pattern for data access
-- **Dependency Injection**: Proper dependency injection throughout the application
-- **Middleware Support**: CORS, logging, authentication middleware
-- **Docker Support**: Full Docker and Docker Compose support
-
-## UUID Implementation
-
-All models now use UUID with the following pattern:
-
-```go
-type Entity struct {
-    ID        uuid.UUID      `gorm:"type:uniqueidentifier;primary_key;default:newid()" json:"id"`
-    CreatedAt time.Time      `json:"created_at"`
-    UpdatedAt time.Time      `json:"updated_at"`
-    DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
-    // ... other fields
-}
-
-func (e *Entity) BeforeCreate(tx *gorm.DB) error {
-    if e.ID == uuid.Nil {
-        e.ID = uuid.New()
-    }
-    return nil
-}
-```
-
-## Getting Started
-
-### Prerequisites
-
-- Go 1.21+
-- SQL Server (or Docker)
-- Redis (optional, for caching)
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd go-crud
-```
-
-2. Copy environment variables:
-```bash
-cp .env.example .env
-```
-
-3. Update the `.env` file with your database and other configurations.
-
-4. Install dependencies:
-```bash
-make deps
-```
-
-5. Run database migrations:
-```bash
-make migrate
-```
-
-6. Build and run the application:
-```bash
-make build
-make run
-```
-
-### Using Docker
-
-1. Start with Docker Compose:
-```bash
-make docker-run
-```
-
-This will start:
-- SQL Server database
-- Redis cache
-- The Go API application
-
-## API Endpoints
-
-### Authentication
-- `POST /api/v1/auth/register` - Register a new user
-- `POST /api/v1/auth/login` - Login user
-
-### Users (Protected)
-- `GET /api/v1/users/profile` - Get user profile
-
-### Bookings (Protected)
-- `POST /api/v1/bookings` - Create a new booking
-- `GET /api/v1/bookings/:id` - Get booking by ID
-- `PUT /api/v1/bookings/:id/assign-mechanic` - Assign mechanic to booking
-
-## Configuration
-
-The application supports configuration via:
-- Environment variables (`.env` file for local development)
-- YAML configuration files (`configs/config.yaml`)
-- System environment variables (for production deployment)
-
-### Environment Variables
-
-For **local development**, create a `.env` file in the project root (see `.env.example`):
-
-```env
-# Application Configuration
-GIN_MODE=release
-SERVER_PORT=8080
-
-# Azure SQL Database Configuration
-DB_HOST=your-server.database.windows.net
-DB_PORT=1433
-DB_USER=your-username
-DB_PASSWORD=your-password
-DB_DATABASE=your-database
-
-# JWT Configuration
-JWT_SECRET=your-super-secure-jwt-secret-at-least-32-characters-long
-JWT_EXPIRATION=24
-
-# Redis Configuration (Optional)
-REDIS_HOST=redis
-REDIS_PORT=6379
-REDIS_PASSWORD=your-redis-password
-```
-
-For **production deployment** (Railway, Docker, etc.):
-- Set these variables in your platform's environment configuration
-- The application will automatically use system environment variables when no `.env` file is present
-- This is the recommended approach for production deployments
-
-## Development
-
-### Make Commands
-
-- `make build` - Build the application
-- `make run` - Run the application
-- `make test` - Run tests
-- `make clean` - Clean build artifacts
-- `make migrate` - Run database migrations
-- `make deps` - Install dependencies
-- `make docker-build` - Build Docker image
-- `make docker-run` - Run with Docker Compose
-- `make lint` - Run linter
-- `make fmt` - Format code
-
-### Project Layers
-
-1. **Domain Layer** (`internal/domain/`): Contains business entities, repository interfaces, and domain services
-2. **Use Cases Layer** (`internal/usecases/`): Contains application-specific business logic
-3. **Adapters Layer** (`internal/adapters/`): Contains handlers, repository implementations, and external service adapters
-4. **Infrastructure Layer** (`internal/infrastructure/`): Contains framework-specific code (database, server, config)
-5. **Shared Layer** (`internal/shared/`): Contains utilities, DTOs, and constants shared across layers
-
-### Clean Architecture Benefits
-
-- **Independence**: Each layer is independent and can be tested in isolation
-- **Testability**: Business logic can be tested without UI, database, or external services
-- **Flexibility**: Easy to swap implementations (database, UI, external services)
-- **Maintainability**: Clear separation of concerns makes the code easier to maintain
-
-## Testing
-
-Run all tests:
-```bash
-make test
-```
-
-Run specific test packages:
-```bash
-go test ./internal/usecases/...
-go test ./internal/adapters/repositories/...
-```
-
-## Deployment
-
-### Production Build
-
-```bash
-make build
-```
-
-### Docker Deployment
-
-```bash
-make docker-build
-docker tag go-crud-api:latest your-registry/go-crud-api:latest
-docker push your-registry/go-crud-api:latest
-```
-
-## Contributing
-
-1. Follow clean architecture principles
-2. Write tests for new features
-3. Use conventional commit messages
-4. Ensure all lints pass with `make lint`
-5. Format code with `make fmt`
-
-## License
-
-This project is licensed under the MIT License.

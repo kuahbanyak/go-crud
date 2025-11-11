@@ -9,13 +9,10 @@ import (
 	"github.com/kuahbanyak/go-crud/pkg/response"
 )
 
-// MaxRequestSize defines the maximum allowed request body size (10MB)
 const MaxRequestSize = 10 << 20 // 10MB
 
-// ValidateRequestSize middleware limits the size of incoming requests
 func ValidateRequestSize(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Only apply to requests with body
 		if r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH" {
 			r.Body = http.MaxBytesReader(w, r.Body, MaxRequestSize)
 		}
@@ -23,7 +20,6 @@ func ValidateRequestSize(next http.Handler) http.Handler {
 	})
 }
 
-// ValidateJSON middleware ensures the request body is valid JSON
 func ValidateJSON(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Only validate for requests with body
@@ -32,8 +28,6 @@ func ValidateJSON(next http.Handler) http.Handler {
 				response.Error(w, http.StatusBadRequest, "Content-Type must be application/json", nil)
 				return
 			}
-
-			// Try to decode to validate JSON structure
 			body, err := io.ReadAll(r.Body)
 			if err != nil {
 				response.Error(w, http.StatusBadRequest, "Failed to read request body", err)
@@ -47,7 +41,6 @@ func ValidateJSON(next http.Handler) http.Handler {
 				return
 			}
 
-			// Create a new reader with the body for the next handler
 			r.Body = io.NopCloser(bytes.NewBuffer(body))
 		}
 		next.ServeHTTP(w, r)

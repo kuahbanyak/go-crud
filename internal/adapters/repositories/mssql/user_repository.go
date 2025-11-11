@@ -1,15 +1,19 @@
 package mssql
+
 import (
 	"context"
 	"errors"
+
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"gorm.io/gorm"
 )
+
 type userRepository struct {
 	db *gorm.DB
 }
+
 func NewUserRepository(db *gorm.DB) repositories.UserRepository {
 	return &userRepository{db: db}
 }
@@ -71,4 +75,3 @@ func (r *userRepository) Count(ctx context.Context) (int, error) {
 	err := r.db.WithContext(ctx).Model(&entities.User{}).Count(&count).Error
 	return int(count), err
 }
-

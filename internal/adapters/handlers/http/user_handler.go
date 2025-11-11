@@ -1,8 +1,10 @@
 package http
+
 import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+
 	"github.com/gorilla/mux"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
@@ -10,9 +12,11 @@ import (
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/kuahbanyak/go-crud/pkg/response"
 )
+
 type UserHandler struct {
 	userUsecase *usecases.UserUsecase
 }
+
 func NewUserHandler(userUsecase *usecases.UserUsecase) *UserHandler {
 	return &UserHandler{
 		userUsecase: userUsecase,
@@ -240,4 +244,3 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 	response.Success(w, http.StatusOK, "User deleted successfully", nil)
 }
-

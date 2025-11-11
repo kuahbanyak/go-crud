@@ -46,7 +46,6 @@ func main() {
 
 	logger.Info("Database connected successfully")
 
-	// Initialize repositories
 	validator := utils.NewValidator()
 	authService := utils.NewJWTService(cfg.JWT.Secret, cfg.JWT.Expiration)
 	middleware.SetAuthService(authService)
@@ -57,7 +56,6 @@ func main() {
 	settingRepo := mssql.NewSettingRepository(db)
 	maintenanceItemRepo := mssql.NewMaintenanceItemRepository(db)
 
-	// Initialize use cases
 	settingUsecase := usecases.NewSettingUsecase(settingRepo)
 	userUsecase := usecases.NewUserUsecase(userRepo, authService)
 	productUsecase := usecases.NewProductUsecase(productRepo, validator)
@@ -65,7 +63,6 @@ func main() {
 	waitingListUsecase := usecases.NewWaitingListUsecase(waitingListRepo, vehicleRepo, userRepo, settingUsecase)
 	maintenanceItemUsecase := usecases.NewMaintenanceItemUsecase(maintenanceItemRepo, waitingListRepo, userRepo)
 
-	// Seed default settings if not exists
 	ctx := context.Background()
 	if err := settingRepo.SeedDefaults(ctx); err != nil {
 		logger.Error("Failed to seed default settings:", err)
@@ -73,7 +70,6 @@ func main() {
 		logger.Info("Default settings seeded successfully")
 	}
 
-	// Initialize handlers
 	userHandler := http.NewUserHandler(userUsecase)
 	productHandler := http.NewProductHandler(productUsecase)
 	waitingListHandler := http.NewWaitingListHandler(waitingListUsecase)
@@ -82,13 +78,11 @@ func main() {
 	maintenanceItemHandler := http.NewMaintenanceItemHandler(maintenanceItemUsecase)
 	srv := server.NewHTTPServer(cfg, userHandler, productHandler, waitingListHandler, settingHandler, vehicleHandler, maintenanceItemHandler)
 
-	// Initialize and start the job scheduler
 	sched, err := scheduler.NewScheduler()
 	if err != nil {
 		log.Fatal("Failed to create scheduler:", err)
 	}
 
-	// Register the daily cleanup job with settings support
 	dailyCleanupJob := jobs.NewDailyCleanupJob(waitingListRepo, settingUsecase)
 	if err := sched.RegisterJob(dailyCleanupJob); err != nil {
 		log.Fatal("Failed to register daily cleanup job:", err)
@@ -98,11 +92,9 @@ func main() {
 	sched.Start()
 	logger.Info("Job scheduler started successfully")
 
-	// Handle graceful shutdown
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
-	// Start server in a goroutine
 	go func() {
 		logger.Info("Starting server on port", cfg.Server.Port)
 		if err := srv.Start(); err != nil {
@@ -110,11 +102,8 @@ func main() {
 		}
 	}()
 
-	// Wait for shutdown signal
-	<-stop
 	logger.Info("Shutting down gracefully...")
 
-	// Stop scheduler
 	if err := sched.Stop(); err != nil {
 		logger.Error("Failed to stop scheduler:", err)
 	}

@@ -1,17 +1,21 @@
 package jobs
+
 import (
 	"context"
 	"fmt"
 	"time"
+
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
 	"github.com/kuahbanyak/go-crud/internal/infrastructure/logger"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 )
+
 type DailyCleanupJob struct {
 	waitingListRepo repositories.WaitingListRepository
 	settingUsecase  *usecases.SettingUsecase
 }
+
 func NewDailyCleanupJob(waitingListRepo repositories.WaitingListRepository, settingUsecase *usecases.SettingUsecase) *DailyCleanupJob {
 	return &DailyCleanupJob{
 		waitingListRepo: waitingListRepo,
@@ -117,4 +121,3 @@ func (j *DailyCleanupJob) enforceTicketLimit(ctx context.Context, today time.Tim
 	}
 	return nil
 }
-

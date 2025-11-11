@@ -1,10 +1,12 @@
 package http
+
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 	"time"
+
 	"github.com/gorilla/mux"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
@@ -12,9 +14,11 @@ import (
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/kuahbanyak/go-crud/pkg/response"
 )
+
 type WaitingListHandler struct {
 	waitingListUsecase *usecases.WaitingListUsecase
 }
+
 func NewWaitingListHandler(waitingListUsecase *usecases.WaitingListUsecase) *WaitingListHandler {
 	return &WaitingListHandler{
 		waitingListUsecase: waitingListUsecase,
@@ -369,4 +373,3 @@ func (h *WaitingListHandler) buildDetailResponse(wl *entities.WaitingList) dto.W
 	}
 	return resp
 }
-

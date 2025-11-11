@@ -1,16 +1,20 @@
 package http
+
 import (
 	"encoding/json"
 	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/kuahbanyak/go-crud/pkg/response"
 )
+
 type MaintenanceItemHandler struct {
 	maintenanceItemUsecase *usecases.MaintenanceItemUsecase
 }
+
 func NewMaintenanceItemHandler(maintenanceItemUsecase *usecases.MaintenanceItemUsecase) *MaintenanceItemHandler {
 	return &MaintenanceItemHandler{
 		maintenanceItemUsecase: maintenanceItemUsecase,
@@ -33,7 +37,7 @@ func (h *MaintenanceItemHandler) CreateInitialItems(w http.ResponseWriter, r *ht
 		response.Error(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
 	}
-	_ = customerID // Will be validated in usecase
+	_ = customerID
 	if err := h.maintenanceItemUsecase.CreateInitialItems(r.Context(), waitingListID, requests); err != nil {
 		response.Error(w, http.StatusInternalServerError, "Failed to create maintenance items", err)
 		return
@@ -163,4 +167,3 @@ func (h *MaintenanceItemHandler) DeleteItem(w http.ResponseWriter, r *http.Reque
 	}
 	response.Success(w, http.StatusOK, "Maintenance item deleted successfully", nil)
 }
-

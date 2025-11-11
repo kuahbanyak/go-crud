@@ -42,7 +42,6 @@ func NewHTTPServer(
 	router.Use(middleware.ValidateRequestSize) // 3. Limit request size
 	router.Use(middleware.Logging)             // 4. Log requests (will include request ID)
 
-	// Rate limiting (100 requests per minute per IP)
 	rateLimiter := middleware.NewRateLimiter(100, time.Minute)
 	router.Use(middleware.RateLimit(rateLimiter))
 
@@ -65,7 +64,6 @@ func NewHTTPServer(
 		maintenanceItemHandler: maintenanceItemHandler,
 	}
 
-	// Setup routes
 	httpServer.setupRoutes()
 
 	return httpServer

@@ -1,12 +1,16 @@
 package middleware
+
 import (
 	"context"
 	"net/http"
 	"strings"
+
 	"github.com/kuahbanyak/go-crud/internal/domain/services"
 	"github.com/kuahbanyak/go-crud/pkg/response"
 )
+
 var authService services.AuthService
+
 func SetAuthService(service services.AuthService) {
 	authService = service
 }
@@ -60,4 +64,3 @@ func RequireRole(roles ...string) func(http.Handler) http.Handler {
 		})
 	}
 }
-
