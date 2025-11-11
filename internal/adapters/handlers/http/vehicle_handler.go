@@ -1,16 +1,20 @@
 package http
+
 import (
 	"encoding/json"
 	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/kuahbanyak/go-crud/pkg/response"
 )
+
 type VehicleHandler struct {
 	vehicleUseCase *usecases.VehicleUseCase
 }
+
 func NewVehicleHandler(vehicleUseCase *usecases.VehicleUseCase) *VehicleHandler {
 	return &VehicleHandler{
 		vehicleUseCase: vehicleUseCase,
@@ -141,4 +145,3 @@ func (h *VehicleHandler) GetAllVehicles(w http.ResponseWriter, r *http.Request) 
 	}
 	response.Success(w, http.StatusOK, "All vehicles retrieved successfully", vehicles)
 }
-

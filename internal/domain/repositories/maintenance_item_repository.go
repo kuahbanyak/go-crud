@@ -1,9 +1,12 @@
 package repositories
+
 import (
 	"context"
+
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 )
+
 type MaintenanceItemRepository interface {
 	Create(ctx context.Context, item *entities.MaintenanceItem) error
 	GetByID(ctx context.Context, id types.MSSQLUUID) (*entities.MaintenanceItem, error)
@@ -22,4 +25,3 @@ type MaintenanceItemRepository interface {
 	GetTotalCost(ctx context.Context, waitingListID types.MSSQLUUID) (estimated float64, actual float64, err error)
 	CountByStatus(ctx context.Context, waitingListID types.MSSQLUUID) (map[string]int, error)
 }
-

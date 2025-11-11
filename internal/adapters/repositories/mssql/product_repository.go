@@ -1,16 +1,20 @@
 package mssql
+
 import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"gorm.io/gorm"
 )
+
 type ProductRepository struct {
 	db *gorm.DB
 }
+
 func NewProductRepository(db *gorm.DB) repositories.ProductRepository {
 	return &ProductRepository{db: db}
 }
@@ -121,4 +125,3 @@ func (r *ProductRepository) Count(ctx context.Context, filter *entities.ProductF
 	}
 	return int(count), nil
 }
-

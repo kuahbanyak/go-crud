@@ -1,14 +1,18 @@
 package mssql
+
 import (
 	"context"
 	"time"
+
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"gorm.io/gorm"
 )
+
 type MaintenanceItemRepositoryImpl struct {
 	db *gorm.DB
 }
+
 func NewMaintenanceItemRepository(db *gorm.DB) *MaintenanceItemRepositoryImpl {
 	return &MaintenanceItemRepositoryImpl{db: db}
 }
@@ -154,4 +158,3 @@ func (r *MaintenanceItemRepositoryImpl) CountByStatus(ctx context.Context, waiti
 	}
 	return counts, nil
 }
-

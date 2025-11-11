@@ -1,9 +1,12 @@
 package entities
+
 import (
 	"time"
+
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"gorm.io/gorm"
 )
+
 type Product struct {
 	ID          types.MSSQLUUID `gorm:"type:uniqueidentifier;primary_key;default:newid()" json:"id"`
 	Name        string          `json:"name" db:"name"`
@@ -25,10 +28,10 @@ type ProductFilter struct {
 	Limit    int     `json:"limit,omitempty"`
 	Offset   int     `json:"offset,omitempty"`
 }
+
 func (i *Product) BeforeCreate(_ *gorm.DB) error {
 	if i.ID.String() == "00000000-0000-0000-0000-000000000000" {
 		i.ID = types.NewMSSQLUUID()
 	}
 	return nil
 }
-

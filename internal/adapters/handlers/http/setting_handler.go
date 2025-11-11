@@ -1,7 +1,9 @@
 package http
+
 import (
 	"encoding/json"
 	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
@@ -9,9 +11,11 @@ import (
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/kuahbanyak/go-crud/pkg/response"
 )
+
 type SettingHandler struct {
 	settingUsecase *usecases.SettingUsecase
 }
+
 func NewSettingHandler(settingUsecase *usecases.SettingUsecase) *SettingHandler {
 	return &SettingHandler{
 		settingUsecase: settingUsecase,
@@ -143,4 +147,3 @@ func (h *SettingHandler) buildResponse(s *entities.Setting) dto.SettingResponse 
 		UpdatedAt:   s.UpdatedAt,
 	}
 }
-

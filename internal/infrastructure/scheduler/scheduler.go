@@ -1,10 +1,13 @@
 package scheduler
+
 import (
 	"context"
 	"fmt"
+
 	"github.com/go-co-op/gocron/v2"
 	"github.com/kuahbanyak/go-crud/internal/infrastructure/logger"
 )
+
 type Scheduler struct {
 	scheduler gocron.Scheduler
 	jobs      []Job
@@ -14,6 +17,7 @@ type Job interface {
 	Run(ctx context.Context) error
 	Schedule() string // Cron expression
 }
+
 func NewScheduler() (*Scheduler, error) {
 	s, err := gocron.NewScheduler()
 	if err != nil {
@@ -69,4 +73,3 @@ func (s *Scheduler) ListJobs() []string {
 	}
 	return jobs
 }
-

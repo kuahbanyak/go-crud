@@ -1,9 +1,12 @@
 package repositories
+
 import (
 	"context"
+
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 )
+
 type UserRepository interface {
 	Create(ctx context.Context, user *entities.User) error
 	GetByID(ctx context.Context, id types.MSSQLUUID) (*entities.User, error)
@@ -15,4 +18,3 @@ type UserRepository interface {
 	Delete(ctx context.Context, id types.MSSQLUUID) error
 	Count(ctx context.Context) (int, error)
 }
-

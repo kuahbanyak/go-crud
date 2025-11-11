@@ -1,15 +1,19 @@
 package mssql
+
 import (
 	"context"
 	"errors"
+
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"gorm.io/gorm"
 )
+
 type vehicleRepository struct {
 	db *gorm.DB
 }
+
 func NewVehicleRepository(db *gorm.DB) repositories.VehicleRepository {
 	return &vehicleRepository{db: db}
 }
@@ -57,4 +61,3 @@ func (r *vehicleRepository) List(ctx context.Context, limit, offset int) ([]*ent
 	err := query.Find(&vehicles).Error
 	return vehicles, err
 }
-

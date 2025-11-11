@@ -1,14 +1,17 @@
 package database
+
 import (
 	"fmt"
 	"os"
 	"time"
+
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/constants"
 	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
+
 type Config struct {
 	Host     string
 	Port     string
@@ -16,6 +19,7 @@ type Config struct {
 	Password string
 	Database string
 }
+
 func NewConnection(config Config) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("sqlserver://%s:%s@%s:%s?database=%s&encrypt=true&trustServerCertificate=false",
 		config.User,
@@ -27,9 +31,9 @@ func NewConnection(config Config) (*gorm.DB, error) {
 	var logLevel logger.LogLevel
 	ginMode := os.Getenv("GIN_MODE")
 	if ginMode == "release" || os.Getenv("RAILWAY_ENVIRONMENT") != "" {
-		logLevel = logger.Error
+		logLevel = logger.Silent
 	} else {
-		logLevel = logger.Error
+		logLevel = logger.Info
 	}
 	db, err := gorm.Open(sqlserver.Open(dsn), &gorm.Config{
 		Logger:                                   logger.Default.LogMode(logLevel),
@@ -62,6 +66,7 @@ func autoMigrate(db *gorm.DB) error {
 		&entities.Invoice{},
 		&entities.Part{},
 		&entities.Setting{},
+		&entities.MaintenanceItem{},
 	)
 }
 func Close(db *gorm.DB) error {
@@ -71,4 +76,3 @@ func Close(db *gorm.DB) error {
 	}
 	return sqlDB.Close()
 }
-
