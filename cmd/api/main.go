@@ -102,6 +102,7 @@ func main() {
 		}
 	}()
 
+	<-stop
 	logger.Info("Shutting down gracefully...")
 
 	if err := sched.Stop(); err != nil {
