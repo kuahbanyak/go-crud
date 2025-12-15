@@ -54,6 +54,11 @@ func NewHTTPServer(
 	rateLimiter := middleware.NewRateLimiter(100, time.Minute)
 	router.Use(middleware.RateLimit(rateLimiter))
 
+	// Handle preflight OPTIONS requests for all routes
+	router.Methods(http.MethodOptions).HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%s", cfg.Server.Port),
 		Handler:      router,
