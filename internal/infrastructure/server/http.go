@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -23,6 +22,11 @@ type HTTPServer struct {
 	settingHandler         *handlers.SettingHandler
 	vehicleHandler         *handlers.VehicleHandler
 	maintenanceItemHandler *handlers.MaintenanceItemHandler
+	healthHandler          *handlers.HealthHandler
+	versionHandler         *handlers.VersionHandler
+	invoiceHandler         *handlers.InvoiceHandler
+	analyticsHandler       *handlers.AnalyticsHandler
+	roleHandler            *handlers.RoleHandler
 }
 
 func NewHTTPServer(
@@ -33,6 +37,11 @@ func NewHTTPServer(
 	settingHandler *handlers.SettingHandler,
 	vehicleHandler *handlers.VehicleHandler,
 	maintenanceItemHandler *handlers.MaintenanceItemHandler,
+	healthHandler *handlers.HealthHandler,
+	versionHandler *handlers.VersionHandler,
+	invoiceHandler *handlers.InvoiceHandler,
+	analyticsHandler *handlers.AnalyticsHandler,
+	roleHandler *handlers.RoleHandler,
 ) *HTTPServer {
 	router := mux.NewRouter()
 
@@ -62,6 +71,11 @@ func NewHTTPServer(
 		settingHandler:         settingHandler,
 		vehicleHandler:         vehicleHandler,
 		maintenanceItemHandler: maintenanceItemHandler,
+		healthHandler:          healthHandler,
+		versionHandler:         versionHandler,
+		invoiceHandler:         invoiceHandler,
+		analyticsHandler:       analyticsHandler,
+		roleHandler:            roleHandler,
 	}
 
 	httpServer.setupRoutes()
@@ -70,7 +84,19 @@ func NewHTTPServer(
 }
 
 func (s *HTTPServer) setupRoutes() {
-	s.router.HandleFunc("/health", s.healthCheck).Methods("GET")
+	// Health check endpoints
+	s.router.HandleFunc("/health", s.healthHandler.HealthCheck).Methods("GET")
+	s.router.HandleFunc("/health/live", s.healthHandler.LivenessCheck).Methods("GET")
+	s.router.HandleFunc("/health/ready", s.healthHandler.ReadinessCheck).Methods("GET")
+
+	// Detailed health check (admin only)
+	healthDetailRoute := s.router.HandleFunc("/health/detail", s.healthHandler.DetailedHealthCheck).Methods("GET").Subrouter()
+	healthDetailRoute.Use(middleware.Auth)
+	healthDetailRoute.Use(middleware.RequireRole(constants.RoleAdmin))
+
+	// Version info endpoint
+	s.router.HandleFunc("/api/version", s.versionHandler.GetVersion).Methods("GET")
+
 	api := s.router.PathPrefix("/api/v1").Subrouter()
 
 	authRoutes := api.PathPrefix("/auth").Subrouter()
@@ -164,26 +190,48 @@ func (s *HTTPServer) setupRoutes() {
 	settingsAdminRoutes.HandleFunc("/key/{key}", s.settingHandler.GetSetting).Methods("GET")
 	settingsAdminRoutes.HandleFunc("/key/{key}", s.settingHandler.UpdateSetting).Methods("PUT")
 	settingsAdminRoutes.HandleFunc("/{id}", s.settingHandler.DeleteSetting).Methods("DELETE")
-}
 
-func (s *HTTPServer) healthCheck(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+	// Invoice Routes (Admin)
+	invoiceAdminRoutes := adminRoutes.PathPrefix("/invoices").Subrouter()
+	invoiceAdminRoutes.HandleFunc("", s.invoiceHandler.CreateInvoice).Methods("POST")
+	invoiceAdminRoutes.HandleFunc("", s.invoiceHandler.GetInvoices).Methods("GET")
+	invoiceAdminRoutes.HandleFunc("/{id}", s.invoiceHandler.GetInvoice).Methods("GET")
+	invoiceAdminRoutes.HandleFunc("/{id}", s.invoiceHandler.UpdateInvoice).Methods("PUT")
+	invoiceAdminRoutes.HandleFunc("/{id}", s.invoiceHandler.DeleteInvoice).Methods("DELETE")
 
-	// Simple health check response
-	type HealthResponse struct {
-		Status    string `json:"status"`
-		Message   string `json:"message"`
-		Timestamp string `json:"timestamp"`
-	}
+	// Invoice Routes (Customer)
+	invoiceRoutes := api.PathPrefix("/invoices").Subrouter()
+	invoiceRoutes.Use(middleware.Auth)
+	invoiceRoutes.HandleFunc("/{id}", s.invoiceHandler.GetInvoice).Methods("GET")
+	invoiceRoutes.HandleFunc("/{id}/pay", s.invoiceHandler.PayInvoice).Methods("POST")
+	invoiceRoutes.HandleFunc("/{id}/download", s.invoiceHandler.DownloadInvoice).Methods("GET")
 
-	response := HealthResponse{
-		Status:    "ok",
-		Message:   "Server is running",
-		Timestamp: time.Now().UTC().Format(time.RFC3339),
-	}
+	// Waiting List Invoice Route
+	waitingListRoutes.HandleFunc("/{id}/invoice", s.invoiceHandler.GetInvoiceByWaitingList).Methods("GET")
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
+	// Analytics Routes (Admin only)
+	analyticsRoutes := adminRoutes.PathPrefix("/analytics").Subrouter()
+	analyticsRoutes.HandleFunc("/overview", s.analyticsHandler.GetOverview).Methods("GET")
+	analyticsRoutes.HandleFunc("/revenue-stats", s.analyticsHandler.GetRevenueStats).Methods("GET")
+	analyticsRoutes.HandleFunc("/service-stats", s.analyticsHandler.GetServiceStats).Methods("GET")
+	analyticsRoutes.HandleFunc("/queue-stats", s.analyticsHandler.GetQueueStats).Methods("GET")
+	analyticsRoutes.HandleFunc("/mechanic-performance", s.analyticsHandler.GetMechanicPerformance).Methods("GET")
+
+	// Role Routes (Admin only)
+	roleRoutes := adminRoutes.PathPrefix("/roles").Subrouter()
+	roleRoutes.HandleFunc("", s.roleHandler.CreateRole).Methods("POST")
+	roleRoutes.HandleFunc("", s.roleHandler.GetAllRoles).Methods("GET")
+	roleRoutes.HandleFunc("/active", s.roleHandler.GetActiveRoles).Methods("GET")
+	roleRoutes.HandleFunc("/{id}", s.roleHandler.GetRole).Methods("GET")
+	roleRoutes.HandleFunc("/{id}", s.roleHandler.UpdateRole).Methods("PUT")
+	roleRoutes.HandleFunc("/{id}", s.roleHandler.DeleteRole).Methods("DELETE")
+	roleRoutes.HandleFunc("/{id}/users", s.roleHandler.GetUsersByRole).Methods("GET")
+
+	// User Role Assignment Routes (Admin only)
+	userRoleRoutes := adminRoutes.PathPrefix("/users/{userId}/roles").Subrouter()
+	userRoleRoutes.HandleFunc("", s.roleHandler.GetUserRoles).Methods("GET")
+	userRoleRoutes.HandleFunc("", s.roleHandler.AssignRoleToUser).Methods("POST")
+	userRoleRoutes.HandleFunc("", s.roleHandler.RemoveRoleFromUser).Methods("DELETE")
 }
 
 func (s *HTTPServer) Start() error {

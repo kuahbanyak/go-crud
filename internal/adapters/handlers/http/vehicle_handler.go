@@ -8,6 +8,7 @@ import (
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
+	"github.com/kuahbanyak/go-crud/pkg/pagination"
 	"github.com/kuahbanyak/go-crud/pkg/response"
 )
 
@@ -138,10 +139,18 @@ func (h *VehicleHandler) DeleteVehicle(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, http.StatusOK, "Vehicle deleted successfully", nil)
 }
 func (h *VehicleHandler) GetAllVehicles(w http.ResponseWriter, r *http.Request) {
-	vehicles, err := h.vehicleUseCase.GetAllVehicles(r.Context(), 0, 0)
+	// Parse pagination params
+	pagParams := pagination.ParseParams(r)
+	filterParams := pagination.ParseFilterParams(r)
+
+	// Get vehicles with pagination
+	vehicles, total, err := h.vehicleUseCase.GetAllVehiclesPaginated(r.Context(), pagParams, filterParams)
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
-	response.Success(w, http.StatusOK, "All vehicles retrieved successfully", vehicles)
+
+	// Build paginated response
+	pagResponse := pagination.BuildResponse(vehicles, total, pagParams)
+	response.Success(w, http.StatusOK, "All vehicles retrieved successfully", pagResponse)
 }

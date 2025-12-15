@@ -60,6 +60,8 @@ func NewConnection(config Config) (*gorm.DB, error) {
 func autoMigrate(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&entities.User{},
+		&entities.Role{},
+		&entities.UserRole{},
 		&entities.Product{},
 		&entities.WaitingList{},
 		&entities.Vehicle{},

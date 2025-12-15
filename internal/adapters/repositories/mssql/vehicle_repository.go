@@ -7,6 +7,7 @@ import (
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/kuahbanyak/go-crud/pkg/pagination"
 	"gorm.io/gorm"
 )
 
@@ -60,4 +61,33 @@ func (r *vehicleRepository) List(ctx context.Context, limit, offset int) ([]*ent
 	}
 	err := query.Find(&vehicles).Error
 	return vehicles, err
+}
+
+func (r *vehicleRepository) ListPaginated(ctx context.Context, pagParams pagination.Params, filterParams pagination.FilterParams) ([]*entities.Vehicle, int64, error) {
+	var vehicles []*entities.Vehicle
+	var total int64
+
+	// Base query
+	query := r.db.WithContext(ctx).Model(&entities.Vehicle{})
+
+	// Apply filters
+	if filterParams.Search != "" {
+		query = pagination.ApplySearch(query, filterParams.Search, "brand", "model", "license_plate", "vin")
+	}
+
+	// Get total count before pagination
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// Apply pagination and preload
+	query = pagParams.Apply(query)
+	query = query.Preload("Owner")
+
+	// Execute query
+	if err := query.Find(&vehicles).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return vehicles, total, nil
 }

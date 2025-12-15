@@ -1,17 +1,22 @@
 package usecases
+
 import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
 	"github.com/kuahbanyak/go-crud/internal/domain/services"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/kuahbanyak/go-crud/pkg/pagination"
 )
+
 type UserUsecase struct {
 	userRepo    repositories.UserRepository
 	authService services.AuthService
 }
+
 func NewUserUsecase(userRepo repositories.UserRepository, authService services.AuthService) *UserUsecase {
 	return &UserUsecase{
 		userRepo:    userRepo,
@@ -38,7 +43,14 @@ func (u *UserUsecase) Login(ctx context.Context, email, password string) (*entit
 	if err := u.authService.ComparePassword(user.Password, password); err != nil {
 		return nil, "", errors.New("invalid credentials")
 	}
-	token, err := u.authService.GenerateToken(user.ID, user.Role)
+
+	// Get role name from Roles relationship (use first role if multiple, or empty string if none)
+	roleName := ""
+	if len(user.Roles) > 0 {
+		roleName = user.Roles[0].Name
+	}
+
+	token, err := u.authService.GenerateToken(user.ID, roleName)
 	if err != nil {
 		return nil, "", errors.New("failed to generate token")
 	}
@@ -70,6 +82,11 @@ func (u *UserUsecase) UpdateUser(ctx context.Context, id types.MSSQLUUID, update
 func (u *UserUsecase) GetUsers(ctx context.Context, limit, offset int) ([]*entities.User, error) {
 	return u.userRepo.GetAll(ctx, limit, offset)
 }
+
+func (u *UserUsecase) GetUsersPaginated(ctx context.Context, pagParams pagination.Params, filterParams pagination.FilterParams) ([]*entities.User, int64, error) {
+	return u.userRepo.GetAllPaginated(ctx, pagParams, filterParams)
+}
+
 func (u *UserUsecase) DeleteUser(ctx context.Context, id types.MSSQLUUID) error {
 	existingUser, err := u.userRepo.GetByID(ctx, id)
 	if err != nil {
@@ -88,6 +105,5 @@ func (u *UserUsecase) RefreshToken(ctx context.Context, refreshToken string) (st
 	return u.authService.GenerateToken(userID, role)
 }
 func (u *UserUsecase) ListMechanics(ctx context.Context) ([]*entities.User, error) {
-	return u.userRepo.GetByRole(ctx, entities.RoleMechanic)
+	return u.userRepo.GetByRole(ctx, "mechanic")
 }
-

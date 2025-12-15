@@ -2,12 +2,16 @@ package http
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/kuahbanyak/go-crud/internal/adapters/handlers/http/middleware"
+	"github.com/kuahbanyak/go-crud/internal/infrastructure/logger"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
+	apperrors "github.com/kuahbanyak/go-crud/pkg/errors"
 	"github.com/kuahbanyak/go-crud/pkg/response"
 )
 
@@ -21,28 +25,99 @@ func NewMaintenanceItemHandler(maintenanceItemUsecase *usecases.MaintenanceItemU
 	}
 }
 func (h *MaintenanceItemHandler) CreateInitialItems(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	waitingListID, err := types.ParseMSSQLUUID(vars["waiting_list_id"])
-	if err != nil {
-		response.Error(w, http.StatusBadRequest, "Invalid waiting list ID", err)
+	// Validate and parse waiting list ID
+	waitingListIDStr, appErr := middleware.GetValidatedPathParam(r, "waiting_list_id")
+	if appErr != nil {
+		response.ErrorFromAppError(r.Context(), w, appErr)
 		return
 	}
+
+	waitingListID, err := types.ParseMSSQLUUID(waitingListIDStr)
+	if err != nil {
+		appErr := apperrors.NewBadRequestError("Invalid waiting list ID format")
+		response.ErrorFromAppError(r.Context(), w, appErr)
+		return
+	}
+
+	// Validate UUID is not nil/empty
+	if waitingListID.String() == "00000000-0000-0000-0000-000000000000" {
+		appErr := apperrors.NewBadRequestError("Waiting list ID cannot be empty")
+		response.ErrorFromAppError(r.Context(), w, appErr)
+		return
+	}
+
+	// Decode and validate request body
 	var requests []dto.CreateMaintenanceItemRequest
 	if err := json.NewDecoder(r.Body).Decode(&requests); err != nil {
-		response.Error(w, http.StatusBadRequest, "Invalid request body", err)
+		appErr := apperrors.NewBadRequestError("Invalid request body")
+		response.ErrorFromAppError(r.Context(), w, appErr)
 		return
 	}
+
+	// Validate at least one item
+	if len(requests) == 0 {
+		appErr := apperrors.NewBadRequestError("At least one maintenance item is required")
+		response.ErrorFromAppError(r.Context(), w, appErr)
+		return
+	}
+
+	// Validate each item
+	validationErrors := make(apperrors.ValidationErrors)
+	for i, req := range requests {
+		prefix := fmt.Sprintf("item[%d]", i)
+
+		if req.Category == "" {
+			validationErrors.Add(prefix+".category", "Category is required")
+		}
+		if req.Name == "" {
+			validationErrors.Add(prefix+".name", "Name is required")
+		}
+		if req.EstimatedCost < 0 {
+			validationErrors.Add(prefix+".estimated_cost", "Estimated cost cannot be negative")
+		}
+
+		// Validate struct tags
+		if appErr := middleware.ValidateStruct(&req); appErr != nil {
+			validationErrors.Add(prefix, appErr.Message)
+		}
+	}
+
+	if validationErrors.HasErrors() {
+		appErr := apperrors.NewValidationErrors(validationErrors)
+		response.ErrorFromAppError(r.Context(), w, appErr)
+		return
+	}
+
+	// Get customer ID from context
 	customerID, ok := r.Context().Value("id").(types.MSSQLUUID)
 	if !ok {
-		response.Error(w, http.StatusUnauthorized, "Unauthorized", nil)
+		appErr := apperrors.NewUnauthorizedError("Unauthorized")
+		response.ErrorFromAppError(r.Context(), w, appErr)
 		return
 	}
-	_ = customerID
+
+	_ = customerID // Use if needed
+
+	// Create maintenance items
 	if err := h.maintenanceItemUsecase.CreateInitialItems(r.Context(), waitingListID, requests); err != nil {
-		response.Error(w, http.StatusInternalServerError, "Failed to create maintenance items", err)
+		// Log detailed error for debugging
+		logger.ErrorWithContext(r.Context(), "Failed to create maintenance items", map[string]interface{}{
+			"waiting_list_id": waitingListID.String(),
+			"error":           err.Error(),
+		})
+
+		// Check if it's an AppError
+		if appErr, ok := err.(*apperrors.AppError); ok {
+			response.ErrorFromAppError(r.Context(), w, appErr)
+			return
+		}
+
+		appErr := apperrors.NewInternalError("Failed to create maintenance items", err)
+		response.ErrorFromAppError(r.Context(), w, appErr)
 		return
 	}
-	response.Success(w, http.StatusCreated, "Maintenance items created successfully", nil)
+
+	response.SuccessWithContext(r.Context(), w, http.StatusCreated, "Maintenance items created successfully", nil)
 }
 func (h *MaintenanceItemHandler) AddDiscoveredItem(w http.ResponseWriter, r *http.Request) {
 	var req dto.AddDiscoveredItemRequest
