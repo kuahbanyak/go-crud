@@ -25,6 +25,21 @@ go.work
 .env
 .env.local
 .env.production
+.env.development
+.env.staging
+.env*.local
+*.env
+
+# Secret/credential files
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets.json
+credentials.json
+config.local.yaml
+config.local.json
 
 # IDE files
 .vscode/
@@ -32,6 +47,8 @@ go.work
 *.swp
 *.swo
 *~
+*.sublime-project
+*.sublime-workspace
 
 # OS files
 .DS_Store
@@ -39,6 +56,7 @@ Thumbs.db
 
 # Log files
 *.log
+logs/
 
 # Database files
 *.db
@@ -47,7 +65,32 @@ Thumbs.db
 # Temporary files
 tmp/
 temp/
+*.tmp
+*.bak
 
 # Docker volumes
 docker-data/
 
+# Air live reload (if using air for hot reload)
+air.toml
+.air.toml
+
+# Coverage reports
+coverage.html
+coverage.txt
+coverage/
+
+# Profiling
+*.prof
+*.pprof
+
+# Generated files
+*_gen.go
+*.generated.go
+
+# Compiled static files
+static/dist/
+
+# Local configuration overrides
+config.local.*
+local.config.*
