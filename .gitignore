@@ -22,6 +22,7 @@ go.work
 /dist/
 
 # Environment files
+.env
 .env.local
 .env.production
 
@@ -50,4 +51,3 @@ temp/
 # Docker volumes
 docker-data/
 
-.env
