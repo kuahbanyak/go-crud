@@ -7,14 +7,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type Role string
-
-const (
-	RoleAdmin    Role = "admin"
-	RoleMechanic Role = "mechanic"
-	RoleCustomer Role = "customer"
-)
-
 type User struct {
 	ID        types.MSSQLUUID `gorm:"type:uniqueidentifier;primary_key;default:newid()" json:"id"`
 	CreatedAt time.Time       `json:"created_at"`
@@ -24,8 +16,10 @@ type User struct {
 	Password  string          `gorm:"not null" json:"-"`
 	Name      string          `json:"name"`
 	Phone     string          `json:"phone"`
-	Role      Role            `gorm:"type:varchar(20);default:'customer'" json:"role"`
 	Address   string          `json:"address"`
+
+	// Many-to-many relationship with roles table (RBAC system)
+	Roles []Role `gorm:"many2many:user_roles;" json:"roles,omitempty"`
 }
 
 func (u *User) BeforeCreate(_ *gorm.DB) error {

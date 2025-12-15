@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/joho/godotenv"
-	"github.com/kuahbanyak/go-crud/internal/adapters/handlers/http"
+	handlers "github.com/kuahbanyak/go-crud/internal/adapters/handlers/http"
 	"github.com/kuahbanyak/go-crud/internal/adapters/handlers/http/middleware"
 	"github.com/kuahbanyak/go-crud/internal/adapters/repositories/mssql"
 	"github.com/kuahbanyak/go-crud/internal/infrastructure/config"
@@ -46,6 +48,12 @@ func main() {
 
 	logger.Info("Database connected successfully")
 
+	// Get underlying sql.DB for repositories that need it
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Fatal("Failed to get sql.DB:", err)
+	}
+
 	validator := utils.NewValidator()
 	authService := utils.NewJWTService(cfg.JWT.Secret, cfg.JWT.Expiration)
 	middleware.SetAuthService(authService)
@@ -55,6 +63,8 @@ func main() {
 	waitingListRepo := mssql.NewWaitingListRepository(db)
 	settingRepo := mssql.NewSettingRepository(db)
 	maintenanceItemRepo := mssql.NewMaintenanceItemRepository(db)
+	invoiceRepo := mssql.NewInvoiceRepository(sqlDB)
+	roleRepo := mssql.NewRoleRepository(db)
 
 	settingUsecase := usecases.NewSettingUsecase(settingRepo)
 	userUsecase := usecases.NewUserUsecase(userRepo, authService)
@@ -62,6 +72,9 @@ func main() {
 	vehicleUsecase := usecases.NewVehicleUseCase(vehicleRepo)
 	waitingListUsecase := usecases.NewWaitingListUsecase(waitingListRepo, vehicleRepo, userRepo, settingUsecase)
 	maintenanceItemUsecase := usecases.NewMaintenanceItemUsecase(maintenanceItemRepo, waitingListRepo, userRepo)
+	invoiceUsecase := usecases.NewInvoiceUsecase(invoiceRepo, waitingListRepo, userRepo)
+	analyticsUsecase := usecases.NewAnalyticsUsecase(sqlDB)
+	roleUsecase := usecases.NewRoleUsecase(roleRepo, userRepo)
 
 	ctx := context.Background()
 	if err := settingRepo.SeedDefaults(ctx); err != nil {
@@ -70,13 +83,26 @@ func main() {
 		logger.Info("Default settings seeded successfully")
 	}
 
-	userHandler := http.NewUserHandler(userUsecase)
-	productHandler := http.NewProductHandler(productUsecase)
-	waitingListHandler := http.NewWaitingListHandler(waitingListUsecase)
-	settingHandler := http.NewSettingHandler(settingUsecase)
-	vehicleHandler := http.NewVehicleHandler(vehicleUsecase)
-	maintenanceItemHandler := http.NewMaintenanceItemHandler(maintenanceItemUsecase)
-	srv := server.NewHTTPServer(cfg, userHandler, productHandler, waitingListHandler, settingHandler, vehicleHandler, maintenanceItemHandler)
+	// Seed default roles
+	if err := database.SeedDefaultRoles(db); err != nil {
+		logger.Error("Failed to seed default roles:", err)
+	} else {
+		logger.Info("Default roles seeded successfully")
+	}
+
+	userHandler := handlers.NewUserHandler(userUsecase)
+	productHandler := handlers.NewProductHandler(productUsecase)
+	waitingListHandler := handlers.NewWaitingListHandler(waitingListUsecase)
+	settingHandler := handlers.NewSettingHandler(settingUsecase)
+	vehicleHandler := handlers.NewVehicleHandler(vehicleUsecase)
+	maintenanceItemHandler := handlers.NewMaintenanceItemHandler(maintenanceItemUsecase)
+	healthHandler := handlers.NewHealthHandler(sqlDB)
+	versionHandler := handlers.NewVersionHandler()
+	invoiceHandler := handlers.NewInvoiceHandler(invoiceUsecase)
+	analyticsHandler := handlers.NewAnalyticsHandler(analyticsUsecase)
+	roleHandler := handlers.NewRoleHandler(roleUsecase)
+
+	srv := server.NewHTTPServer(cfg, userHandler, productHandler, waitingListHandler, settingHandler, vehicleHandler, maintenanceItemHandler, healthHandler, versionHandler, invoiceHandler, analyticsHandler, roleHandler)
 
 	sched, err := scheduler.NewScheduler()
 	if err != nil {
@@ -97,7 +123,7 @@ func main() {
 
 	go func() {
 		logger.Info("Starting server on port", cfg.Server.Port)
-		if err := srv.Start(); err != nil {
+		if err := srv.Start(); err != nil && err != http.ErrServerClosed {
 			log.Fatal("Failed to start server:", err)
 		}
 	}()
@@ -105,9 +131,23 @@ func main() {
 	<-stop
 	logger.Info("Shutting down gracefully...")
 
-	if err := sched.Stop(); err != nil {
-		logger.Error("Failed to stop scheduler:", err)
+	// Create shutdown context with timeout
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer shutdownCancel()
+
+	// Stop accepting new requests and finish existing ones
+	if err := srv.Stop(shutdownCtx); err != nil {
+		logger.Error("Server forced to shutdown:", err)
+	} else {
+		logger.Info("Server shutdown completed")
 	}
 
-	logger.Info("Server stopped")
+	// Stop the scheduler
+	if err := sched.Stop(); err != nil {
+		logger.Error("Failed to stop scheduler:", err)
+	} else {
+		logger.Info("Scheduler stopped")
+	}
+
+	logger.Info("Application shutdown complete")
 }

@@ -1,28 +1,33 @@
 package utils
+
 import (
 	"errors"
 	"time"
+
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"golang.org/x/crypto/bcrypt"
 )
+
 type JwtService struct {
 	secretKey  string
 	expiration time.Duration
 }
+
 func NewJWTService(secretKey string, expirationHours int) *JwtService {
 	return &JwtService{
 		secretKey:  secretKey,
 		expiration: time.Duration(expirationHours) * time.Hour,
 	}
 }
+
 type Claims struct {
 	UserID types.MSSQLUUID `json:"user_id"`
-	Role   entities.Role   `json:"role"`
+	Role   string          `json:"role"`
 	jwt.RegisteredClaims
 }
-func (j *JwtService) GenerateToken(userID types.MSSQLUUID, role entities.Role) (string, error) {
+
+func (j *JwtService) GenerateToken(userID types.MSSQLUUID, role string) (string, error) {
 	claims := &Claims{
 		UserID: userID,
 		Role:   role,
@@ -35,7 +40,7 @@ func (j *JwtService) GenerateToken(userID types.MSSQLUUID, role entities.Role) (
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(j.secretKey))
 }
-func (j *JwtService) ValidateToken(tokenString string) (types.MSSQLUUID, entities.Role, error) {
+func (j *JwtService) ValidateToken(tokenString string) (types.MSSQLUUID, string, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(j.secretKey), nil
 	})
@@ -57,4 +62,3 @@ func (j *JwtService) HashPassword(password string) (string, error) {
 func (j *JwtService) ComparePassword(hashedPassword, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
-

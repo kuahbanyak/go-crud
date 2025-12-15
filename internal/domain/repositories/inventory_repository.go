@@ -15,6 +15,7 @@ type InvoiceRepository interface {
 	Update(ctx context.Context, invoice *entities.Invoice) error
 	Delete(ctx context.Context, id uuid.UUID) error
 	List(ctx context.Context, limit, offset int) ([]*entities.Invoice, error)
+	Count(ctx context.Context) (int, error)
 }
 type PartRepository interface {
 	Create(ctx context.Context, part *entities.Part) error

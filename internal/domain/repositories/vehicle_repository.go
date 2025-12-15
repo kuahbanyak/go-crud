@@ -5,6 +5,7 @@ import (
 
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/kuahbanyak/go-crud/pkg/pagination"
 )
 
 type VehicleRepository interface {
@@ -14,4 +15,5 @@ type VehicleRepository interface {
 	Update(ctx context.Context, vehicle *entities.Vehicle) error
 	Delete(ctx context.Context, id types.MSSQLUUID) error
 	List(ctx context.Context, limit, offset int) ([]*entities.Vehicle, error)
+	ListPaginated(ctx context.Context, pagParams pagination.Params, filterParams pagination.FilterParams) ([]*entities.Vehicle, int64, error)
 }

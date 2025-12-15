@@ -1,16 +1,20 @@
 package usecases
+
 import (
 	"context"
 	"errors"
-	"time"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/kuahbanyak/go-crud/pkg/pagination"
+	"time"
 )
+
 type VehicleUseCase struct {
 	vehicleRepo repositories.VehicleRepository
 }
+
 func NewVehicleUseCase(vehicleRepo repositories.VehicleRepository) *VehicleUseCase {
 	return &VehicleUseCase{
 		vehicleRepo: vehicleRepo,
@@ -168,4 +172,26 @@ func (uc *VehicleUseCase) GetAllVehicles(ctx context.Context, limit, offset int)
 	}
 	return response, nil
 }
+func (uc *VehicleUseCase) GetAllVehiclesPaginated(ctx context.Context, pagParams pagination.Params, filterParams pagination.FilterParams) ([]*dto.VehicleResponse, int64, error) {
+	vehicles, total, err := uc.vehicleRepo.ListPaginated(ctx, pagParams, filterParams)
+	if err != nil {
+		return nil, 0, err
+	}
 
+	var response []*dto.VehicleResponse
+	for _, v := range vehicles {
+		response = append(response, &dto.VehicleResponse{
+			ID:           v.ID.String(),
+			OwnerID:      v.OwnerID.String(),
+			Brand:        v.Brand,
+			Model:        v.Model,
+			Year:         v.Year,
+			LicensePlate: v.LicensePlate,
+			VIN:          v.VIN,
+			Mileage:      v.Mileage,
+			CreatedAt:    v.CreatedAt.Format(time.RFC3339),
+			UpdatedAt:    v.UpdatedAt.Format(time.RFC3339),
+		})
+	}
+	return response, total, nil
+}

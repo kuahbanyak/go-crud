@@ -1,0 +1,1899 @@
+{
+	"info": {
+		"name": "Go-CRUD API - Complete Collection",
+		"description": "Complete API collection with Health, Version, Auth, Users, Products, Vehicles, Waiting List, Maintenance, Settings, Invoices, Analytics, Pagination & Rate Limiting",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"version": "3.0.0"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "adminToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "vehicleId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "waitingListId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "maintenanceItemId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "invoiceId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "settingId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "productId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "roleId",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Health & Version",
+			"item": [
+				{
+					"name": "Simple Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["health"]
+						}
+					}
+				},
+				{
+					"name": "Liveness Probe",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health/live",
+							"host": ["{{baseUrl}}"],
+							"path": ["health", "live"]
+						}
+					}
+				},
+				{
+					"name": "Readiness Probe",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health/ready",
+							"host": ["{{baseUrl}}"],
+							"path": ["health", "ready"]
+						}
+					}
+				},
+				{
+					"name": "Detailed Health (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/health/detail",
+							"host": ["{{baseUrl}}"],
+							"path": ["health", "detail"]
+						}
+					}
+				},
+				{
+					"name": "API Version",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/version",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "version"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.token) {",
+									"        pm.collectionVariables.set(\"token\", jsonData.data.token);",
+									"    }",
+									"    if (jsonData.data && jsonData.data.user && jsonData.data.user.id) {",
+									"        pm.collectionVariables.set(\"userId\", jsonData.data.user.id);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"phone\": \"081234567890\",\n  \"address\": \"Jakarta\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.token) {",
+									"        pm.collectionVariables.set(\"token\", jsonData.data.token);",
+									"    }",
+									"    if (jsonData.data && jsonData.data.user && jsonData.data.user.id) {",
+									"        pm.collectionVariables.set(\"userId\", jsonData.data.user.id);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Login Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.token) {",
+									"        pm.collectionVariables.set(\"adminToken\", jsonData.data.token);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "login"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "users", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe Updated\",\n  \"phone\": \"081234567899\",\n  \"address\": \"Jakarta Selatan\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "users", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Get All Users (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users?page=1&page_size=10&search=&sort_by=created_at&sort_dir=desc&status=",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "users"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (default: 1)"
+								},
+								{
+									"key": "page_size",
+									"value": "10",
+									"description": "Items per page (default: 10, max: 100)"
+								},
+								{
+									"key": "search",
+									"value": "",
+									"description": "Search in name, email, phone"
+								},
+								{
+									"key": "sort_by",
+									"value": "updated_at",
+									"description": "Field to sort by (created_at, updated_at, name, email)"
+								},
+								{
+									"key": "sort_dir",
+									"value": "desc",
+									"description": "Sort direction: asc or desc"
+								},
+								{
+									"key": "status",
+									"value": "",
+									"description": "Filter by role: admin, mechanic, customer"
+								}
+							]
+						},
+						"description": "Get all users with pagination, search, sort, and filter. Requires admin role."
+					}
+				},
+				{
+					"name": "Get User by ID (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "users", "{{userId}}"]
+						},
+						"description": "Get user details by ID. Requires admin role."
+					}
+				},
+				{
+					"name": "Update User (Admin)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"first_name\": \"Updated\",\n  \"last_name\": \"Name\",\n  \"phone\": \"081234567890\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "users", "{{userId}}"]
+						},
+						"description": "Update user details. Requires admin role."
+					}
+				},
+				{
+					"name": "Delete User (Admin)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "users", "{{userId}}"]
+						},
+						"description": "Delete user by ID. Requires admin role."
+					}
+				}
+			]
+		},
+		{
+			"name": "Vehicles",
+			"item": [
+				{
+					"name": "Create Vehicle",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set(\"vehicleId\", jsonData.data.id);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"brand\": \"Toyota\",\n  \"model\": \"Avanza\",\n  \"year\": 2020,\n  \"license_plate\": \"B1234XYZ\",\n  \"color\": \"Silver\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/vehicles",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "vehicles"]
+						}
+					}
+				},
+				{
+					"name": "Get My Vehicles",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/vehicles",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "vehicles"]
+						}
+					}
+				},
+				{
+					"name": "Get Vehicle by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/vehicles/{{vehicleId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "vehicles", "{{vehicleId}}"]
+						}
+					}
+				},
+				{
+					"name": "Update Vehicle",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"brand\": \"Toyota\",\n  \"model\": \"Avanza G\",\n  \"year\": 2020,\n  \"license_plate\": \"B1234XYZ\",\n  \"color\": \"Black\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/vehicles/{{vehicleId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "vehicles", "{{vehicleId}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete Vehicle",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/vehicles/{{vehicleId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "vehicles", "{{vehicleId}}"]
+						}
+					}
+				},
+				{
+					"name": "Get All Vehicles (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/vehicles?page=1&page_size=10&search=&sort_by=created_at&sort_dir=desc",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "vehicles"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (default: 1)"
+								},
+								{
+									"key": "page_size",
+									"value": "10",
+									"description": "Items per page (default: 10, max: 100)"
+								},
+								{
+									"key": "search",
+									"value": "",
+									"description": "Search in brand, model, license_plate, vin"
+								},
+								{
+									"key": "sort_by",
+									"value": "updated_at",
+									"description": "Field to sort by (created_at, updated_at, brand, model)"
+								},
+								{
+									"key": "sort_dir",
+									"value": "desc",
+									"description": "Sort direction: asc or desc"
+								}
+							]
+						},
+						"description": "Get all vehicles with pagination, search, and sort. Requires admin role."
+					}
+				}
+			]
+		},
+		{
+			"name": "Waiting List",
+			"item": [
+				{
+					"name": "Take Queue",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set(\"waitingListId\", jsonData.data.id);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"vehicle_id\": \"{{vehicleId}}\",\n  \"service_type\": \"Regular Service\",\n  \"service_date\": \"2025-11-14\",\n  \"estimated_time\": 60,\n  \"notes\": \"Need oil change\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/waiting-list/take",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "waiting-list", "take"]
+						}
+					}
+				},
+				{
+					"name": "Get My Queue",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/waiting-list/my-queue",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "waiting-list", "my-queue"]
+						}
+					}
+				},
+				{
+					"name": "Get Queue Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/waiting-list/status/{{waitingListId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "waiting-list", "status", "{{waitingListId}}"]
+						}
+					}
+				},
+				{
+					"name": "Cancel Queue",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/waiting-list/{{waitingListId}}/cancel",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "waiting-list", "{{waitingListId}}", "cancel"]
+						}
+					}
+				},
+				{
+					"name": "Get All Waiting Lists (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/waiting-list?date=2025-11-14&status=waiting&page=1&page_size=20",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "waiting-list"],
+							"query": [
+								{
+									"key": "date",
+									"value": "2025-11-14"
+								},
+								{
+									"key": "status",
+									"value": "waiting"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "page_size",
+									"value": "20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Call Next Queue (Admin)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/waiting-list/call-next",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "waiting-list", "call-next"]
+						}
+					}
+				},
+				{
+					"name": "Start Service (Admin)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/waiting-list/{{waitingListId}}/start",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "waiting-list", "{{waitingListId}}", "start"]
+						}
+					}
+				},
+				{
+					"name": "Complete Service (Admin)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/waiting-list/{{waitingListId}}/complete",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "waiting-list", "{{waitingListId}}", "complete"]
+						}
+					}
+				},
+				{
+					"name": "Mark as No Show (Admin)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/waiting-list/{{waitingListId}}/no-show",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "waiting-list", "{{waitingListId}}", "no-show"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Maintenance Items",
+			"item": [
+				{
+					"name": "Create Initial Items",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  {\n    \"category\": \"Engine\",\n    \"name\": \"Oil Change\",\n    \"description\": \"Regular oil change\",\n    \"estimated_cost\": 150000\n  },\n  {\n    \"category\": \"Brakes\",\n    \"name\": \"Brake Pad Check\",\n    \"description\": \"Check brake pad condition\",\n    \"estimated_cost\": 0\n  }\n]"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/maintenance/waiting-list/{{waitingListId}}/items",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "maintenance", "waiting-list", "{{waitingListId}}", "items"]
+						}
+					}
+				},
+				{
+					"name": "Get Items by Waiting List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/maintenance/waiting-list/{{waitingListId}}/items",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "maintenance", "waiting-list", "{{waitingListId}}", "items"]
+						}
+					}
+				},
+				{
+					"name": "Get Inspection Summary",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/maintenance/waiting-list/{{waitingListId}}/inspection-summary",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "maintenance", "waiting-list", "{{waitingListId}}", "inspection-summary"]
+						}
+					}
+				},
+				{
+					"name": "Approve Items (Customer)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"item_ids\": [\"{{maintenanceItemId}}\"],\n  \"approve\": true,\n  \"notes\": \"Approved for service\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/maintenance/items/approve",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "maintenance", "items", "approve"]
+						}
+					}
+				},
+				{
+					"name": "Add Discovered Item (Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"waiting_list_id\": \"{{waitingListId}}\",\n  \"category\": \"Engine\",\n  \"name\": \"Air Filter Replacement\",\n  \"description\": \"Air filter is dirty and needs replacement\",\n  \"priority\": \"high\",\n  \"estimated_cost\": 75000,\n  \"labor_hours\": 0.5,\n  \"requires_approval\": true,\n  \"notes\": \"Recommend immediate replacement\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/maintenance/items/discovered",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "maintenance", "items", "discovered"]
+						}
+					}
+				},
+				{
+					"name": "Update Item (Admin)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"completed\",\n  \"actual_cost\": 160000,\n  \"labor_hours\": 1.5,\n  \"notes\": \"Service completed successfully\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/maintenance/items/{{maintenanceItemId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "maintenance", "items", "{{maintenanceItemId}}"]
+						}
+					}
+				},
+				{
+					"name": "Complete Item (Admin)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/maintenance/items/{{maintenanceItemId}}/complete",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "maintenance", "items", "{{maintenanceItemId}}", "complete"]
+						}
+					}
+				},
+				{
+					"name": "Delete Item (Admin)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/maintenance/items/{{maintenanceItemId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "maintenance", "items", "{{maintenanceItemId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Invoices",
+			"item": [
+				{
+					"name": "Create Invoice (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set(\"invoiceId\", jsonData.data.id);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customer_id\": \"{{userId}}\",\n  \"waiting_list_id\": \"{{waitingListId}}\",\n  \"amount\": 500000,\n  \"tax_amount\": 50000,\n  \"notes\": \"Full service invoice\",\n  \"due_days\": 7\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/invoices",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "invoices"]
+						}
+					}
+				},
+				{
+					"name": "Get All Invoices (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/invoices?page=1&page_size=20&status=pending",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "invoices"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "page_size",
+									"value": "20"
+								},
+								{
+									"key": "status",
+									"value": "pending"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Invoice by ID (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/invoices/{{invoiceId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "invoices", "{{invoiceId}}"]
+						}
+					}
+				},
+				{
+					"name": "Update Invoice (Admin)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 550000,\n  \"tax_amount\": 55000,\n  \"notes\": \"Updated invoice\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/invoices/{{invoiceId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "invoices", "{{invoiceId}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete Invoice (Admin)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/invoices/{{invoiceId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "invoices", "{{invoiceId}}"]
+						}
+					}
+				},
+				{
+					"name": "Get My Invoice",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/invoices/{{invoiceId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "invoices", "{{invoiceId}}"]
+						}
+					}
+				},
+				{
+					"name": "Pay Invoice",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"payment_method\": \"cash\",\n  \"payment_ref\": \"TRX12345\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/invoices/{{invoiceId}}/pay",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "invoices", "{{invoiceId}}", "pay"]
+						}
+					}
+				},
+				{
+					"name": "Download Invoice PDF",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/invoices/{{invoiceId}}/download",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "invoices", "{{invoiceId}}", "download"]
+						}
+					}
+				},
+				{
+					"name": "Get Invoice for Waiting List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/waiting-list/{{waitingListId}}/invoice",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "waiting-list", "{{waitingListId}}", "invoice"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Analytics (Admin)",
+			"item": [
+				{
+					"name": "Dashboard Overview",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/analytics/overview",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "analytics", "overview"]
+						}
+					}
+				},
+				{
+					"name": "Revenue Stats - Daily",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/analytics/revenue-stats?period=daily",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "analytics", "revenue-stats"],
+							"query": [
+								{
+									"key": "period",
+									"value": "daily"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Revenue Stats - Weekly",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/analytics/revenue-stats?period=weekly",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "analytics", "revenue-stats"],
+							"query": [
+								{
+									"key": "period",
+									"value": "weekly"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Revenue Stats - Monthly",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/analytics/revenue-stats?period=monthly",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "analytics", "revenue-stats"],
+							"query": [
+								{
+									"key": "period",
+									"value": "monthly"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Service Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/analytics/service-stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "analytics", "service-stats"]
+						}
+					}
+				},
+				{
+					"name": "Queue Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/analytics/queue-stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "analytics", "queue-stats"]
+						}
+					}
+				},
+				{
+					"name": "Mechanic Performance",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/analytics/mechanic-performance",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "analytics", "mechanic-performance"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Settings",
+			"item": [
+				{
+					"name": "Get Public Settings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/settings/public",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "settings", "public"]
+						}
+					}
+				},
+				{
+					"name": "Get All Settings (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/settings",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "settings"]
+						}
+					}
+				},
+				{
+					"name": "Create Setting (Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"max_daily_queue\",\n  \"value\": \"50\",\n  \"category\": \"queue\",\n  \"description\": \"Maximum queue per day\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/settings",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "settings"]
+						}
+					}
+				},
+				{
+					"name": "Get Settings by Category (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/settings/category/queue",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "settings", "category", "queue"]
+						}
+					}
+				},
+				{
+					"name": "Get Setting by Key (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/settings/key/max_daily_queue",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "settings", "key", "max_daily_queue"]
+						}
+					}
+				},
+				{
+					"name": "Update Setting (Admin)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"value\": \"60\",\n  \"description\": \"Maximum queue per day (updated)\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/settings/key/max_daily_queue",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "settings", "key", "max_daily_queue"]
+						}
+					}
+				},
+				{
+					"name": "Delete Setting (Admin)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/settings/{{settingId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "settings", "{{settingId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Get All Products",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/products?page=1&page_size=20",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "products"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "page_size",
+									"value": "20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Product by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/products/{{productId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "products", "{{productId}}"]
+						}
+					}
+				},
+				{
+					"name": "Create Product (Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Engine Oil 5W-30\",\n  \"description\": \"Synthetic engine oil\",\n  \"price\": 150000,\n  \"stock\": 50\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/products",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "products"]
+						}
+					}
+				},
+				{
+					"name": "Update Product (Admin)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Engine Oil 5W-30 Updated\",\n  \"price\": 160000,\n  \"stock\": 45\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/products/{{productId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "products", "{{productId}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete Product (Admin)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/products/{{productId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "products", "{{productId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Roles (Admin)",
+			"item": [
+				{
+					"name": "Get All Roles (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/roles?page=1&page_size=10&search=&sort_by=name&sort_dir=asc&status=active",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "roles"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (default: 1)"
+								},
+								{
+									"key": "page_size",
+									"value": "10",
+									"description": "Items per page (default: 10, max: 100)"
+								},
+								{
+									"key": "search",
+									"value": "",
+									"description": "Search in name, display_name, description"
+								},
+								{
+									"key": "sort_by",
+									"value": "name",
+									"description": "Sort by: name, created_at, updated_at"
+								},
+								{
+									"key": "sort_dir",
+									"value": "asc",
+									"description": "Sort direction: asc or desc"
+								},
+								{
+									"key": "status",
+									"value": "active",
+									"description": "Filter by status: active or inactive"
+								}
+							]
+						},
+						"description": "Get all roles with pagination, search, and filtering. Admin only."
+					}
+				},
+				{
+					"name": "Get Active Roles",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/roles/active",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "roles", "active"]
+						},
+						"description": "Get only active roles. Admin only."
+					}
+				},
+				{
+					"name": "Create Role",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 && pm.response.json().data) {",
+									"    pm.collectionVariables.set('roleId', pm.response.json().data.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"supervisor\",\n  \"display_name\": \"Supervisor\",\n  \"description\": \"Supervises daily operations and mechanics\",\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/roles",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "roles"]
+						},
+						"description": "Create a new role. Admin only."
+					}
+				},
+				{
+					"name": "Get Role by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/roles/{{roleId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "roles", "{{roleId}}"]
+						},
+						"description": "Get role details by ID. Admin only."
+					}
+				},
+				{
+					"name": "Update Role",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"display_name\": \"Senior Supervisor\",\n  \"description\": \"Senior supervisor with extended responsibilities\",\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/roles/{{roleId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "roles", "{{roleId}}"]
+						},
+						"description": "Update role details. Admin only. Note: role name cannot be changed."
+					}
+				},
+				{
+					"name": "Delete Role",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/roles/{{roleId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "roles", "{{roleId}}"]
+						},
+						"description": "Delete a role. Admin only. Warning: This will remove all user assignments for this role."
+					}
+				},
+				{
+					"name": "Get Users by Role",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/roles/{{roleId}}/users",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "roles", "{{roleId}}", "users"]
+						},
+						"description": "Get all users assigned to a specific role. Admin only."
+					}
+				}
+			],
+			"description": "Role management endpoints for creating, updating, and managing system roles."
+		},
+		{
+			"name": "User Roles (Admin)",
+			"item": [
+				{
+					"name": "Get User's Roles",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/users/{{userId}}/roles",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "users", "{{userId}}", "roles"]
+						},
+						"description": "Get all roles assigned to a specific user. Admin only."
+					}
+				},
+				{
+					"name": "Assign Role to User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"role_id\": \"{{roleId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/users/{{userId}}/roles",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "users", "{{userId}}", "roles"]
+						},
+						"description": "Assign a role to a user. Admin only. Users can have multiple roles."
+					}
+				},
+				{
+					"name": "Remove Role from User",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"role_id\": \"{{roleId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/users/{{userId}}/roles",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "users", "{{userId}}", "roles"]
+						},
+						"description": "Remove a role from a user. Admin only."
+					}
+				}
+			],
+			"description": "User role assignment endpoints for managing which roles users have."
+		}
+	]
+}
+

@@ -1,7 +1,9 @@
 package dto
+
 import (
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 )
+
 type RegisterRequest struct {
 	Username  string `json:"username" validate:"required,min=3,max=50"`
 	Email     string `json:"email" validate:"required,email"`
@@ -25,7 +27,7 @@ type UserResponse struct {
 	Email string          `json:"email"`
 	Name  string          `json:"name"`
 	Phone string          `json:"phone"`
-	Role  string          `json:"role"`
+	Roles []RoleResponse  `json:"roles,omitempty"` // RBAC roles from roles table
 }
 type LoginResponse struct {
 	User        UserResponse `json:"user"`
@@ -41,4 +43,3 @@ type UserListResponse struct {
 	Page  int            `json:"page"`
 	Limit int            `json:"limit"`
 }
-
