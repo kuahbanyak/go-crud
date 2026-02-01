@@ -14,6 +14,7 @@ import (
 	handlers "github.com/kuahbanyak/go-crud/internal/adapters/handlers/http"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
+	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -119,13 +120,13 @@ func TestWaitingListHandler_TakeQueueNumber(t *testing.T) {
 			name:   "take queue successfully",
 			userID: 1,
 			requestBody: dto.TakeQueueRequest{
-				VehicleID: vehicleID,
+				VehicleID: types.FromUUID(vehicleID),
 			},
 			mockSetup: func(m *MockWaitingListUsecase) {
 				queue := &entities.WaitingList{
-					ID:          uuid.New(),
-					UserID:      1,
-					VehicleID:   vehicleID,
+					ID:          types.NewMSSQLUUID(),
+					CustomerID:  types.NewMSSQLUUID(),
+					VehicleID:   types.FromUUID(vehicleID),
 					QueueNumber: 10,
 					Status:      entities.WaitingListStatusWaiting,
 				}
@@ -142,7 +143,7 @@ func TestWaitingListHandler_TakeQueueNumber(t *testing.T) {
 			name:   "queue full",
 			userID: 1,
 			requestBody: dto.TakeQueueRequest{
-				VehicleID: vehicleID,
+				VehicleID: types.FromUUID(vehicleID),
 			},
 			mockSetup: func(m *MockWaitingListUsecase) {
 				m.On("TakeQueue", mock.Anything, uint(1), vehicleID).Return(nil, errors.New("queue is full"))
@@ -253,7 +254,7 @@ func TestWaitingListHandler_GetTodayQueue(t *testing.T) {
 			mockSetup: func(m *MockWaitingListUsecase) {
 				queues := []*entities.WaitingList{
 					{QueueNumber: 1, Status: entities.WaitingListStatusWaiting},
-					{QueueNumber: 2, Status: entities.WaitingListStatusInProgress},
+					{QueueNumber: 2, Status: entities.WaitingListStatusCalled},
 				}
 				m.On("GetTodayQueue", mock.Anything).Return(queues, nil)
 			},
@@ -311,12 +312,9 @@ func TestWaitingListHandler_CheckAvailability(t *testing.T) {
 			queryParam: "?date=2025-10-28",
 			mockSetup: func(m *MockWaitingListUsecase) {
 				availability := &dto.QueueAvailabilityResponse{
-					Date:              "2025-10-28",
-					TotalCapacity:     50,
-					CurrentCount:      30,
-					AvailableSlots:    20,
-					IsAvailable:       true,
-					EstimatedWaitTime: 45,
+					Date:          "2025-10-28",
+					IsAvailable:   true,
+					MaxDailyLimit: 10,
 				}
 				m.On("CheckAvailability", mock.Anything, "2025-10-28").Return(availability, nil)
 			},

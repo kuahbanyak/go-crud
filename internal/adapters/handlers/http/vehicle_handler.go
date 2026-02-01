@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/kuahbanyak/go-crud/internal/adapters/handlers/http/helpers"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
@@ -146,11 +147,11 @@ func (h *VehicleHandler) GetAllVehicles(w http.ResponseWriter, r *http.Request) 
 	// Get vehicles with pagination
 	vehicles, total, err := h.vehicleUseCase.GetAllVehiclesPaginated(r.Context(), pagParams, filterParams)
 	if err != nil {
-		response.Error(w, http.StatusInternalServerError, err.Error(), nil)
+		helpers.RespondInternalError(w, r, err.Error(), err)
 		return
 	}
 
 	// Build paginated response
 	pagResponse := pagination.BuildResponse(vehicles, total, pagParams)
-	response.Success(w, http.StatusOK, "All vehicles retrieved successfully", pagResponse)
+	helpers.RespondSuccess(w, r, http.StatusOK, "All vehicles retrieved successfully", pagResponse)
 }

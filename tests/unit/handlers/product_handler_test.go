@@ -13,6 +13,7 @@ import (
 	"github.com/gorilla/mux"
 	handlers "github.com/kuahbanyak/go-crud/internal/adapters/handlers/http"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
+	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -83,7 +84,7 @@ func TestProductHandler_CreateProduct(t *testing.T) {
 			},
 			mockSetup: func(m *MockProductUsecase) {
 				product := &entities.Product{
-					ID:          uuid.New(),
+					ID:          types.NewMSSQLUUID(),
 					Name:        "Test Product",
 					Description: "Test Description",
 					Price:       99.99,
@@ -159,7 +160,7 @@ func TestProductHandler_GetProduct(t *testing.T) {
 			productID: validID.String(),
 			mockSetup: func(m *MockProductUsecase) {
 				product := &entities.Product{
-					ID:          validID,
+					ID:          types.FromUUID(validID),
 					Name:        "Test Product",
 					Description: "Test Description",
 					Price:       99.99,
@@ -310,7 +311,7 @@ func TestProductHandler_UpdateProduct(t *testing.T) {
 			},
 			mockSetup: func(m *MockProductUsecase) {
 				updatedProduct := &entities.Product{
-					ID:    validID,
+					ID:    types.FromUUID(validID),
 					Name:  "Updated Product",
 					Price: 199.99,
 				}

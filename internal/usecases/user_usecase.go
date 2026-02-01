@@ -14,12 +14,14 @@ import (
 
 type UserUsecase struct {
 	userRepo    repositories.UserRepository
+	roleRepo    repositories.RoleRepository
 	authService services.AuthService
 }
 
-func NewUserUsecase(userRepo repositories.UserRepository, authService services.AuthService) *UserUsecase {
+func NewUserUsecase(userRepo repositories.UserRepository, roleRepo repositories.RoleRepository, authService services.AuthService) *UserUsecase {
 	return &UserUsecase{
 		userRepo:    userRepo,
+		roleRepo:    roleRepo,
 		authService: authService,
 	}
 }
@@ -33,7 +35,24 @@ func (u *UserUsecase) Register(ctx context.Context, user *entities.User) error {
 		return fmt.Errorf("failed to hash password: %w", err)
 	}
 	user.Password = hashedPassword
-	return u.userRepo.Create(ctx, user)
+	if err := u.userRepo.Create(ctx, user); err != nil {
+		return err
+	}
+
+	// Automatically assign "customer" role to new user
+	customerRole, err := u.roleRepo.GetByName(ctx, "customer")
+	if err != nil {
+		return fmt.Errorf("failed to get customer role: %w", err)
+	}
+	if customerRole != nil {
+		// Use empty UUID for system-assigned role (self-registration)
+		emptyUUID := types.MSSQLUUID{}
+		if err := u.roleRepo.AssignRoleToUser(ctx, user.ID, customerRole.ID, emptyUUID); err != nil {
+			return fmt.Errorf("failed to assign customer role: %w", err)
+		}
+	}
+
+	return nil
 }
 func (u *UserUsecase) Login(ctx context.Context, email, password string) (*entities.User, string, error) {
 	user, err := u.userRepo.GetByEmail(ctx, email)
@@ -61,10 +80,7 @@ func (u *UserUsecase) GetUserByID(ctx context.Context, id types.MSSQLUUID) (*ent
 }
 func (u *UserUsecase) UpdateUser(ctx context.Context, id types.MSSQLUUID, updateData *entities.User) (*entities.User, error) {
 	existingUser, err := u.userRepo.GetByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	if existingUser == nil {
+	if err != nil || existingUser == nil {
 		return nil, errors.New("user not found")
 	}
 	if updateData.Name != "" {
@@ -89,10 +105,7 @@ func (u *UserUsecase) GetUsersPaginated(ctx context.Context, pagParams paginatio
 
 func (u *UserUsecase) DeleteUser(ctx context.Context, id types.MSSQLUUID) error {
 	existingUser, err := u.userRepo.GetByID(ctx, id)
-	if err != nil {
-		return err
-	}
-	if existingUser == nil {
+	if err != nil || existingUser == nil {
 		return errors.New("user not found")
 	}
 	return u.userRepo.Delete(ctx, id)

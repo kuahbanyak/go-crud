@@ -1,19 +1,22 @@
 package usecases
+
 import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"time"
 )
+
 type WaitingListUsecase struct {
 	waitingListRepo repositories.WaitingListRepository
 	vehicleRepo     repositories.VehicleRepository
 	userRepo        repositories.UserRepository
 	settingUsecase  *SettingUsecase
 }
+
 func NewWaitingListUsecase(
 	waitingListRepo repositories.WaitingListRepository,
 	vehicleRepo repositories.VehicleRepository,
@@ -155,6 +158,7 @@ func (u *WaitingListUsecase) generateProgressMessage(status entities.WaitingList
 		return "Status unknown"
 	}
 }
+
 type ServiceProgressResponse struct {
 	ID                   types.MSSQLUUID `json:"id"`
 	QueueNumber          int             `json:"queue_number"`
@@ -170,6 +174,7 @@ type ServiceProgressResponse struct {
 	ServiceEndAt         *time.Time      `json:"service_end_at,omitempty"`
 	Message              string          `json:"message"`
 }
+
 func (u *WaitingListUsecase) CallCustomer(ctx context.Context, id types.MSSQLUUID) error {
 	waitingList, err := u.waitingListRepo.GetByID(ctx, id)
 	if err != nil {
@@ -240,13 +245,9 @@ func (u *WaitingListUsecase) GetWaitingCount(ctx context.Context, serviceDate ti
 }
 func (u *WaitingListUsecase) UpdateWaitingList(ctx context.Context, id types.MSSQLUUID, updates *entities.WaitingList) error {
 	existing, err := u.waitingListRepo.GetByID(ctx, id)
-	if err != nil {
-		return err
-	}
-	if existing == nil {
+	if err != nil || existing == nil {
 		return errors.New("waiting list entry not found")
 	}
 	updates.ID = id
 	return u.waitingListRepo.Update(ctx, updates)
 }
-

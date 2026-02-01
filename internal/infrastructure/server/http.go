@@ -51,8 +51,8 @@ func NewHTTPServer(
 	router.Use(middleware.ValidateRequestSize) // 3. Limit request size
 	router.Use(middleware.Logging)             // 4. Log requests (will include request ID)
 
-	rateLimiter := middleware.NewRateLimiter(100, time.Minute)
-	router.Use(middleware.RateLimit(rateLimiter))
+	rateLimiter := middleware.NewEnhancedRateLimiter(middleware.DefaultRateLimitConfig())
+	router.Use(middleware.EnhancedRateLimit(rateLimiter))
 
 	// Handle preflight OPTIONS requests for all routes
 	router.Methods(http.MethodOptions).HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -147,7 +147,7 @@ func (s *HTTPServer) setupRoutes() {
 	waitingListRoutes.HandleFunc("/{id}/cancel", s.waitingListHandler.CancelQueue).Methods("PUT")
 	waitingListRoutes.HandleFunc("/{id}/progress", s.waitingListHandler.GetServiceProgress).Methods("GET")
 
-	// Waiting List Routes (Admin only - manage queue operations)
+	// Waiting List Routes (Admin Mechanic and - manage queue operations)
 	adminWaitingListRoutes := adminRoutes.PathPrefix("/waiting-list").Subrouter()
 	adminWaitingListRoutes.HandleFunc("/{id}/call", s.waitingListHandler.CallCustomer).Methods("PUT")
 	adminWaitingListRoutes.HandleFunc("/{id}/start", s.waitingListHandler.StartService).Methods("PUT")

@@ -67,7 +67,7 @@ func main() {
 	roleRepo := mssql.NewRoleRepository(db)
 
 	settingUsecase := usecases.NewSettingUsecase(settingRepo)
-	userUsecase := usecases.NewUserUsecase(userRepo, authService)
+	userUsecase := usecases.NewUserUsecase(userRepo, roleRepo, authService)
 	productUsecase := usecases.NewProductUsecase(productRepo, validator)
 	vehicleUsecase := usecases.NewVehicleUseCase(vehicleRepo)
 	waitingListUsecase := usecases.NewWaitingListUsecase(waitingListRepo, vehicleRepo, userRepo, settingUsecase)

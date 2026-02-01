@@ -165,7 +165,14 @@ func TestUserHandler_Login(t *testing.T) {
 				user := &entities.User{
 					Email: "test@example.com",
 					Name:  "John Doe",
-					Role:  entities.RoleCustomer,
+					Roles: []entities.Role{
+						{
+							Name:        "customer",
+							DisplayName: "Customer",
+							Description: "Customer role",
+							IsActive:    true,
+						},
+					},
 				}
 				m.On("Login", mock.Anything, "test@example.com", "password123").Return(user, "mock-token", nil)
 			},

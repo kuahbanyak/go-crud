@@ -1,15 +1,19 @@
 package usecases
+
 import (
 	"context"
 	"errors"
 	"strconv"
+
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
 )
+
 type SettingUsecase struct {
 	settingRepo repositories.SettingRepository
 }
+
 func NewSettingUsecase(settingRepo repositories.SettingRepository) *SettingUsecase {
 	return &SettingUsecase{
 		settingRepo: settingRepo,
@@ -29,10 +33,7 @@ func (u *SettingUsecase) GetPublicSettings(ctx context.Context) ([]*entities.Set
 }
 func (u *SettingUsecase) UpdateSetting(ctx context.Context, key, value string) error {
 	setting, err := u.settingRepo.GetByKey(ctx, key)
-	if err != nil {
-		return err
-	}
-	if setting == nil {
+	if err != nil || setting == nil {
 		return errors.New("setting not found")
 	}
 	if !setting.IsEditable {
@@ -106,4 +107,3 @@ func (u *SettingUsecase) IsCleanupJobEnabled(ctx context.Context) bool {
 func (u *SettingUsecase) GetJobSchedule(ctx context.Context) string {
 	return u.GetStringValue(ctx, "waiting_list.job_schedule", "0 0 * * *")
 }
-

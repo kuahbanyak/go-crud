@@ -14,6 +14,7 @@ import (
 	handlers "github.com/kuahbanyak/go-crud/internal/adapters/handlers/http"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
+	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -79,11 +80,10 @@ func TestVehicleHandler_CreateVehicle(t *testing.T) {
 				Brand:        "Toyota",
 				Model:        "Camry",
 				Year:         2023,
-				Color:        "Black",
 			},
 			mockSetup: func(m *MockVehicleUsecase) {
 				m.On("Create", mock.Anything, mock.MatchedBy(func(v *entities.Vehicle) bool {
-					return v.LicensePlate == "ABC123" && v.UserID == 1
+					return v.LicensePlate == "ABC123" && v.ID.ID() == 1
 				})).Return(nil)
 			},
 			expectedStatus: http.StatusCreated,
@@ -122,7 +122,7 @@ func TestVehicleHandler_CreateVehicle(t *testing.T) {
 			mockUsecase := new(MockVehicleUsecase)
 			tt.mockSetup(mockUsecase)
 
-			handler := handlers.NewVehicleHandler(&usecases.VehicleUsecase{})
+			handler := handlers.NewVehicleHandler(&usecases.VehicleUseCase{})
 
 			body, _ := json.Marshal(tt.requestBody)
 			req := httptest.NewRequest(http.MethodPost, "/api/v1/vehicles", bytes.NewBuffer(body))
@@ -160,7 +160,7 @@ func TestVehicleHandler_GetVehicle(t *testing.T) {
 			vehicleID: validID.String(),
 			mockSetup: func(m *MockVehicleUsecase) {
 				vehicle := &entities.Vehicle{
-					ID:           validID,
+					ID:           types.FromUUID(validID),
 					LicensePlate: "ABC123",
 					Brand:        "Toyota",
 					Model:        "Camry",
@@ -195,7 +195,7 @@ func TestVehicleHandler_GetVehicle(t *testing.T) {
 			mockUsecase := new(MockVehicleUsecase)
 			tt.mockSetup(mockUsecase)
 
-			handler := handlers.NewVehicleHandler(&usecases.VehicleUsecase{})
+			handler := handlers.NewVehicleHandler(&usecases.VehicleUseCase{})
 
 			req := httptest.NewRequest(http.MethodGet, "/api/v1/vehicles/"+tt.vehicleID, nil)
 			req = mux.SetURLVars(req, map[string]string{"id": tt.vehicleID})
@@ -261,7 +261,7 @@ func TestVehicleHandler_GetMyVehicles(t *testing.T) {
 			mockUsecase := new(MockVehicleUsecase)
 			tt.mockSetup(mockUsecase)
 
-			handler := handlers.NewVehicleHandler(&usecases.VehicleUsecase{})
+			handler := handlers.NewVehicleHandler(&usecases.VehicleUseCase{})
 
 			req := httptest.NewRequest(http.MethodGet, "/api/v1/vehicles", nil)
 			ctx := context.WithValue(req.Context(), "id", tt.userID)
@@ -321,7 +321,7 @@ func TestVehicleHandler_GetAllVehicles(t *testing.T) {
 			mockUsecase := new(MockVehicleUsecase)
 			tt.mockSetup(mockUsecase)
 
-			handler := handlers.NewVehicleHandler(&usecases.VehicleUsecase{})
+			handler := handlers.NewVehicleHandler(&usecases.VehicleUseCase{})
 
 			req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/vehicles", nil)
 			rec := httptest.NewRecorder()
@@ -360,7 +360,7 @@ func TestVehicleHandler_UpdateVehicle(t *testing.T) {
 				Model:        "Camry Updated",
 			},
 			mockSetup: func(m *MockVehicleUsecase) {
-				existingVehicle := &entities.Vehicle{ID: validID}
+				existingVehicle := &entities.Vehicle{ID: types.FromUUID(validID)}
 				m.On("GetByID", mock.Anything, validID).Return(existingVehicle, nil)
 				m.On("Update", mock.Anything, mock.Anything).Return(nil)
 			},
@@ -390,7 +390,7 @@ func TestVehicleHandler_UpdateVehicle(t *testing.T) {
 			mockUsecase := new(MockVehicleUsecase)
 			tt.mockSetup(mockUsecase)
 
-			handler := handlers.NewVehicleHandler(&usecases.VehicleUsecase{})
+			handler := handlers.NewVehicleHandler(&usecases.VehicleUseCase{})
 
 			body, _ := json.Marshal(tt.requestBody)
 			req := httptest.NewRequest(http.MethodPut, "/api/v1/vehicles/"+tt.vehicleID, bytes.NewBuffer(body))
@@ -444,7 +444,7 @@ func TestVehicleHandler_DeleteVehicle(t *testing.T) {
 			mockUsecase := new(MockVehicleUsecase)
 			tt.mockSetup(mockUsecase)
 
-			handler := handlers.NewVehicleHandler(&usecases.VehicleUsecase{})
+			handler := handlers.NewVehicleHandler(&usecases.VehicleUseCase{})
 
 			req := httptest.NewRequest(http.MethodDelete, "/api/v1/vehicles/"+tt.vehicleID, nil)
 			req = mux.SetURLVars(req, map[string]string{"id": tt.vehicleID})
