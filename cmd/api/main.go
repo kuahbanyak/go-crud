@@ -70,7 +70,7 @@ func main() {
 	userUsecase := usecases.NewUserUsecase(userRepo, roleRepo, authService)
 	productUsecase := usecases.NewProductUsecase(productRepo, validator)
 	vehicleUsecase := usecases.NewVehicleUseCase(vehicleRepo)
-	waitingListUsecase := usecases.NewWaitingListUsecase(waitingListRepo, vehicleRepo, userRepo, settingUsecase)
+	waitingListUsecase := usecases.NewWaitingListUsecase(waitingListRepo, vehicleRepo, userRepo, settingUsecase, vehicleUsecase)
 	maintenanceItemUsecase := usecases.NewMaintenanceItemUsecase(maintenanceItemRepo, waitingListRepo, userRepo)
 	invoiceUsecase := usecases.NewInvoiceUsecase(invoiceRepo, waitingListRepo, userRepo)
 	analyticsUsecase := usecases.NewAnalyticsUsecase(sqlDB)
@@ -92,7 +92,7 @@ func main() {
 
 	userHandler := handlers.NewUserHandler(userUsecase)
 	productHandler := handlers.NewProductHandler(productUsecase)
-	waitingListHandler := handlers.NewWaitingListHandler(waitingListUsecase)
+	waitingListHandler := handlers.NewWaitingListHandler(waitingListUsecase, vehicleUsecase)
 	settingHandler := handlers.NewSettingHandler(settingUsecase)
 	vehicleHandler := handlers.NewVehicleHandler(vehicleUsecase)
 	maintenanceItemHandler := handlers.NewMaintenanceItemHandler(maintenanceItemUsecase)

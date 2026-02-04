@@ -7,17 +7,19 @@ import (
 )
 
 type TakeQueueRequest struct {
-	VehicleID     types.MSSQLUUID `json:"vehicle_id" validate:"required"`
-	ServiceType   string          `json:"service_type" validate:"required"`
-	ServiceDate   string          `json:"service_date" validate:"required"` // Changed to string for date-only format (YYYY-MM-DD)
-	EstimatedTime int             `json:"estimated_time"`                   // in minutes
-	Notes         string          `json:"notes,omitempty"`
+	VehicleID     *types.MSSQLUUID      `json:"vehicle_id,omitempty"`
+	NewVehicle    *CreateVehicleRequest `json:"new_vehicle,omitempty"`
+	ServiceType   string                `json:"service_type" validate:"required"`
+	ServiceDate   string                `json:"service_date" validate:"required"` // Changed to string for date-only format (YYYY-MM-DD)
+	EstimatedTime int                   `json:"estimated_time"`                   // in minutes, default 0
+	Notes         string                `json:"notes,omitempty"`
 }
 
 type UpdateWaitingListRequest struct {
 	ServiceType   string `json:"service_type,omitempty"`
-	EstimatedTime int    `json:"estimated_time,omitempty"`
+	EstimatedTime int    `json:"estimated_time,omitempty"` // Estimated time in minutes from mechanic
 	Notes         string `json:"notes,omitempty"`
+	MechanicNotes string `json:"mechanic_notes,omitempty"` // Notes from mechanic after inspection
 	Status        string `json:"status,omitempty"`
 }
 
@@ -34,6 +36,7 @@ type WaitingListResponse struct {
 	ServiceStartAt *time.Time      `json:"service_start_at,omitempty"`
 	ServiceEndAt   *time.Time      `json:"service_end_at,omitempty"`
 	Notes          string          `json:"notes"`
+	MechanicNotes  string          `json:"mechanic_notes"`
 	CreatedAt      time.Time       `json:"created_at"`
 	UpdatedAt      time.Time       `json:"updated_at"`
 }
@@ -56,6 +59,7 @@ type WaitingListWithDetailsResponse struct {
 	ServiceStartAt *time.Time      `json:"service_start_at,omitempty"`
 	ServiceEndAt   *time.Time      `json:"service_end_at,omitempty"`
 	Notes          string          `json:"notes"`
+	MechanicNotes  string          `json:"mechanic_notes"`
 	CreatedAt      time.Time       `json:"created_at"`
 	UpdatedAt      time.Time       `json:"updated_at"`
 }
@@ -88,9 +92,11 @@ type ServiceProgressResponse struct {
 	QueueNumber   int             `json:"queue_number"`
 	Status        string          `json:"status"`
 	StatusMessage string          `json:"status_message"`
-	VehicleBrand  string          `json:"vehicle_brand"`
-	VehicleModel  string          `json:"vehicle_model"`
-	LicensePlate  string          `json:"license_plate"`
+	VehicleBrand  string          `json:"vehicle_brand,omitempty"`
+	VehicleModel  string          `json:"vehicle_model,omitempty"`
+	LicensePlate  string          `json:"license_plate,omitempty"`
+	CustomerName  string          `json:"customer_name,omitempty"`
+	CustomerPhone string          `json:"customer_phone,omitempty"`
 	ServiceType   string          `json:"service_type"`
 	ServiceDate   time.Time       `json:"service_date"`
 	EstimatedTime int             `json:"estimated_time_minutes"`

@@ -149,6 +149,8 @@ func (s *HTTPServer) setupRoutes() {
 
 	// Waiting List Routes (Admin Mechanic and - manage queue operations)
 	adminWaitingListRoutes := adminRoutes.PathPrefix("/waiting-list").Subrouter()
+	adminWaitingListRoutes.HandleFunc("/progress/all", s.waitingListHandler.GetAllServiceProgress).Methods("GET")
+	adminWaitingListRoutes.HandleFunc("/{id}", s.waitingListHandler.UpdateWaitingList).Methods("PUT")
 	adminWaitingListRoutes.HandleFunc("/{id}/call", s.waitingListHandler.CallCustomer).Methods("PUT")
 	adminWaitingListRoutes.HandleFunc("/{id}/start", s.waitingListHandler.StartService).Methods("PUT")
 	adminWaitingListRoutes.HandleFunc("/{id}/complete", s.waitingListHandler.CompleteService).Methods("PUT")

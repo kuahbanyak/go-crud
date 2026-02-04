@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
-	"time"
 )
 
 type WaitingListUsecase struct {
@@ -15,6 +16,7 @@ type WaitingListUsecase struct {
 	vehicleRepo     repositories.VehicleRepository
 	userRepo        repositories.UserRepository
 	settingUsecase  *SettingUsecase
+	vehicleUsecase  *VehicleUseCase
 }
 
 func NewWaitingListUsecase(
@@ -22,12 +24,14 @@ func NewWaitingListUsecase(
 	vehicleRepo repositories.VehicleRepository,
 	userRepo repositories.UserRepository,
 	settingUsecase *SettingUsecase,
+	vehicleUsecase *VehicleUseCase,
 ) *WaitingListUsecase {
 	return &WaitingListUsecase{
 		waitingListRepo: waitingListRepo,
 		vehicleRepo:     vehicleRepo,
 		userRepo:        userRepo,
 		settingUsecase:  settingUsecase,
+		vehicleUsecase:  vehicleUsecase,
 	}
 }
 func (u *WaitingListUsecase) TakeQueueNumber(ctx context.Context, waitingList *entities.WaitingList) error {
@@ -248,6 +252,23 @@ func (u *WaitingListUsecase) UpdateWaitingList(ctx context.Context, id types.MSS
 	if err != nil || existing == nil {
 		return errors.New("waiting list entry not found")
 	}
-	updates.ID = id
-	return u.waitingListRepo.Update(ctx, updates)
+
+	// Update only provided fields
+	if updates.ServiceType != "" {
+		existing.ServiceType = updates.ServiceType
+	}
+	if updates.EstimatedTime > 0 {
+		existing.EstimatedTime = updates.EstimatedTime
+	}
+	if updates.Notes != "" {
+		existing.Notes = updates.Notes
+	}
+	if updates.MechanicNotes != "" {
+		existing.MechanicNotes = updates.MechanicNotes
+	}
+	if updates.Status != "" {
+		existing.Status = updates.Status
+	}
+
+	return u.waitingListRepo.Update(ctx, existing)
 }

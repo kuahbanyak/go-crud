@@ -28,12 +28,13 @@ type WaitingList struct {
 	CustomerID     types.MSSQLUUID   `gorm:"type:uniqueidentifier;not null" json:"customer_id"`
 	ServiceDate    time.Time         `gorm:"uniqueIndex:idx_queue_date;not null" json:"service_date"`
 	ServiceType    string            `gorm:"type:varchar(100);not null" json:"service_type"`
-	EstimatedTime  int               `json:"estimated_time"` // in minutes
+	EstimatedTime  int               `json:"estimated_time"` // in minutes, default 0, updated by mechanic
 	Status         WaitingListStatus `gorm:"type:varchar(30);default:'waiting'" json:"status"`
 	CalledAt       *time.Time        `json:"called_at,omitempty"`
 	ServiceStartAt *time.Time        `json:"service_start_at,omitempty"`
 	ServiceEndAt   *time.Time        `json:"service_end_at,omitempty"`
-	Notes          string            `gorm:"type:text" json:"notes"`
+	Notes          string            `gorm:"type:text" json:"notes"`          // Customer notes
+	MechanicNotes  string            `gorm:"type:text" json:"mechanic_notes"` // Mechanic notes after inspection
 	Vehicle        Vehicle           `gorm:"foreignKey:VehicleID" json:"vehicle,omitempty"`
 	Customer       User              `gorm:"foreignKey:CustomerID" json:"customer,omitempty"`
 }

@@ -55,20 +55,12 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Build full name properly
-	name := req.FirstName
-	if req.LastName != "" {
-		if name != "" {
-			name += " "
-		}
-		name += req.LastName
-	}
-
 	user := &entities.User{
 		Email:    req.Email,
 		Password: req.Password,
-		Name:     name,
+		Name:     req.Name,
 		Phone:    req.Phone,
+		Address:  req.Address,
 	}
 	err := h.userUsecase.Register(r.Context(), user)
 	if err != nil {
@@ -139,7 +131,7 @@ func (h *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	updateData := &entities.User{
-		Name:  req.FirstName + " " + req.LastName,
+		Name:  req.Name,
 		Phone: req.Phone,
 	}
 	updatedUser, err := h.userUsecase.UpdateUser(r.Context(), userID, updateData)
@@ -210,7 +202,7 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	updateData := &entities.User{
-		Name:  req.FirstName + " " + req.LastName,
+		Name:  req.Name,
 		Phone: req.Phone,
 	}
 	updatedUser, err := h.userUsecase.UpdateUser(r.Context(), id, updateData)

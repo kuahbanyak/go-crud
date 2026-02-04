@@ -5,29 +5,26 @@ import (
 )
 
 type RegisterRequest struct {
-	Username  string `json:"username" validate:"required,min=3,max=50"`
-	Email     string `json:"email" validate:"required,email"`
-	Password  string `json:"password" validate:"required,min=8"`
-	FirstName string `json:"first_name" validate:"required,min=1,max=100"`
-	LastName  string `json:"last_name" validate:"required,min=1,max=100"`
-	Phone     string `json:"phone,omitempty" validate:"omitempty,min=10,max=20"`
-	Address   string `json:"address,omitempty" validate:"omitempty,min=1,max=100"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=8"`
+	Name     string `json:"name" validate:"required,min=1,max=100"`
+	Phone    string `json:"phone,omitempty" validate:"omitempty,min=10,max=20"`
+	Address  string `json:"address,omitempty" validate:"omitempty,min=1,max=100"`
 }
 type LoginRequest struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
 }
 type UpdateUserRequest struct {
-	FirstName string `json:"first_name,omitempty" validate:"omitempty,min=1,max=100"`
-	LastName  string `json:"last_name,omitempty" validate:"omitempty,min=1,max=100"`
-	Phone     string `json:"phone,omitempty" validate:"omitempty,min=10,max=20"`
+	Name  string `json:"name,omitempty" validate:"omitempty,min=1,max=100"`
+	Phone string `json:"phone,omitempty" validate:"omitempty,min=10,max=20"`
 }
 type UserResponse struct {
 	ID    types.MSSQLUUID `json:"id"`
 	Email string          `json:"email"`
 	Name  string          `json:"name"`
 	Phone string          `json:"phone"`
-	Roles []RoleResponse  `json:"roles,omitempty"` // RBAC roles from roles table
+	Roles []RoleResponse  `json:"roles,omitempty"`
 }
 type LoginResponse struct {
 	User        UserResponse `json:"user"`

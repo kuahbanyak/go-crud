@@ -17,11 +17,13 @@ import (
 
 type WaitingListHandler struct {
 	waitingListUsecase *usecases.WaitingListUsecase
+	vehicleUsecase     *usecases.VehicleUseCase
 }
 
-func NewWaitingListHandler(waitingListUsecase *usecases.WaitingListUsecase) *WaitingListHandler {
+func NewWaitingListHandler(waitingListUsecase *usecases.WaitingListUsecase, vehicleUsecase *usecases.VehicleUseCase) *WaitingListHandler {
 	return &WaitingListHandler{
 		waitingListUsecase: waitingListUsecase,
+		vehicleUsecase:     vehicleUsecase,
 	}
 }
 func (h *WaitingListHandler) TakeQueueNumber(w http.ResponseWriter, r *http.Request) {
@@ -30,28 +32,78 @@ func (h *WaitingListHandler) TakeQueueNumber(w http.ResponseWriter, r *http.Requ
 		response.Error(w, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
+
 	customerID, ok := r.Context().Value("id").(types.MSSQLUUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
 	}
+
+	// Check if user has vehicles
+	userVehicles, err := h.vehicleUsecase.GetMyVehicles(r.Context(), customerID)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, "Failed to get user vehicles", err)
+		return
+	}
+
+	var vehicleID types.MSSQLUUID
+
+	// Handle vehicle selection or creation
+	if req.VehicleID != nil {
+		// User selected an existing vehicle
+		vehicleID = *req.VehicleID
+
+		// Verify ownership
+		_, err := h.vehicleUsecase.GetVehicleByID(r.Context(), customerID, vehicleID)
+		if err != nil {
+			response.Error(w, http.StatusForbidden, "Vehicle not found or you don't own this vehicle", err)
+			return
+		}
+	} else if req.NewVehicle != nil {
+		// User wants to add a new vehicle
+		newVehicle, err := h.vehicleUsecase.CreateVehicle(r.Context(), customerID, req.NewVehicle)
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, "Failed to create new vehicle", err)
+			return
+		}
+		vid, _ := types.ParseMSSQLUUID(newVehicle.ID)
+		vehicleID = vid
+	} else if len(userVehicles) == 0 {
+		// No vehicle provided and user has no vehicles
+		response.Error(w, http.StatusBadRequest, "No vehicle specified. Please provide vehicle_id or new_vehicle", map[string]interface{}{
+			"has_vehicles": false,
+			"message":      "You need to add a vehicle first",
+		})
+		return
+	} else {
+		// No vehicle selected but user has vehicles
+		response.Error(w, http.StatusBadRequest, "Please select a vehicle or add a new one", map[string]interface{}{
+			"has_vehicles": true,
+			"vehicles":     userVehicles,
+		})
+		return
+	}
+
 	serviceDate, err := time.Parse("2006-01-02", req.ServiceDate)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid service_date format. Use YYYY-MM-DD", err)
 		return
 	}
+
 	waitingList := &entities.WaitingList{
-		VehicleID:     req.VehicleID,
+		VehicleID:     vehicleID,
 		CustomerID:    customerID,
 		ServiceDate:   serviceDate,
 		ServiceType:   req.ServiceType,
-		EstimatedTime: req.EstimatedTime,
+		EstimatedTime: req.EstimatedTime, // Default 0 if not provided, will be updated by mechanic
 		Notes:         req.Notes,
 	}
+
 	if err := h.waitingListUsecase.TakeQueueNumber(r.Context(), waitingList); err != nil {
 		response.Error(w, http.StatusInternalServerError, "Failed to take queue number", err)
 		return
 	}
+
 	resp := dto.WaitingListResponse{
 		ID:            waitingList.ID,
 		QueueNumber:   waitingList.QueueNumber,
@@ -62,9 +114,11 @@ func (h *WaitingListHandler) TakeQueueNumber(w http.ResponseWriter, r *http.Requ
 		EstimatedTime: waitingList.EstimatedTime,
 		Status:        string(waitingList.Status),
 		Notes:         waitingList.Notes,
+		MechanicNotes: waitingList.MechanicNotes,
 		CreatedAt:     waitingList.CreatedAt,
 		UpdatedAt:     waitingList.UpdatedAt,
 	}
+
 	response.Success(w, http.StatusCreated, "Queue number taken successfully", resp)
 }
 func (h *WaitingListHandler) GetMyQueue(w http.ResponseWriter, r *http.Request) {
@@ -208,6 +262,49 @@ func (h *WaitingListHandler) MarkNoShow(w http.ResponseWriter, r *http.Request) 
 	}
 	response.Success(w, http.StatusOK, "Marked as no-show successfully", nil)
 }
+
+// UpdateWaitingList allows admin and mechanic to update queue with notes and estimates
+func (h *WaitingListHandler) UpdateWaitingList(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := types.ParseMSSQLUUID(vars["id"])
+	if err != nil {
+		response.Error(w, http.StatusBadRequest, "Invalid ID", err)
+		return
+	}
+
+	var req dto.UpdateWaitingListRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, http.StatusBadRequest, "Invalid request body", err)
+		return
+	}
+
+	// Build update entity from request
+	updates := &entities.WaitingList{
+		ServiceType:   req.ServiceType,
+		EstimatedTime: req.EstimatedTime,
+		Notes:         req.Notes,
+		MechanicNotes: req.MechanicNotes,
+	}
+
+	if req.Status != "" {
+		updates.Status = entities.WaitingListStatus(req.Status)
+	}
+
+	if err := h.waitingListUsecase.UpdateWaitingList(r.Context(), id, updates); err != nil {
+		response.Error(w, http.StatusInternalServerError, "Failed to update waiting list", err)
+		return
+	}
+
+	// Get updated waiting list to return
+	updatedWL, err := h.waitingListUsecase.GetWaitingList(r.Context(), id)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, "Failed to get updated waiting list", err)
+		return
+	}
+
+	resp := h.buildDetailResponse(updatedWL)
+	response.Success(w, http.StatusOK, "Waiting list updated successfully", resp)
+}
 func (h *WaitingListHandler) CheckAvailability(w http.ResponseWriter, r *http.Request) {
 	dateStr := r.URL.Query().Get("date")
 	var serviceDate time.Time
@@ -310,6 +407,112 @@ func (h *WaitingListHandler) GetServiceProgress(w http.ResponseWriter, r *http.R
 	}
 	response.Success(w, http.StatusOK, "Service progress retrieved successfully", resp)
 }
+
+// GetAllServiceProgress allows admin to view progress of all queues
+func (h *WaitingListHandler) GetAllServiceProgress(w http.ResponseWriter, r *http.Request) {
+	// Get date from query parameter, default to today
+	dateStr := r.URL.Query().Get("date")
+	var serviceDate time.Time
+	var err error
+
+	if dateStr == "" {
+		serviceDate = time.Now()
+	} else {
+		serviceDate, err = time.Parse("2006-01-02", dateStr)
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, "Invalid date format. Use YYYY-MM-DD", err)
+			return
+		}
+	}
+
+	// Get all tickets for the date
+	allTickets, err := h.waitingListUsecase.GetQueueByDate(r.Context(), serviceDate)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, "Failed to retrieve queue information", err)
+		return
+	}
+
+	if len(allTickets) == 0 {
+		response.Success(w, http.StatusOK, "No queue entries found for this date", []interface{}{})
+		return
+	}
+
+	// Calculate current serving queue
+	var currentlyServing int
+	for _, ticket := range allTickets {
+		if ticket.Status == entities.WaitingListStatusInService {
+			currentlyServing = ticket.QueueNumber
+			break
+		}
+	}
+
+	// Build progress response for each ticket
+	progressList := make([]dto.ServiceProgressResponse, 0, len(allTickets))
+
+	for _, waitingList := range allTickets {
+		// Calculate waiting ahead for this ticket
+		var waitingAhead int
+		for _, ticket := range allTickets {
+			if ticket.QueueNumber < waitingList.QueueNumber &&
+				(ticket.Status == entities.WaitingListStatusWaiting || ticket.Status == entities.WaitingListStatusCalled) {
+				waitingAhead++
+			}
+		}
+
+		estimatedWaitMin := waitingAhead * 30
+		if waitingList.Status == entities.WaitingListStatusInService ||
+			waitingList.Status == entities.WaitingListStatusCompleted {
+			estimatedWaitMin = 0
+		}
+
+		statusMessage := h.generateStatusMessage(waitingList.Status, waitingAhead, currentlyServing, waitingList.QueueNumber)
+
+		progress := dto.ServiceProgressResponse{
+			ID:            waitingList.ID,
+			QueueNumber:   waitingList.QueueNumber,
+			Status:        string(waitingList.Status),
+			StatusMessage: statusMessage,
+			ServiceType:   waitingList.ServiceType,
+			ServiceDate:   waitingList.ServiceDate,
+			EstimatedTime: waitingList.EstimatedTime,
+			QueuePosition: waitingList.QueueNumber,
+			PeopleAhead:   waitingAhead,
+			EstimatedWait: estimatedWaitMin,
+			Timeline: dto.Timeline{
+				QueueTakenAt:   waitingList.CreatedAt,
+				CalledAt:       waitingList.CalledAt,
+				ServiceStartAt: waitingList.ServiceStartAt,
+				ServiceEndAt:   waitingList.ServiceEndAt,
+			},
+			Notes: waitingList.Notes,
+		}
+
+		// Add vehicle info if available
+		if waitingList.Vehicle.ID.String() != "00000000-0000-0000-0000-000000000000" {
+			progress.VehicleBrand = waitingList.Vehicle.Brand
+			progress.VehicleModel = waitingList.Vehicle.Model
+			progress.LicensePlate = waitingList.Vehicle.LicensePlate
+		}
+
+		// Add customer info
+		if waitingList.Customer.ID.String() != "00000000-0000-0000-0000-000000000000" {
+			progress.CustomerName = waitingList.Customer.Name
+			progress.CustomerPhone = waitingList.Customer.Phone
+		}
+
+		progressList = append(progressList, progress)
+	}
+
+	responseData := map[string]interface{}{
+		"date":              serviceDate.Format("2006-01-02"),
+		"total_queues":      len(progressList),
+		"currently_serving": currentlyServing,
+		"progress_list":     progressList,
+	}
+
+	response.Success(w, http.StatusOK, "All service progress retrieved successfully", responseData)
+}
+
 func (h *WaitingListHandler) generateStatusMessage(status entities.WaitingListStatus, waitingAhead, currentlyServing, queueNumber int) string {
 	switch status {
 	case entities.WaitingListStatusWaiting:
@@ -359,6 +562,7 @@ func (h *WaitingListHandler) buildDetailResponse(wl *entities.WaitingList) dto.W
 		ServiceStartAt: wl.ServiceStartAt,
 		ServiceEndAt:   wl.ServiceEndAt,
 		Notes:          wl.Notes,
+		MechanicNotes:  wl.MechanicNotes,
 		CreatedAt:      wl.CreatedAt,
 		UpdatedAt:      wl.UpdatedAt,
 	}

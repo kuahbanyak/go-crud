@@ -77,11 +77,10 @@ func TestUserHandler_Register(t *testing.T) {
 		{
 			name: "successful registration",
 			requestBody: dto.RegisterRequest{
-				Email:     "test@example.com",
-				Password:  "password123",
-				FirstName: "John",
-				LastName:  "Doe",
-				Phone:     "1234567890",
+				Email:    "test@example.com",
+				Password: "password123",
+				Name:     "John Doe",
+				Phone:    "1234567890",
 			},
 			mockSetup: func(m *MockUserUsecase) {
 				m.On("Register", mock.Anything, mock.MatchedBy(func(u *entities.User) bool {
@@ -97,11 +96,10 @@ func TestUserHandler_Register(t *testing.T) {
 		{
 			name: "registration with existing email",
 			requestBody: dto.RegisterRequest{
-				Email:     "existing@example.com",
-				Password:  "password123",
-				FirstName: "Jane",
-				LastName:  "Doe",
-				Phone:     "9876543210",
+				Email:    "existing@example.com",
+				Password: "password123",
+				Name:     "Jane Doe",
+				Phone:    "9876543210",
 			},
 			mockSetup: func(m *MockUserUsecase) {
 				m.On("Register", mock.Anything, mock.Anything).Return(errors.New("user with this email already exists"))
@@ -358,9 +356,8 @@ func TestUserHandler_UpdateUser(t *testing.T) {
 			name:   "update user successfully",
 			userID: "1",
 			requestBody: dto.UpdateUserRequest{
-				FirstName: "Updated",
-				LastName:  "Name",
-				Phone:     "9999999999",
+				Name:  "Updated Name",
+				Phone: "9999999999",
 			},
 			mockSetup: func(m *MockUserUsecase) {
 				existingUser := &entities.User{Email: "test@example.com"}
@@ -380,8 +377,7 @@ func TestUserHandler_UpdateUser(t *testing.T) {
 			name:   "user not found",
 			userID: "999",
 			requestBody: dto.UpdateUserRequest{
-				FirstName: "Updated",
-				LastName:  "Name",
+				Name: "Updated Name",
 			},
 			mockSetup: func(m *MockUserUsecase) {
 				m.On("GetByID", mock.Anything, uint(999)).Return(nil, errors.New("user not found"))
