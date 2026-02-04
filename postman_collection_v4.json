@@ -291,13 +291,14 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"John Doe Updated\",\n  \"phone\": \"081234567899\",\n  \"address\": \"Jakarta Selatan\"\n}"
+							"raw": "{\n  \"name\": \"John Doe Updated\",\n  \"phone\": \"081234567899\",\n  \"address\": \"Jakarta Selatan\",\n  \"password\": \"newPassword123\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/users/profile",
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "v1", "users", "profile"]
-						}
+						},
+						"description": "Update own profile (all fields optional: name, phone, address, password)."
 					}
 				},
 				{
@@ -387,14 +388,14 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"first_name\": \"Updated\",\n  \"last_name\": \"Name\",\n  \"phone\": \"081234567890\"\n}"
+							"raw": "{\n  \"name\": \"Updated Name\",\n  \"phone\": \"081234567890\",\n  \"address\": \"Updated Address\",\n  \"password\": \"newPassword123\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/users/{{userId}}",
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "v1", "users", "{{userId}}"]
 						},
-						"description": "Update user details. Requires admin role."
+						"description": "Update user details (all fields optional: name, phone, address, password). Requires admin role."
 					}
 				},
 				{

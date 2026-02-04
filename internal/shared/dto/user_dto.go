@@ -16,8 +16,10 @@ type LoginRequest struct {
 	Password string `json:"password" validate:"required"`
 }
 type UpdateUserRequest struct {
-	Name  string `json:"name,omitempty" validate:"omitempty,min=1,max=100"`
-	Phone string `json:"phone,omitempty" validate:"omitempty,min=10,max=20"`
+	Name     string `json:"name,omitempty" validate:"omitempty,min=1,max=100"`
+	Phone    string `json:"phone,omitempty" validate:"omitempty,min=10,max=20"`
+	Address  string `json:"address,omitempty" validate:"omitempty,min=1,max=100"`
+	Password string `json:"password,omitempty" validate:"omitempty,min=10,max=20"`
 }
 type UserResponse struct {
 	ID    types.MSSQLUUID `json:"id"`
