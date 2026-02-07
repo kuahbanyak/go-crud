@@ -405,6 +405,9 @@ func (h *WaitingListHandler) GetServiceProgress(w http.ResponseWriter, r *http.R
 		resp.VehicleModel = waitingList.Vehicle.Model
 		resp.LicensePlate = waitingList.Vehicle.LicensePlate
 	}
+	if waitingList.Mechanic != nil && waitingList.Mechanic.ID.String() != "00000000-0000-0000-0000-000000000000" {
+		resp.MechanicName = waitingList.Mechanic.Name
+	}
 	response.Success(w, http.StatusOK, "Service progress retrieved successfully", resp)
 }
 
@@ -500,6 +503,11 @@ func (h *WaitingListHandler) GetAllServiceProgress(w http.ResponseWriter, r *htt
 			progress.CustomerPhone = waitingList.Customer.Phone
 		}
 
+		// Add mechanic info
+		if waitingList.Mechanic != nil && waitingList.Mechanic.ID.String() != "00000000-0000-0000-0000-000000000000" {
+			progress.MechanicName = waitingList.Mechanic.Name
+		}
+
 		progressList = append(progressList, progress)
 	}
 
@@ -511,6 +519,81 @@ func (h *WaitingListHandler) GetAllServiceProgress(w http.ResponseWriter, r *htt
 	}
 
 	response.Success(w, http.StatusOK, "All service progress retrieved successfully", responseData)
+}
+
+// GetAvailableQueues returns list of queues available for service (waiting or called status)
+func (h *WaitingListHandler) GetAvailableQueues(w http.ResponseWriter, r *http.Request) {
+	// Get date from query parameter, default to today
+	dateStr := r.URL.Query().Get("date")
+	var serviceDate time.Time
+	var err error
+
+	if dateStr == "" {
+		serviceDate = time.Now()
+	} else {
+		serviceDate, err = time.Parse("2006-01-02", dateStr)
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, "Invalid date format. Use YYYY-MM-DD", err)
+			return
+		}
+	}
+
+	// Get available queues
+	availableQueues, err := h.waitingListUsecase.GetAvailableQueues(r.Context(), serviceDate)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, "Failed to retrieve available queues", err)
+		return
+	}
+
+	if len(availableQueues) == 0 {
+		response.Success(w, http.StatusOK, "No queues available for service", []interface{}{})
+		return
+	}
+
+	// Build response with full details
+	queueList := make([]dto.WaitingListWithDetailsResponse, 0, len(availableQueues))
+	for _, queue := range availableQueues {
+		queueList = append(queueList, h.buildDetailResponse(queue))
+	}
+
+	responseData := map[string]interface{}{
+		"date":             serviceDate.Format("2006-01-02"),
+		"total_queues":     len(queueList),
+		"available_queues": queueList,
+	}
+
+	response.Success(w, http.StatusOK, "Available queues retrieved successfully", responseData)
+}
+
+// AssignMechanicToQueue allows mechanic to assign themselves to service a queue
+func (h *WaitingListHandler) AssignMechanicToQueue(w http.ResponseWriter, r *http.Request) {
+	mechanicID, ok := r.Context().Value("id").(types.MSSQLUUID)
+	if !ok {
+		response.Error(w, http.StatusUnauthorized, "Unauthorized", nil)
+		return
+	}
+
+	var req dto.AssignMechanicRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, http.StatusBadRequest, "Invalid request body", err)
+		return
+	}
+
+	// Assign mechanic to queue
+	if err := h.waitingListUsecase.AssignMechanicToQueue(r.Context(), req.QueueID, mechanicID); err != nil {
+		response.Error(w, http.StatusBadRequest, "Failed to assign mechanic to queue", err)
+		return
+	}
+
+	// Get updated queue to return
+	updatedQueue, err := h.waitingListUsecase.GetWaitingList(r.Context(), req.QueueID)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, "Failed to get updated queue", err)
+		return
+	}
+
+	resp := h.buildDetailResponse(updatedQueue)
+	response.Success(w, http.StatusOK, "Mechanic assigned to queue successfully", resp)
 }
 
 func (h *WaitingListHandler) generateStatusMessage(status entities.WaitingListStatus, waitingAhead, currentlyServing, queueNumber int) string {
@@ -554,6 +637,7 @@ func (h *WaitingListHandler) buildDetailResponse(wl *entities.WaitingList) dto.W
 		QueueNumber:    wl.QueueNumber,
 		VehicleID:      wl.VehicleID,
 		CustomerID:     wl.CustomerID,
+		MechanicID:     wl.MechanicID,
 		ServiceDate:    wl.ServiceDate,
 		ServiceType:    wl.ServiceType,
 		EstimatedTime:  wl.EstimatedTime,
@@ -574,6 +658,9 @@ func (h *WaitingListHandler) buildDetailResponse(wl *entities.WaitingList) dto.W
 	if wl.Customer.ID.String() != "00000000-0000-0000-0000-000000000000" {
 		resp.CustomerName = wl.Customer.Name
 		resp.CustomerPhone = wl.Customer.Phone
+	}
+	if wl.Mechanic != nil && wl.Mechanic.ID.String() != "00000000-0000-0000-0000-000000000000" {
+		resp.MechanicName = wl.Mechanic.Name
 	}
 	return resp
 }

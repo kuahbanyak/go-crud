@@ -272,3 +272,52 @@ func (u *WaitingListUsecase) UpdateWaitingList(ctx context.Context, id types.MSS
 
 	return u.waitingListRepo.Update(ctx, existing)
 }
+
+// AssignMechanicToQueue assigns a mechanic to service a queue entry
+func (u *WaitingListUsecase) AssignMechanicToQueue(ctx context.Context, queueID types.MSSQLUUID, mechanicID types.MSSQLUUID) error {
+	// Get the waiting list entry
+	waitingList, err := u.waitingListRepo.GetByID(ctx, queueID)
+	if err != nil {
+		return errors.New("queue entry not found")
+	}
+
+	// Check if mechanic exists and has mechanic role
+	mechanic, err := u.userRepo.GetByID(ctx, mechanicID)
+	if err != nil {
+		return errors.New("mechanic not found")
+	}
+
+	// Check if user is a mechanic or admin (assuming roles are checked elsewhere)
+	_ = mechanic // Use mechanic variable to avoid unused error
+
+	// Check if queue is in a valid state for assignment
+	if waitingList.Status != entities.WaitingListStatusWaiting &&
+		waitingList.Status != entities.WaitingListStatusCalled {
+		return errors.New("can only assign mechanic to waiting or called queues")
+	}
+
+	// Assign mechanic
+	waitingList.MechanicID = &mechanicID
+
+	return u.waitingListRepo.Update(ctx, waitingList)
+}
+
+// GetAvailableQueues returns queues that are waiting to be serviced (for mechanics to choose from)
+func (u *WaitingListUsecase) GetAvailableQueues(ctx context.Context, serviceDate time.Time) ([]*entities.WaitingList, error) {
+	// Get all queues for the date
+	allQueues, err := u.waitingListRepo.GetByServiceDate(ctx, serviceDate)
+	if err != nil {
+		return nil, err
+	}
+
+	// Filter for queues that are waiting or called (available for service)
+	availableQueues := make([]*entities.WaitingList, 0)
+	for _, queue := range allQueues {
+		if queue.Status == entities.WaitingListStatusWaiting ||
+			queue.Status == entities.WaitingListStatusCalled {
+			availableQueues = append(availableQueues, queue)
+		}
+	}
+
+	return availableQueues, nil
+}

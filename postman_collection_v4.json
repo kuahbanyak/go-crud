@@ -1,9 +1,9 @@
 {
 	"info": {
 		"name": "Go-CRUD API - Complete Collection",
-		"description": "Complete API collection with Health, Version, Auth, Users, Products, Vehicles, Waiting List (with Queue Progress), Maintenance, Settings, Invoices, Analytics, Roles & Pagination. Updated Feb 2026 with improved ticket queue system featuring vehicle auto-creation, mechanic notes, and admin progress monitoring.",
+		"description": "Complete API collection with Health, Version, Auth, Users, Products, Vehicles, Waiting List (with Queue Progress & Mechanic Assignment), Maintenance, Settings, Invoices, Analytics, Roles & Pagination. Updated Feb 2026 with mechanic assignment feature - mechanics can view available queues, choose which customer to service first, and their name is displayed in queue progress.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"version": "4.0.0"
+		"version": "4.1.0"
 	},
 	"variable": [
 		{
@@ -18,6 +18,11 @@
 		},
 		{
 			"key": "adminToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "mechanicToken",
 			"value": "",
 			"type": "string"
 		},
@@ -844,9 +849,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/admin/waiting-list/progress/all?date=2026-02-10",
+							"raw": "{{baseUrl}}/api/v1/mechanic/waiting-list/progress/all?date=2026-02-10",
 							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "admin", "waiting-list", "progress", "all"],
+							"path": ["api", "v1", "mechanic", "waiting-list", "progress", "all"],
 							"query": [
 								{
 									"key": "date",
@@ -855,7 +860,60 @@
 								}
 							]
 						},
-						"description": "Admin can view progress of ALL users' queues for a specific date. Shows customer names, phone numbers, vehicle details, and complete progress information for each ticket."
+						"description": "Admin & Mechanic can view progress of ALL users' queues for a specific date. Shows customer names, phone numbers, vehicle details, mechanic name (if assigned), and complete progress information for each ticket."
+					}
+				},
+				{
+					"name": "Get Available Queues (Mechanic)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{mechanicToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/mechanic/waiting-list/available?date=2026-02-10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "mechanic", "waiting-list", "available"],
+							"query": [
+								{
+									"key": "date",
+									"value": "2026-02-10",
+									"description": "Optional - defaults to today"
+								}
+							]
+						},
+						"description": "Mechanic/Admin can view all available queues (waiting or called status) that are ready to be serviced. Shows customer details, vehicle info, and service type to help mechanic choose which customer to service first."
+					}
+				},
+				{
+					"name": "Assign Mechanic to Queue",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{mechanicToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"queue_id\": \"{{waitingListId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/mechanic/waiting-list/assign",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "mechanic", "waiting-list", "assign"]
+						},
+						"description": "Mechanic assigns themselves to service a specific queue. This allows mechanics to choose which customer they want to service first. The mechanic's name will be shown in the queue details and progress."
 					}
 				},
 				{
@@ -878,9 +936,9 @@
 							"raw": "{\n  \"estimated_time\": 45,\n  \"mechanic_notes\": \"Oil change required. Air filter is dirty, recommend replacement. Brake pads at 60%.\"\n}"
 						},
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/admin/waiting-list/{{waitingListId}}",
+							"raw": "{{baseUrl}}/api/v1/mechanic/waiting-list/{{waitingListId}}",
 							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "admin", "waiting-list", "{{waitingListId}}"]
+							"path": ["api", "v1", "mechanic", "waiting-list", "{{waitingListId}}"]
 						},
 						"description": "Mechanic/Admin updates the queue after inspection with time estimate (in minutes) and notes. This is the NEW endpoint for mechanic updates."
 					}
@@ -897,11 +955,11 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/admin/waiting-list/{{waitingListId}}/call",
+							"raw": "{{baseUrl}}/api/v1/mechanic/waiting-list/{{waitingListId}}/call",
 							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "admin", "waiting-list", "{{waitingListId}}", "call"]
+							"path": ["api", "v1", "mechanic", "waiting-list", "{{waitingListId}}", "call"]
 						},
-						"description": "Call the customer - changes status to 'called'"
+						"description": "Call the customer - changes status to 'called' (Admin & Mechanic only)"
 					}
 				},
 				{
@@ -916,9 +974,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/admin/waiting-list/{{waitingListId}}/start",
+							"raw": "{{baseUrl}}/api/v1/mechanic/waiting-list/{{waitingListId}}/start",
 							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "admin", "waiting-list", "{{waitingListId}}", "start"]
+							"path": ["api", "v1", "mechanic", "waiting-list", "{{waitingListId}}", "start"]
 						},
 						"description": "Start the service - changes status to 'in_service'"
 					}
@@ -935,11 +993,11 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/admin/waiting-list/{{waitingListId}}/complete",
+							"raw": "{{baseUrl}}/api/v1/mechanic/waiting-list/{{waitingListId}}/complete",
 							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "admin", "waiting-list", "{{waitingListId}}", "complete"]
+							"path": ["api", "v1", "mechanic", "waiting-list", "{{waitingListId}}", "complete"]
 						},
-						"description": "Complete the service - changes status to 'completed'"
+						"description": "Complete the service - changes status to 'completed' (Admin & Mechanic only)"
 					}
 				},
 				{
@@ -954,11 +1012,11 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/admin/waiting-list/{{waitingListId}}/no-show",
+							"raw": "{{baseUrl}}/api/v1/mechanic/waiting-list/{{waitingListId}}/no-show",
 							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "admin", "waiting-list", "{{waitingListId}}", "no-show"]
+							"path": ["api", "v1", "mechanic", "waiting-list", "{{waitingListId}}", "no-show"]
 						},
-						"description": "Mark customer as no-show - changes status to 'no_show'"
+						"description": "Mark customer as no-show - changes status to 'no_show' (Admin & Mechanic only)"
 					}
 				}
 			]
@@ -1125,7 +1183,7 @@
 					}
 				},
 				{
-					"name": "Delete Item (Admin)",
+					"name": "Delete Item (Admin & Mechanic)",
 					"request": {
 						"method": "DELETE",
 						"header": [
@@ -1136,9 +1194,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/admin/maintenance/items/{{maintenanceItemId}}",
+							"raw": "{{baseUrl}}/api/v1/mechanic/maintenance/items/{{maintenanceItemId}}",
 							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "admin", "maintenance", "items", "{{maintenanceItemId}}"]
+							"path": ["api", "v1", "mechanic", "maintenance", "items", "{{maintenanceItemId}}"]
 						}
 					}
 				}

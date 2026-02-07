@@ -23,45 +23,52 @@ type UpdateWaitingListRequest struct {
 	Status        string `json:"status,omitempty"`
 }
 
+type AssignMechanicRequest struct {
+	QueueID types.MSSQLUUID `json:"queue_id" validate:"required"`
+}
+
 type WaitingListResponse struct {
-	ID             types.MSSQLUUID `json:"id"`
-	QueueNumber    int             `json:"queue_number"`
-	VehicleID      types.MSSQLUUID `json:"vehicle_id"`
-	CustomerID     types.MSSQLUUID `json:"customer_id"`
-	ServiceDate    time.Time       `json:"service_date"`
-	ServiceType    string          `json:"service_type"`
-	EstimatedTime  int             `json:"estimated_time"`
-	Status         string          `json:"status"`
-	CalledAt       *time.Time      `json:"called_at,omitempty"`
-	ServiceStartAt *time.Time      `json:"service_start_at,omitempty"`
-	ServiceEndAt   *time.Time      `json:"service_end_at,omitempty"`
-	Notes          string          `json:"notes"`
-	MechanicNotes  string          `json:"mechanic_notes"`
-	CreatedAt      time.Time       `json:"created_at"`
-	UpdatedAt      time.Time       `json:"updated_at"`
+	ID             types.MSSQLUUID  `json:"id"`
+	QueueNumber    int              `json:"queue_number"`
+	VehicleID      types.MSSQLUUID  `json:"vehicle_id"`
+	CustomerID     types.MSSQLUUID  `json:"customer_id"`
+	MechanicID     *types.MSSQLUUID `json:"mechanic_id,omitempty"`
+	ServiceDate    time.Time        `json:"service_date"`
+	ServiceType    string           `json:"service_type"`
+	EstimatedTime  int              `json:"estimated_time"`
+	Status         string           `json:"status"`
+	CalledAt       *time.Time       `json:"called_at,omitempty"`
+	ServiceStartAt *time.Time       `json:"service_start_at,omitempty"`
+	ServiceEndAt   *time.Time       `json:"service_end_at,omitempty"`
+	Notes          string           `json:"notes"`
+	MechanicNotes  string           `json:"mechanic_notes"`
+	CreatedAt      time.Time        `json:"created_at"`
+	UpdatedAt      time.Time        `json:"updated_at"`
 }
 
 type WaitingListWithDetailsResponse struct {
-	ID             types.MSSQLUUID `json:"id"`
-	QueueNumber    int             `json:"queue_number"`
-	VehicleID      types.MSSQLUUID `json:"vehicle_id"`
-	VehicleBrand   string          `json:"vehicle_brand,omitempty"`
-	VehicleModel   string          `json:"vehicle_model,omitempty"`
-	LicensePlate   string          `json:"license_plate,omitempty"`
-	CustomerID     types.MSSQLUUID `json:"customer_id"`
-	CustomerName   string          `json:"customer_name,omitempty"`
-	CustomerPhone  string          `json:"customer_phone,omitempty"`
-	ServiceDate    time.Time       `json:"service_date"`
-	ServiceType    string          `json:"service_type"`
-	EstimatedTime  int             `json:"estimated_time"`
-	Status         string          `json:"status"`
-	CalledAt       *time.Time      `json:"called_at,omitempty"`
-	ServiceStartAt *time.Time      `json:"service_start_at,omitempty"`
-	ServiceEndAt   *time.Time      `json:"service_end_at,omitempty"`
-	Notes          string          `json:"notes"`
-	MechanicNotes  string          `json:"mechanic_notes"`
-	CreatedAt      time.Time       `json:"created_at"`
-	UpdatedAt      time.Time       `json:"updated_at"`
+	ID             types.MSSQLUUID  `json:"id"`
+	QueueNumber    int              `json:"queue_number"`
+	VehicleID      types.MSSQLUUID  `json:"vehicle_id"`
+	VehicleBrand   string           `json:"vehicle_brand,omitempty"`
+	VehicleModel   string           `json:"vehicle_model,omitempty"`
+	LicensePlate   string           `json:"license_plate,omitempty"`
+	CustomerID     types.MSSQLUUID  `json:"customer_id"`
+	CustomerName   string           `json:"customer_name,omitempty"`
+	CustomerPhone  string           `json:"customer_phone,omitempty"`
+	MechanicID     *types.MSSQLUUID `json:"mechanic_id,omitempty"`
+	MechanicName   string           `json:"mechanic_name,omitempty"`
+	ServiceDate    time.Time        `json:"service_date"`
+	ServiceType    string           `json:"service_type"`
+	EstimatedTime  int              `json:"estimated_time"`
+	Status         string           `json:"status"`
+	CalledAt       *time.Time       `json:"called_at,omitempty"`
+	ServiceStartAt *time.Time       `json:"service_start_at,omitempty"`
+	ServiceEndAt   *time.Time       `json:"service_end_at,omitempty"`
+	Notes          string           `json:"notes"`
+	MechanicNotes  string           `json:"mechanic_notes"`
+	CreatedAt      time.Time        `json:"created_at"`
+	UpdatedAt      time.Time        `json:"updated_at"`
 }
 
 type WaitingListListResponse struct {
@@ -97,6 +104,7 @@ type ServiceProgressResponse struct {
 	LicensePlate  string          `json:"license_plate,omitempty"`
 	CustomerName  string          `json:"customer_name,omitempty"`
 	CustomerPhone string          `json:"customer_phone,omitempty"`
+	MechanicName  string          `json:"mechanic_name,omitempty"`
 	ServiceType   string          `json:"service_type"`
 	ServiceDate   time.Time       `json:"service_date"`
 	EstimatedTime int             `json:"estimated_time_minutes"`

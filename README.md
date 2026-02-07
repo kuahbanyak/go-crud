@@ -435,19 +435,26 @@ Authorization: Bearer {token}
 
 All admin endpoints require `Authorization: Bearer {admin_token}` and admin role.
 
-#### Waiting List Management
+### Mechanic & Admin Endpoints
+
+These endpoints require `Authorization: Bearer {token}` with either admin or mechanic role.
+
+#### Waiting List Management (Mechanic/Admin)
 ```http
-PUT /api/v1/admin/waiting-list/{id}/call       # Call customer
-PUT /api/v1/admin/waiting-list/{id}/start      # Start service
-PUT /api/v1/admin/waiting-list/{id}/complete   # Complete service
-PUT /api/v1/admin/waiting-list/{id}/no-show    # Mark no-show
+GET /api/v1/mechanic/waiting-list/progress/all     # Get all service progress
+PUT /api/v1/mechanic/waiting-list/{id}              # Update queue (add estimate & notes)
+PUT /api/v1/mechanic/waiting-list/{id}/call         # Call customer
+PUT /api/v1/mechanic/waiting-list/{id}/start        # Start service
+PUT /api/v1/mechanic/waiting-list/{id}/complete     # Complete service
+PUT /api/v1/mechanic/waiting-list/{id}/no-show      # Mark no-show
 ```
 
 #### Maintenance Items (Mechanic/Admin)
 ```http
-POST /api/v1/admin/maintenance/items/discovered  # Add discovered issue
-PUT /api/v1/admin/maintenance/items/{id}         # Update item
-PUT /api/v1/admin/maintenance/items/{id}/complete # Complete item
+POST /api/v1/mechanic/maintenance/items/discovered  # Add discovered issue
+PUT /api/v1/mechanic/maintenance/items/{id}         # Update item
+PUT /api/v1/mechanic/maintenance/items/{id}/complete # Complete item
+DELETE /api/v1/mechanic/maintenance/items/{id}      # Delete item
 DELETE /api/v1/admin/maintenance/items/{id}      # Delete item
 ```
 

@@ -26,6 +26,7 @@ type WaitingList struct {
 	QueueNumber    int               `gorm:"uniqueIndex:idx_queue_date;not null" json:"queue_number"`
 	VehicleID      types.MSSQLUUID   `gorm:"type:uniqueidentifier;not null" json:"vehicle_id"`
 	CustomerID     types.MSSQLUUID   `gorm:"type:uniqueidentifier;not null" json:"customer_id"`
+	MechanicID     *types.MSSQLUUID  `gorm:"type:uniqueidentifier" json:"mechanic_id,omitempty"` // Mechanic assigned to service
 	ServiceDate    time.Time         `gorm:"uniqueIndex:idx_queue_date;not null" json:"service_date"`
 	ServiceType    string            `gorm:"type:varchar(100);not null" json:"service_type"`
 	EstimatedTime  int               `json:"estimated_time"` // in minutes, default 0, updated by mechanic
@@ -37,6 +38,7 @@ type WaitingList struct {
 	MechanicNotes  string            `gorm:"type:text" json:"mechanic_notes"` // Mechanic notes after inspection
 	Vehicle        Vehicle           `gorm:"foreignKey:VehicleID" json:"vehicle,omitempty"`
 	Customer       User              `gorm:"foreignKey:CustomerID" json:"customer,omitempty"`
+	Mechanic       *User             `gorm:"foreignKey:MechanicID" json:"mechanic,omitempty"` // Mechanic who serviced
 }
 
 func (w *WaitingList) BeforeCreate(_ *gorm.DB) error {
