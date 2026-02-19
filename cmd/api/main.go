@@ -61,26 +61,28 @@ func main() {
 	productRepo := mssql.NewProductRepository(db)
 	vehicleRepo := mssql.NewVehicleRepository(db)
 	waitingListRepo := mssql.NewWaitingListRepository(db)
-	settingRepo := mssql.NewSettingRepository(db)
-	maintenanceItemRepo := mssql.NewMaintenanceItemRepository(db)
+	serviceItemRepo := mssql.NewServiceItemRepository(db)
 	invoiceRepo := mssql.NewInvoiceRepository(sqlDB)
 	roleRepo := mssql.NewRoleRepository(db)
+	jobRepo := mssql.NewJobRepository(db)
 
-	settingUsecase := usecases.NewSettingUsecase(settingRepo)
+	jobUsecase := usecases.NewJobUsecase(jobRepo)
 	userUsecase := usecases.NewUserUsecase(userRepo, roleRepo, authService)
 	productUsecase := usecases.NewProductUsecase(productRepo, validator)
 	vehicleUsecase := usecases.NewVehicleUseCase(vehicleRepo)
-	waitingListUsecase := usecases.NewWaitingListUsecase(waitingListRepo, vehicleRepo, userRepo, settingUsecase, vehicleUsecase)
-	maintenanceItemUsecase := usecases.NewMaintenanceItemUsecase(maintenanceItemRepo, waitingListRepo, userRepo)
+	serviceItemUsecase := usecases.NewServiceItemUsecase(serviceItemRepo)
+	waitingListUsecase := usecases.NewWaitingListUsecase(waitingListRepo, vehicleRepo, userRepo, vehicleUsecase, serviceItemRepo, jobUsecase)
 	invoiceUsecase := usecases.NewInvoiceUsecase(invoiceRepo, waitingListRepo, userRepo)
 	analyticsUsecase := usecases.NewAnalyticsUsecase(sqlDB)
 	roleUsecase := usecases.NewRoleUsecase(roleRepo, userRepo)
 
 	ctx := context.Background()
-	if err := settingRepo.SeedDefaults(ctx); err != nil {
-		logger.Error("Failed to seed default settings:", err)
+
+	// Seed default jobs
+	if err := jobRepo.SeedDefaults(ctx); err != nil {
+		logger.Error("Failed to seed default jobs:", err)
 	} else {
-		logger.Info("Default settings seeded successfully")
+		logger.Info("Default jobs seeded successfully")
 	}
 
 	// Seed default roles
@@ -90,33 +92,59 @@ func main() {
 		logger.Info("Default roles seeded successfully")
 	}
 
+	// Seed default service items
+	if err := database.SeedDefaultServiceItems(db); err != nil {
+		logger.Error("Failed to seed default service items:", err)
+	} else {
+		logger.Info("Default service items seeded successfully")
+	}
+
 	userHandler := handlers.NewUserHandler(userUsecase)
 	productHandler := handlers.NewProductHandler(productUsecase)
-	waitingListHandler := handlers.NewWaitingListHandler(waitingListUsecase, vehicleUsecase)
-	settingHandler := handlers.NewSettingHandler(settingUsecase)
+	waitingListHandler := handlers.NewWaitingListHandler(waitingListUsecase, vehicleUsecase, jobUsecase)
 	vehicleHandler := handlers.NewVehicleHandler(vehicleUsecase)
-	maintenanceItemHandler := handlers.NewMaintenanceItemHandler(maintenanceItemUsecase)
+	serviceItemHandler := handlers.NewServiceItemHandler(serviceItemUsecase)
 	healthHandler := handlers.NewHealthHandler(sqlDB)
 	versionHandler := handlers.NewVersionHandler()
 	invoiceHandler := handlers.NewInvoiceHandler(invoiceUsecase)
 	analyticsHandler := handlers.NewAnalyticsHandler(analyticsUsecase)
 	roleHandler := handlers.NewRoleHandler(roleUsecase)
-
-	srv := server.NewHTTPServer(cfg, userHandler, productHandler, waitingListHandler, settingHandler, vehicleHandler, maintenanceItemHandler, healthHandler, versionHandler, invoiceHandler, analyticsHandler, roleHandler)
+	jobHandler := handlers.NewJobHandler(jobUsecase)
 
 	sched, err := scheduler.NewScheduler()
 	if err != nil {
 		log.Fatal("Failed to create scheduler:", err)
 	}
 
-	dailyCleanupJob := jobs.NewDailyCleanupJob(waitingListRepo, settingUsecase)
+	dailyCleanupJob := jobs.NewDailyCleanupJob(waitingListRepo, jobUsecase)
 	if err := sched.RegisterJob(dailyCleanupJob); err != nil {
 		log.Fatal("Failed to register daily cleanup job:", err)
+	}
+
+	// Check database for any active jobs - do NOT auto-run on startup
+	hasActiveJobs, err := jobUsecase.HasAnyActiveJob(ctx)
+	if err != nil {
+		logger.Error("Failed to check job status from database:", err)
+	}
+
+	// Jobs are disabled by default on startup - admin must manually enable them
+	sched.SetAutoRun(false)
+
+	if hasActiveJobs {
+		logger.Info("Active jobs found in database, but automatic execution is DISABLED on startup")
+		logger.Info("Jobs will only run when admin manually enables them via API")
+	} else {
+		logger.Info("No active jobs found in database")
+		logger.Info("Jobs will only run when admin manually enables them via API")
 	}
 
 	logger.Info("Starting job scheduler...")
 	sched.Start()
 	logger.Info("Job scheduler started successfully")
+
+	schedulerHandler := handlers.NewSchedulerHandler(sched, jobUsecase)
+
+	srv := server.NewHTTPServer(cfg, userHandler, productHandler, waitingListHandler, vehicleHandler, serviceItemHandler, healthHandler, versionHandler, invoiceHandler, analyticsHandler, roleHandler, schedulerHandler, jobHandler)
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)

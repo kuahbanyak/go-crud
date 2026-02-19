@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
+	"github.com/kuahbanyak/go-crud/internal/shared/utils"
 )
 
 type InvoiceRepository struct {
@@ -24,7 +24,7 @@ func (r *InvoiceRepository) Create(ctx context.Context, invoice *entities.Invoic
 		VALUES (@p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12)
 	`
 
-	now := time.Now()
+	now := utils.NowWIB()
 	invoice.CreatedAt = now
 	invoice.UpdatedAt = now
 
@@ -237,7 +237,7 @@ func (r *InvoiceRepository) Update(ctx context.Context, invoice *entities.Invoic
 		WHERE id = @p12 AND deleted_at IS NULL
 	`
 
-	invoice.UpdatedAt = time.Now()
+	invoice.UpdatedAt = utils.NowWIB()
 
 	result, err := r.db.ExecContext(ctx, query,
 		sql.Named("p1", invoice.WaitingListID),
@@ -278,7 +278,7 @@ func (r *InvoiceRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	`
 
 	result, err := r.db.ExecContext(ctx, query,
-		sql.Named("p1", time.Now()),
+		sql.Named("p1", utils.NowWIB()),
 		sql.Named("p2", id),
 	)
 

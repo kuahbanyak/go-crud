@@ -33,3 +33,41 @@ func ParseTimeWIB(value string) (time.Time, error) {
 	}
 	return t.In(WIBLocation), nil
 }
+
+// GetWeekStart returns the start of the week (Monday 00:00:00) for the given date
+func GetWeekStart(t time.Time) time.Time {
+	// Get the weekday (0 = Sunday, 1 = Monday, ...)
+	weekday := int(t.Weekday())
+
+	// Calculate days to subtract to get to Monday
+	// If Sunday (0), go back 6 days; if Monday (1), go back 0 days, etc.
+	daysToMonday := (weekday + 6) % 7
+
+	// Get Monday of the week
+	monday := t.AddDate(0, 0, -daysToMonday)
+
+	// Set to start of day (00:00:00)
+	return time.Date(monday.Year(), monday.Month(), monday.Day(), 0, 0, 0, 0, t.Location())
+}
+
+// GetWeekEnd returns the end of the week (Sunday 23:59:59) for the given date
+func GetWeekEnd(t time.Time) time.Time {
+	weekStart := GetWeekStart(t)
+	// Add 6 days to Monday to get Sunday, then set to end of day
+	sunday := weekStart.AddDate(0, 0, 6)
+	return time.Date(sunday.Year(), sunday.Month(), sunday.Day(), 23, 59, 59, 999999999, t.Location())
+}
+
+// IsInCurrentOrFutureWeek checks if the given date is in the current week or a future week
+func IsInCurrentOrFutureWeek(checkDate time.Time, referenceDate time.Time) bool {
+	checkWeekStart := GetWeekStart(checkDate)
+	referenceWeekStart := GetWeekStart(referenceDate)
+
+	// Allow if checkDate's week is same or after reference week
+	return !checkWeekStart.Before(referenceWeekStart)
+}
+
+// GetWeekNumber returns the ISO week number and year
+func GetWeekNumber(t time.Time) (year, week int) {
+	return t.ISOWeek()
+}

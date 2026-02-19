@@ -32,8 +32,10 @@ flowchart TD
     Wait --> CheckProgress
     RefreshProgress -->|No| CancelOption{Want to<br/>Cancel?}
     
-    CancelOption -->|Yes| CancelQueue[Cancel Queue<br/>PUT /api/v1/waiting-list/:id/cancel]
+    CancelOption -->|Yes| CancelQueue[Cancel Queue<br/>PUT /api/v1/waiting-list/:id/cancel<br/>✨ Ticket Returned!<br/>Other customers moved up]
     CancelOption -->|No| CheckProgress
+    
+    CancelQueue --> CancelSuccess[✅ Cancellation Confirmed<br/>- Ticket returned to system<br/>- Queue reordered automatically<br/>- Customers behind you moved up]
     
     ProceedToService --> MechanicInspection[Mechanic Inspects Vehicle]
     MechanicInspection --> ServiceStart[Service Starts]
@@ -48,7 +50,7 @@ flowchart TD
     PayInvoice --> PaymentComplete[✅ Payment Complete]
     DownloadInvoice --> End([Done])
     PaymentComplete --> End
-    CancelQueue --> End
+    CancelSuccess --> End
     
     style Start fill:#90EE90
     style End fill:#FFB6C1
@@ -57,6 +59,7 @@ flowchart TD
     style InServiceStatus fill:#87CEEB
     style CompletedStatus fill:#98FB98
     style PaymentComplete fill:#90EE90
+    style CancelSuccess fill:#98FB98
 ```
 
 ## Mechanic Workflow
@@ -95,17 +98,7 @@ flowchart TD
     
     StartService --> PerformService[🔧 Perform Service Work]
     
-    PerformService --> NeedMaintenance{Additional Items<br/>Discovered?}
-    
-    NeedMaintenance -->|Yes| AddDiscovered[Add Discovered Items<br/>POST /api/v1/mechanic/maintenance/items/discovered]
-    NeedMaintenance -->|No| CheckComplete
-    
-    AddDiscovered --> CustomerApproval{Customer<br/>Approves?}
-    CustomerApproval -->|Yes| AddToService[Add Items to Service]
-    CustomerApproval -->|No| DocumentDeclined[Document Customer Declined]
-    
-    AddToService --> PerformService
-    DocumentDeclined --> CheckComplete{Service<br/>Complete?}
+    PerformService --> CheckComplete{Service<br/>Complete?}
     
     CheckComplete -->|No| PerformService
     CheckComplete -->|Yes| CompleteService[Complete Service<br/>PUT /api/v1/mechanic/waiting-list/:id/complete]
@@ -288,40 +281,50 @@ stateDiagram-v2
     [*] --> Waiting: Customer Takes Queue
     
     Waiting --> Called: Mechanic Calls Customer
-    Waiting --> Canceled: Customer Cancels
+    Waiting --> Canceled: Customer Cancels (Ticket Returned)
     
     Called --> InService: Mechanic Starts Service
     Called --> NoShow: Customer Doesn't Arrive
-    Called --> Canceled: Customer Cancels
+    Called --> Canceled: Customer Cancels (Ticket Returned)
     
     InService --> Completed: Service Finished
     
     Completed --> [*]: Invoice Generated
-    Canceled --> [*]
+    Canceled --> [*]: Queue Reordered
     NoShow --> [*]
     
     note right of Waiting
         Customer waiting in queue
         Can check progress
         See position & wait time
+        Can cancel to return ticket
     end note
     
     note right of Called
         Customer has been called
         Should proceed to service area
         Mechanic waiting
+        Can still cancel
     end note
     
     note right of InService
         Service in progress
         Mechanic assigned
         Estimated time shown
+        Cannot cancel
     end note
     
     note right of Completed
         Service complete
         Invoice ready
         Payment due
+        Cannot cancel
+    end note
+    
+    note left of Canceled
+        Ticket cancelled and returned
+        Queue numbers reordered
+        Customers moved up automatically
     end note
 ```
 
@@ -385,7 +388,8 @@ flowchart LR
 
 ---
 
-**Generated:** February 7, 2026
-**Version:** 1.0.0
-**System:** Queue Management with Mechanic Assignment
+**Generated:** February 14, 2026  
+**Version:** 1.1.0  
+**System:** Queue Management with Mechanic Assignment  
+**Latest Enhancement:** Cancel Ticket Returns Queue Slot - When a customer cancels their ticket, the slot is returned to the system and queue numbers are automatically reordered, moving other customers up in line.
 

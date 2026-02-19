@@ -9,32 +9,48 @@ import (
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/kuahbanyak/go-crud/internal/shared/utils"
 )
 
 type WaitingListUsecase struct {
 	waitingListRepo repositories.WaitingListRepository
 	vehicleRepo     repositories.VehicleRepository
 	userRepo        repositories.UserRepository
-	settingUsecase  *SettingUsecase
+	serviceItemRepo repositories.ServiceItemRepository
 	vehicleUsecase  *VehicleUseCase
+	jobUsecase      *JobUsecase
 }
 
 func NewWaitingListUsecase(
 	waitingListRepo repositories.WaitingListRepository,
 	vehicleRepo repositories.VehicleRepository,
 	userRepo repositories.UserRepository,
-	settingUsecase *SettingUsecase,
 	vehicleUsecase *VehicleUseCase,
+	serviceItemRepo repositories.ServiceItemRepository,
+	jobUsecase *JobUsecase,
 ) *WaitingListUsecase {
 	return &WaitingListUsecase{
 		waitingListRepo: waitingListRepo,
 		vehicleRepo:     vehicleRepo,
 		userRepo:        userRepo,
-		settingUsecase:  settingUsecase,
+		serviceItemRepo: serviceItemRepo,
 		vehicleUsecase:  vehicleUsecase,
+		jobUsecase:      jobUsecase,
 	}
 }
+
 func (u *WaitingListUsecase) TakeQueueNumber(ctx context.Context, waitingList *entities.WaitingList) error {
+	// Check if any job is active (system is accepting tickets)
+	if u.jobUsecase != nil {
+		hasActiveJob, err := u.jobUsecase.HasAnyActiveJob(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to check job status: %w", err)
+		}
+		if !hasActiveJob {
+			return errors.New("the ticket system is currently not accepting new bookings. Please contact the administrator to activate the system")
+		}
+	}
+
 	if u.vehicleRepo != nil {
 		_, err := u.vehicleRepo.GetByID(ctx, waitingList.VehicleID)
 		if err != nil {
@@ -45,31 +61,71 @@ func (u *WaitingListUsecase) TakeQueueNumber(ctx context.Context, waitingList *e
 	if err != nil {
 		return errors.New("customer not found")
 	}
-	available, _, err := u.CheckTicketAvailability(ctx, waitingList.ServiceDate)
+
+	// If service item is selected, populate estimated time and cost
+	if waitingList.ServiceItemID != nil && u.serviceItemRepo != nil {
+		serviceItem, err := u.serviceItemRepo.GetByID(ctx, *waitingList.ServiceItemID)
+		if err != nil {
+			return errors.New("selected service item not found")
+		}
+
+		// If not active, reject
+		if !serviceItem.IsActive {
+			return errors.New("selected service item is not available")
+		}
+
+		// Auto-populate estimated time and cost from service item
+		if waitingList.EstimatedTime == 0 {
+			waitingList.EstimatedTime = serviceItem.EstimatedTime
+		}
+		waitingList.EstimatedCost = serviceItem.EstimatedCost
+
+		// Use service item name as service type if not provided
+		if waitingList.ServiceType == "" {
+			waitingList.ServiceType = serviceItem.Name
+		}
+	}
+
+	// Check if the service date is in a past week
+	now := utils.NowWIB()
+	if !u.IsInCurrentOrFutureWeek(waitingList.ServiceDate, now) {
+		return errors.New("cannot book tickets for previous weeks. Please select a date in the current week or a future week")
+	}
+
+	// Check weekly ticket availability
+	available, remaining, weekStart, weekEnd, err := u.CheckWeeklyTicketAvailability(ctx, waitingList.ServiceDate)
 	if err != nil {
-		return fmt.Errorf("failed to check ticket availability: %w", err)
+		return fmt.Errorf("failed to check weekly ticket availability: %w", err)
 	}
 	if !available {
-		maxTickets := u.settingUsecase.GetMaxTicketsPerDay(ctx)
-		return fmt.Errorf("daily ticket limit reached: maximum %d tickets per day (0 remaining)", maxTickets)
+		maxTickets := 20 // Default weekly ticket limit
+		return fmt.Errorf("weekly ticket limit reached for week of %s to %s: maximum %d tickets per week (%d remaining)",
+			weekStart.Format("Jan 02"), weekEnd.Format("Jan 02"), maxTickets, remaining)
 	}
+
 	queueNumber, err := u.waitingListRepo.GetNextQueueNumber(ctx, waitingList.ServiceDate)
 	if err != nil {
 		return errors.New("failed to generate queue number")
 	}
-	maxTickets := u.settingUsecase.GetMaxTicketsPerDay(ctx)
-	if queueNumber > maxTickets {
-		return fmt.Errorf("cannot create ticket: queue number %d exceeds daily limit of %d tickets", queueNumber, maxTickets)
-	}
+
 	waitingList.QueueNumber = queueNumber
 	waitingList.Status = entities.WaitingListStatusWaiting
 	return u.waitingListRepo.Create(ctx, waitingList)
 }
-func (u *WaitingListUsecase) CheckTicketAvailability(ctx context.Context, serviceDate time.Time) (bool, int, error) {
-	entries, err := u.waitingListRepo.GetByServiceDate(ctx, serviceDate)
+
+// CheckWeeklyTicketAvailability checks if there are available tickets for the week containing serviceDate
+func (u *WaitingListUsecase) CheckWeeklyTicketAvailability(ctx context.Context, serviceDate time.Time) (available bool, remaining int, weekStart time.Time, weekEnd time.Time, err error) {
+	// Get week boundaries
+	weekStart = u.GetWeekStart(serviceDate)
+	weekEnd = u.GetWeekEnd(serviceDate)
+
+	// Get all entries for the week
+	entries, err := u.waitingListRepo.GetByWeekRange(ctx, weekStart, weekEnd)
 	if err != nil {
-		return false, 0, fmt.Errorf("failed to get entries for date: %w", err)
+		return false, 0, weekStart, weekEnd, fmt.Errorf("failed to get entries for week: %w", err)
 	}
+
+	// Count active tickets in the week
 	activeCount := 0
 	for _, entry := range entries {
 		if entry.Status == entities.WaitingListStatusWaiting ||
@@ -78,14 +134,39 @@ func (u *WaitingListUsecase) CheckTicketAvailability(ctx context.Context, servic
 			activeCount++
 		}
 	}
-	maxTickets := u.settingUsecase.GetMaxTicketsPerDay(ctx)
-	available := activeCount < maxTickets
-	remaining := maxTickets - activeCount
+
+	maxTickets := 20 // Default weekly ticket limit
+	available = activeCount < maxTickets
+	remaining = maxTickets - activeCount
 	if remaining < 0 {
 		remaining = 0
 	}
-	return available, remaining, nil
+
+	return available, remaining, weekStart, weekEnd, nil
 }
+
+// GetWeekStart returns the start of the week (Monday 00:00:00) for the given date
+func (u *WaitingListUsecase) GetWeekStart(t time.Time) time.Time {
+	weekday := int(t.Weekday())
+	daysToMonday := (weekday + 6) % 7
+	monday := t.AddDate(0, 0, -daysToMonday)
+	return time.Date(monday.Year(), monday.Month(), monday.Day(), 0, 0, 0, 0, t.Location())
+}
+
+// GetWeekEnd returns the end of the week (Sunday 23:59:59) for the given date
+func (u *WaitingListUsecase) GetWeekEnd(t time.Time) time.Time {
+	weekStart := u.GetWeekStart(t)
+	sunday := weekStart.AddDate(0, 0, 6)
+	return time.Date(sunday.Year(), sunday.Month(), sunday.Day(), 23, 59, 59, 999999999, t.Location())
+}
+
+// IsInCurrentOrFutureWeek checks if the given date is in the current week or a future week
+func (u *WaitingListUsecase) IsInCurrentOrFutureWeek(checkDate time.Time, referenceDate time.Time) bool {
+	checkWeekStart := u.GetWeekStart(checkDate)
+	referenceWeekStart := u.GetWeekStart(referenceDate)
+	return !checkWeekStart.Before(referenceWeekStart)
+}
+
 func (u *WaitingListUsecase) GetWaitingList(ctx context.Context, id types.MSSQLUUID) (*entities.WaitingList, error) {
 	return u.waitingListRepo.GetByID(ctx, id)
 }
@@ -96,7 +177,7 @@ func (u *WaitingListUsecase) GetCustomerWaitingLists(ctx context.Context, custom
 	return u.waitingListRepo.GetByCustomerID(ctx, customerID)
 }
 func (u *WaitingListUsecase) GetTodayQueue(ctx context.Context) ([]*entities.WaitingList, error) {
-	today := time.Now()
+	today := utils.NowWIB()
 	return u.waitingListRepo.GetByServiceDate(ctx, today)
 }
 func (u *WaitingListUsecase) GetQueueByDate(ctx context.Context, serviceDate time.Time) ([]*entities.WaitingList, error) {
@@ -187,7 +268,7 @@ func (u *WaitingListUsecase) CallCustomer(ctx context.Context, id types.MSSQLUUI
 	if waitingList.Status != entities.WaitingListStatusWaiting {
 		return errors.New("can only call customers in waiting status")
 	}
-	now := time.Now()
+	now := utils.NowWIB()
 	waitingList.Status = entities.WaitingListStatusCalled
 	waitingList.CalledAt = &now
 	return u.waitingListRepo.Update(ctx, waitingList)
@@ -200,7 +281,7 @@ func (u *WaitingListUsecase) StartService(ctx context.Context, id types.MSSQLUUI
 	if waitingList.Status != entities.WaitingListStatusCalled {
 		return errors.New("customer must be called before starting service")
 	}
-	now := time.Now()
+	now := utils.NowWIB()
 	waitingList.Status = entities.WaitingListStatusInService
 	waitingList.ServiceStartAt = &now
 	return u.waitingListRepo.Update(ctx, waitingList)
@@ -213,7 +294,7 @@ func (u *WaitingListUsecase) CompleteService(ctx context.Context, id types.MSSQL
 	if waitingList.Status != entities.WaitingListStatusInService {
 		return errors.New("service must be in progress to complete")
 	}
-	now := time.Now()
+	now := utils.NowWIB()
 	waitingList.Status = entities.WaitingListStatusCompleted
 	waitingList.ServiceEndAt = &now
 	return u.waitingListRepo.Update(ctx, waitingList)
@@ -223,11 +304,46 @@ func (u *WaitingListUsecase) CancelQueue(ctx context.Context, id types.MSSQLUUID
 	if err != nil {
 		return err
 	}
+
+	// Check if the ticket can be cancelled
 	if waitingList.Status == entities.WaitingListStatusCompleted {
 		return errors.New("cannot cancel completed service")
 	}
+	if waitingList.Status == entities.WaitingListStatusCanceled {
+		return errors.New("ticket is already cancelled")
+	}
+
+	// Store the cancelled queue number for returning the ticket
+	cancelledQueueNumber := waitingList.QueueNumber
+	serviceDate := waitingList.ServiceDate
+
+	// Mark the ticket as cancelled
 	waitingList.Status = entities.WaitingListStatusCanceled
-	return u.waitingListRepo.Update(ctx, waitingList)
+	if err := u.waitingListRepo.Update(ctx, waitingList); err != nil {
+		return fmt.Errorf("failed to cancel ticket: %w", err)
+	}
+
+	// Return the ticket by reordering queue numbers
+	// Get all waiting and called tickets after the cancelled one
+	allTickets, err := u.waitingListRepo.GetByServiceDate(ctx, serviceDate)
+	if err != nil {
+		return nil // Ticket is already cancelled, just log this error
+	}
+
+	// Reorder queue numbers for tickets that come after the cancelled one
+	for _, ticket := range allTickets {
+		// Only reorder tickets that are waiting or called and have a higher queue number
+		if (ticket.Status == entities.WaitingListStatusWaiting || ticket.Status == entities.WaitingListStatusCalled) &&
+			ticket.QueueNumber > cancelledQueueNumber {
+			ticket.QueueNumber--
+			if err := u.waitingListRepo.Update(ctx, ticket); err != nil {
+				// Log error but continue with other tickets
+				continue
+			}
+		}
+	}
+
+	return nil
 }
 func (u *WaitingListUsecase) MarkNoShow(ctx context.Context, id types.MSSQLUUID) error {
 	waitingList, err := u.waitingListRepo.GetByID(ctx, id)

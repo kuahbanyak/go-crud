@@ -14,6 +14,7 @@ type WaitingListRepository interface {
 	GetByQueueNumber(ctx context.Context, queueNumber int, serviceDate time.Time) (*entities.WaitingList, error)
 	GetByCustomerID(ctx context.Context, customerID types.MSSQLUUID) ([]*entities.WaitingList, error)
 	GetByServiceDate(ctx context.Context, serviceDate time.Time) ([]*entities.WaitingList, error)
+	GetByWeekRange(ctx context.Context, weekStart, weekEnd time.Time) ([]*entities.WaitingList, error)
 	GetByStatus(ctx context.Context, status entities.WaitingListStatus, serviceDate time.Time) ([]*entities.WaitingList, error)
 	GetNextQueueNumber(ctx context.Context, serviceDate time.Time) (int, error)
 	Update(ctx context.Context, waitingList *entities.WaitingList) error

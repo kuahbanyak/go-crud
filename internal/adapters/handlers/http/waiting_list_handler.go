@@ -11,6 +11,7 @@ import (
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/kuahbanyak/go-crud/internal/shared/utils"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/kuahbanyak/go-crud/pkg/response"
 )
@@ -18,14 +19,17 @@ import (
 type WaitingListHandler struct {
 	waitingListUsecase *usecases.WaitingListUsecase
 	vehicleUsecase     *usecases.VehicleUseCase
+	jobUsecase         *usecases.JobUsecase
 }
 
-func NewWaitingListHandler(waitingListUsecase *usecases.WaitingListUsecase, vehicleUsecase *usecases.VehicleUseCase) *WaitingListHandler {
+func NewWaitingListHandler(waitingListUsecase *usecases.WaitingListUsecase, vehicleUsecase *usecases.VehicleUseCase, jobUsecase *usecases.JobUsecase) *WaitingListHandler {
 	return &WaitingListHandler{
 		waitingListUsecase: waitingListUsecase,
 		vehicleUsecase:     vehicleUsecase,
+		jobUsecase:         jobUsecase,
 	}
 }
+
 func (h *WaitingListHandler) TakeQueueNumber(w http.ResponseWriter, r *http.Request) {
 	var req dto.TakeQueueRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -84,7 +88,7 @@ func (h *WaitingListHandler) TakeQueueNumber(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	serviceDate, err := time.Parse("2006-01-02", req.ServiceDate)
+	serviceDate, err := time.ParseInLocation("2006-01-02", req.ServiceDate, utils.WIBLocation)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid service_date format. Use YYYY-MM-DD", err)
 		return
@@ -93,6 +97,7 @@ func (h *WaitingListHandler) TakeQueueNumber(w http.ResponseWriter, r *http.Requ
 	waitingList := &entities.WaitingList{
 		VehicleID:     vehicleID,
 		CustomerID:    customerID,
+		ServiceItemID: req.ServiceItemID,
 		ServiceDate:   serviceDate,
 		ServiceType:   req.ServiceType,
 		EstimatedTime: req.EstimatedTime, // Default 0 if not provided, will be updated by mechanic
@@ -151,7 +156,7 @@ func (h *WaitingListHandler) GetTodayQueue(w http.ResponseWriter, r *http.Reques
 		response.Error(w, http.StatusInternalServerError, "Failed to get today's queue", err)
 		return
 	}
-	resp := h.buildWaitingListResponse(waitingLists, time.Now())
+	resp := h.buildWaitingListResponse(waitingLists, utils.NowWIB())
 	response.Success(w, http.StatusOK, "Today's queue retrieved successfully", resp)
 }
 func (h *WaitingListHandler) GetQueueByDate(w http.ResponseWriter, r *http.Request) {
@@ -160,7 +165,7 @@ func (h *WaitingListHandler) GetQueueByDate(w http.ResponseWriter, r *http.Reque
 		response.Error(w, http.StatusBadRequest, "Date parameter is required", nil)
 		return
 	}
-	serviceDate, err := time.Parse("2006-01-02", dateStr)
+	serviceDate, err := time.ParseInLocation("2006-01-02", dateStr, utils.WIBLocation)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid date format. Use YYYY-MM-DD", err)
 		return
@@ -182,9 +187,9 @@ func (h *WaitingListHandler) GetQueueByNumber(w http.ResponseWriter, r *http.Req
 	}
 	dateStr := r.URL.Query().Get("date")
 	if dateStr == "" {
-		dateStr = time.Now().Format("2006-01-02")
+		dateStr = utils.NowWIB().Format("2006-01-02")
 	}
-	serviceDate, err := time.Parse("2006-01-02", dateStr)
+	serviceDate, err := time.ParseInLocation("2006-01-02", dateStr, utils.WIBLocation)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid date format. Use YYYY-MM-DD", err)
 		return
@@ -243,11 +248,37 @@ func (h *WaitingListHandler) CancelQueue(w http.ResponseWriter, r *http.Request)
 		response.Error(w, http.StatusBadRequest, "Invalid ID", err)
 		return
 	}
-	if err := h.waitingListUsecase.CancelQueue(r.Context(), id); err != nil {
-		response.Error(w, http.StatusInternalServerError, "Failed to cancel queue", err)
+
+	// Get the ticket details before cancellation
+	ticket, err := h.waitingListUsecase.GetWaitingList(r.Context(), id)
+	if err != nil {
+		response.Error(w, http.StatusNotFound, "Ticket not found", err)
 		return
 	}
-	response.Success(w, http.StatusOK, "Queue cancelled successfully", nil)
+
+	// Verify ownership - users can only cancel their own tickets
+	customerID, ok := r.Context().Value("id").(types.MSSQLUUID)
+	if !ok {
+		response.Error(w, http.StatusUnauthorized, "Unauthorized", nil)
+		return
+	}
+
+	if ticket.CustomerID != customerID {
+		response.Error(w, http.StatusForbidden, "You can only cancel your own tickets", nil)
+		return
+	}
+
+	// Cancel the queue
+	if err := h.waitingListUsecase.CancelQueue(r.Context(), id); err != nil {
+		response.Error(w, http.StatusBadRequest, err.Error(), err)
+		return
+	}
+
+	response.Success(w, http.StatusOK, "Queue cancelled successfully. Your ticket has been returned and other customers' queue positions have been updated.", map[string]interface{}{
+		"cancelled_queue_number": ticket.QueueNumber,
+		"service_date":           ticket.ServiceDate.Format("2006-01-02"),
+		"message":                fmt.Sprintf("Ticket #%d has been cancelled and returned. Customers behind you have been moved up in the queue.", ticket.QueueNumber),
+	})
 }
 func (h *WaitingListHandler) MarkNoShow(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -306,33 +337,79 @@ func (h *WaitingListHandler) UpdateWaitingList(w http.ResponseWriter, r *http.Re
 	response.Success(w, http.StatusOK, "Waiting list updated successfully", resp)
 }
 func (h *WaitingListHandler) CheckAvailability(w http.ResponseWriter, r *http.Request) {
+	// Check if system is accepting bookings (any job is active)
+	systemAcceptingBookings := false
+	if h.jobUsecase != nil {
+		hasActiveJob, err := h.jobUsecase.HasAnyActiveJob(r.Context())
+		if err == nil {
+			systemAcceptingBookings = hasActiveJob
+		}
+	}
+
 	dateStr := r.URL.Query().Get("date")
 	var serviceDate time.Time
 	var err error
 	if dateStr == "" {
-		serviceDate = time.Now()
+		serviceDate = utils.NowWIB()
 	} else {
-		serviceDate, err = time.Parse("2006-01-02", dateStr)
+		serviceDate, err = time.ParseInLocation("2006-01-02", dateStr, utils.WIBLocation)
 		if err != nil {
 			response.Error(w, http.StatusBadRequest, "Invalid date format. Use YYYY-MM-DD", err)
 			return
 		}
 	}
-	available, remaining, err := h.waitingListUsecase.CheckTicketAvailability(r.Context(), serviceDate)
+
+	// If system is not accepting bookings, return immediately
+	if !systemAcceptingBookings {
+		resp := map[string]interface{}{
+			"system_active":        false,
+			"accepting_bookings":   false,
+			"date":                 serviceDate.Format("2006-01-02"),
+			"available":            false,
+			"remaining_tickets":    0,
+			"max_tickets_per_week": 20,
+			"message":              "The ticket booking system is currently not accepting new bookings. Please contact the administrator or try again later when the system is active.",
+		}
+		response.Success(w, http.StatusOK, "System is currently not accepting bookings", resp)
+		return
+	}
+
+	// Check if the date is in a past week
+	now := utils.NowWIB()
+	if !h.waitingListUsecase.IsInCurrentOrFutureWeek(serviceDate, now) {
+		weekStart := h.waitingListUsecase.GetWeekStart(serviceDate)
+		weekEnd := h.waitingListUsecase.GetWeekEnd(serviceDate)
+		response.Error(w, http.StatusBadRequest,
+			fmt.Sprintf("Cannot book tickets for previous weeks. The week of %s to %s has already passed. Please select a date in the current week or a future week.",
+				weekStart.Format("Jan 02, 2006"), weekEnd.Format("Jan 02, 2006")), nil)
+		return
+	}
+
+	// Check weekly availability
+	available, remaining, weekStart, weekEnd, err := h.waitingListUsecase.CheckWeeklyTicketAvailability(r.Context(), serviceDate)
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, "Failed to check availability", err)
 		return
 	}
+
+	maxTicketsPerWeek := 20 // Default weekly ticket limit
+
 	resp := map[string]interface{}{
-		"date":              serviceDate.Format("2006-01-02"),
-		"available":         available,
-		"remaining_tickets": remaining,
-		"max_tickets":       10,
+		"system_active":        true,
+		"accepting_bookings":   true,
+		"date":                 serviceDate.Format("2006-01-02"),
+		"week_start":           weekStart.Format("2006-01-02"),
+		"week_end":             weekEnd.Format("2006-01-02"),
+		"available":            available,
+		"remaining_tickets":    remaining,
+		"max_tickets_per_week": maxTicketsPerWeek,
 		"message": func() string {
 			if available {
-				return fmt.Sprintf("%d tickets remaining for this date", remaining)
+				return fmt.Sprintf("✅ System is active. %d tickets remaining for the week of %s to %s. You can choose any date within this week.",
+					remaining, weekStart.Format("Jan 02"), weekEnd.Format("Jan 02"))
 			}
-			return "No tickets available for this date (limit reached)"
+			return fmt.Sprintf("⚠️ No tickets available for the week of %s to %s (limit of %d tickets reached)",
+				weekStart.Format("Jan 02"), weekEnd.Format("Jan 02"), maxTicketsPerWeek)
 		}(),
 	}
 	response.Success(w, http.StatusOK, "Availability checked successfully", resp)
@@ -419,9 +496,9 @@ func (h *WaitingListHandler) GetAllServiceProgress(w http.ResponseWriter, r *htt
 	var err error
 
 	if dateStr == "" {
-		serviceDate = time.Now()
+		serviceDate = utils.NowWIB()
 	} else {
-		serviceDate, err = time.Parse("2006-01-02", dateStr)
+		serviceDate, err = time.ParseInLocation("2006-01-02", dateStr, utils.WIBLocation)
 		if err != nil {
 			response.Error(w, http.StatusBadRequest, "Invalid date format. Use YYYY-MM-DD", err)
 			return
@@ -529,9 +606,9 @@ func (h *WaitingListHandler) GetAvailableQueues(w http.ResponseWriter, r *http.R
 	var err error
 
 	if dateStr == "" {
-		serviceDate = time.Now()
+		serviceDate = utils.NowWIB()
 	} else {
-		serviceDate, err = time.Parse("2006-01-02", dateStr)
+		serviceDate, err = time.ParseInLocation("2006-01-02", dateStr, utils.WIBLocation)
 		if err != nil {
 			response.Error(w, http.StatusBadRequest, "Invalid date format. Use YYYY-MM-DD", err)
 			return

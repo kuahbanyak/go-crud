@@ -3,11 +3,11 @@ package mssql
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
 	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/kuahbanyak/go-crud/internal/shared/utils"
 	"github.com/kuahbanyak/go-crud/pkg/pagination"
 	"gorm.io/gorm"
 )
@@ -124,7 +124,7 @@ func (r *roleRepository) AssignRoleToUser(ctx context.Context, userID, roleID, a
 		UserID:     userID,
 		RoleID:     roleID,
 		AssignedBy: assignedBy,
-		AssignedAt: time.Now(),
+		AssignedAt: utils.NowWIB(),
 	}
 
 	return r.db.WithContext(ctx).Create(userRole).Error

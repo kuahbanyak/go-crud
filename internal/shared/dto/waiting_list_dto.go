@@ -9,6 +9,7 @@ import (
 type TakeQueueRequest struct {
 	VehicleID     *types.MSSQLUUID      `json:"vehicle_id,omitempty"`
 	NewVehicle    *CreateVehicleRequest `json:"new_vehicle,omitempty"`
+	ServiceItemID *types.MSSQLUUID      `json:"service_item_id,omitempty"` // Selected service item from list
 	ServiceType   string                `json:"service_type" validate:"required"`
 	ServiceDate   string                `json:"service_date" validate:"required"` // Changed to string for date-only format (YYYY-MM-DD)
 	EstimatedTime int                   `json:"estimated_time"`                   // in minutes, default 0

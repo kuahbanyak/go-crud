@@ -67,8 +67,8 @@ func autoMigrate(db *gorm.DB) error {
 		&entities.Vehicle{},
 		&entities.Invoice{},
 		&entities.Part{},
-		&entities.Setting{},
-		&entities.MaintenanceItem{},
+		&entities.ServiceItem{},
+		&entities.Job{},
 	)
 }
 func Close(db *gorm.DB) error {

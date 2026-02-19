@@ -14,19 +14,20 @@ import (
 )
 
 type HTTPServer struct {
-	server                 *http.Server
-	router                 *mux.Router
-	userHandler            *handlers.UserHandler
-	productHandler         *handlers.ProductHandler
-	waitingListHandler     *handlers.WaitingListHandler
-	settingHandler         *handlers.SettingHandler
-	vehicleHandler         *handlers.VehicleHandler
-	maintenanceItemHandler *handlers.MaintenanceItemHandler
-	healthHandler          *handlers.HealthHandler
-	versionHandler         *handlers.VersionHandler
-	invoiceHandler         *handlers.InvoiceHandler
-	analyticsHandler       *handlers.AnalyticsHandler
-	roleHandler            *handlers.RoleHandler
+	server             *http.Server
+	router             *mux.Router
+	userHandler        *handlers.UserHandler
+	productHandler     *handlers.ProductHandler
+	waitingListHandler *handlers.WaitingListHandler
+	vehicleHandler     *handlers.VehicleHandler
+	serviceItemHandler *handlers.ServiceItemHandler
+	healthHandler      *handlers.HealthHandler
+	versionHandler     *handlers.VersionHandler
+	invoiceHandler     *handlers.InvoiceHandler
+	analyticsHandler   *handlers.AnalyticsHandler
+	roleHandler        *handlers.RoleHandler
+	schedulerHandler   *handlers.SchedulerHandler
+	jobHandler         *handlers.JobHandler
 }
 
 func NewHTTPServer(
@@ -34,14 +35,15 @@ func NewHTTPServer(
 	userHandler *handlers.UserHandler,
 	productHandler *handlers.ProductHandler,
 	waitingListHandler *handlers.WaitingListHandler,
-	settingHandler *handlers.SettingHandler,
 	vehicleHandler *handlers.VehicleHandler,
-	maintenanceItemHandler *handlers.MaintenanceItemHandler,
+	serviceItemHandler *handlers.ServiceItemHandler,
 	healthHandler *handlers.HealthHandler,
 	versionHandler *handlers.VersionHandler,
 	invoiceHandler *handlers.InvoiceHandler,
 	analyticsHandler *handlers.AnalyticsHandler,
 	roleHandler *handlers.RoleHandler,
+	schedulerHandler *handlers.SchedulerHandler,
+	jobHandler *handlers.JobHandler,
 ) *HTTPServer {
 	router := mux.NewRouter()
 
@@ -68,19 +70,20 @@ func NewHTTPServer(
 	}
 
 	httpServer := &HTTPServer{
-		server:                 server,
-		router:                 router,
-		userHandler:            userHandler,
-		productHandler:         productHandler,
-		waitingListHandler:     waitingListHandler,
-		settingHandler:         settingHandler,
-		vehicleHandler:         vehicleHandler,
-		maintenanceItemHandler: maintenanceItemHandler,
-		healthHandler:          healthHandler,
-		versionHandler:         versionHandler,
-		invoiceHandler:         invoiceHandler,
-		analyticsHandler:       analyticsHandler,
-		roleHandler:            roleHandler,
+		server:             server,
+		router:             router,
+		userHandler:        userHandler,
+		productHandler:     productHandler,
+		waitingListHandler: waitingListHandler,
+		vehicleHandler:     vehicleHandler,
+		serviceItemHandler: serviceItemHandler,
+		healthHandler:      healthHandler,
+		versionHandler:     versionHandler,
+		invoiceHandler:     invoiceHandler,
+		analyticsHandler:   analyticsHandler,
+		roleHandler:        roleHandler,
+		schedulerHandler:   schedulerHandler,
+		jobHandler:         jobHandler,
 	}
 
 	httpServer.setupRoutes()
@@ -160,23 +163,6 @@ func (s *HTTPServer) setupRoutes() {
 	mechanicWaitingListRoutes.HandleFunc("/{id}/complete", s.waitingListHandler.CompleteService).Methods("PUT")
 	mechanicWaitingListRoutes.HandleFunc("/{id}/no-show", s.waitingListHandler.MarkNoShow).Methods("PUT")
 
-	// Maintenance Items Routes (Customer)
-	maintenanceRoutes := api.PathPrefix("/maintenance").Subrouter()
-	maintenanceRoutes.Use(middleware.Auth)
-	maintenanceRoutes.HandleFunc("/waiting-list/{waiting_list_id}/items", s.maintenanceItemHandler.CreateInitialItems).Methods("POST")
-	maintenanceRoutes.HandleFunc("/waiting-list/{waiting_list_id}/items", s.maintenanceItemHandler.GetItemsByWaitingList).Methods("GET")
-	maintenanceRoutes.HandleFunc("/waiting-list/{waiting_list_id}/inspection-summary", s.maintenanceItemHandler.GetInspectionSummary).Methods("GET")
-	maintenanceRoutes.HandleFunc("/items/approve", s.maintenanceItemHandler.ApproveItems).Methods("POST")
-
-	// Maintenance Items Routes (Admin/Mechanic)
-	mechanicMaintenanceRoutes := api.PathPrefix("/mechanic/maintenance").Subrouter()
-	mechanicMaintenanceRoutes.Use(middleware.Auth)
-	mechanicMaintenanceRoutes.Use(middleware.RequireRole(constants.RoleAdmin, constants.RoleMechanic))
-	mechanicMaintenanceRoutes.HandleFunc("/items/discovered", s.maintenanceItemHandler.AddDiscoveredItem).Methods("POST")
-	mechanicMaintenanceRoutes.HandleFunc("/items/{id}", s.maintenanceItemHandler.UpdateItem).Methods("PUT")
-	mechanicMaintenanceRoutes.HandleFunc("/items/{id}/complete", s.maintenanceItemHandler.CompleteItem).Methods("PUT")
-	mechanicMaintenanceRoutes.HandleFunc("/items/{id}", s.maintenanceItemHandler.DeleteItem).Methods("DELETE")
-
 	// Vehicle Routes (User can manage their own vehicles)
 	vehicleRoutes := api.PathPrefix("/vehicles").Subrouter()
 	vehicleRoutes.Use(middleware.Auth)
@@ -190,19 +176,19 @@ func (s *HTTPServer) setupRoutes() {
 	adminVehicleRoutes := adminRoutes.PathPrefix("/vehicles").Subrouter()
 	adminVehicleRoutes.HandleFunc("", s.vehicleHandler.GetAllVehicles).Methods("GET")
 
-	// Settings Routes (Public - for customers to see shop info)
-	settingsPublicRoutes := api.PathPrefix("/settings").Subrouter()
-	settingsPublicRoutes.Use(middleware.Auth)
-	settingsPublicRoutes.HandleFunc("/public", s.settingHandler.GetPublicSettings).Methods("GET")
+	// Service Items Routes (Public - for customers to see available services)
+	serviceItemsPublicRoutes := api.PathPrefix("/service-items").Subrouter()
+	serviceItemsPublicRoutes.Use(middleware.Auth)
+	serviceItemsPublicRoutes.HandleFunc("", s.serviceItemHandler.GetActiveServiceItems).Methods("GET")
+	serviceItemsPublicRoutes.HandleFunc("/grouped", s.serviceItemHandler.GetServiceItemsGroupedByCategory).Methods("GET")
+	serviceItemsPublicRoutes.HandleFunc("/{id}", s.serviceItemHandler.GetServiceItem).Methods("GET")
 
-	// Settings Routes (Admin only)
-	settingsAdminRoutes := adminRoutes.PathPrefix("/settings").Subrouter()
-	settingsAdminRoutes.HandleFunc("", s.settingHandler.GetAllSettings).Methods("GET")
-	settingsAdminRoutes.HandleFunc("", s.settingHandler.CreateSetting).Methods("POST")
-	settingsAdminRoutes.HandleFunc("/category/{category}", s.settingHandler.GetSettingsByCategory).Methods("GET")
-	settingsAdminRoutes.HandleFunc("/key/{key}", s.settingHandler.GetSetting).Methods("GET")
-	settingsAdminRoutes.HandleFunc("/key/{key}", s.settingHandler.UpdateSetting).Methods("PUT")
-	settingsAdminRoutes.HandleFunc("/{id}", s.settingHandler.DeleteSetting).Methods("DELETE")
+	// Service Items Routes (Admin - Manage service items)
+	adminServiceItemRoutes := adminRoutes.PathPrefix("/service-items").Subrouter()
+	adminServiceItemRoutes.HandleFunc("", s.serviceItemHandler.CreateServiceItem).Methods("POST")
+	adminServiceItemRoutes.HandleFunc("/all", s.serviceItemHandler.GetAllServiceItems).Methods("GET")
+	adminServiceItemRoutes.HandleFunc("/{id}", s.serviceItemHandler.UpdateServiceItem).Methods("PUT")
+	adminServiceItemRoutes.HandleFunc("/{id}", s.serviceItemHandler.DeleteServiceItem).Methods("DELETE")
 
 	// Invoice Routes (Admin)
 	invoiceAdminRoutes := adminRoutes.PathPrefix("/invoices").Subrouter()
@@ -245,6 +231,30 @@ func (s *HTTPServer) setupRoutes() {
 	userRoleRoutes.HandleFunc("", s.roleHandler.GetUserRoles).Methods("GET")
 	userRoleRoutes.HandleFunc("", s.roleHandler.AssignRoleToUser).Methods("POST")
 	userRoleRoutes.HandleFunc("", s.roleHandler.RemoveRoleFromUser).Methods("DELETE")
+
+	// Scheduler/Jobs Routes (Admin only)
+	if s.schedulerHandler != nil {
+		schedulerRoutes := adminRoutes.PathPrefix("/scheduler").Subrouter()
+		schedulerRoutes.HandleFunc("", s.schedulerHandler.ListJobs).Methods("GET")
+		schedulerRoutes.HandleFunc("/status", s.schedulerHandler.GetJobsStatus).Methods("GET")
+		schedulerRoutes.HandleFunc("/{name}", s.schedulerHandler.GetJobStatus).Methods("GET")
+		schedulerRoutes.HandleFunc("/{name}/run", s.schedulerHandler.RunJobManually).Methods("POST")
+		schedulerRoutes.HandleFunc("/start", s.schedulerHandler.StartAutoRun).Methods("POST")
+		schedulerRoutes.HandleFunc("/stop", s.schedulerHandler.StopAutoRun).Methods("POST")
+		schedulerRoutes.HandleFunc("/auto-run/status", s.schedulerHandler.GetAutoRunStatus).Methods("GET")
+	}
+
+	// Job Management Routes (Admin only)
+	if s.jobHandler != nil {
+		jobRoutes := adminRoutes.PathPrefix("/jobs").Subrouter()
+		jobRoutes.HandleFunc("", s.jobHandler.GetAllJobs).Methods("GET")
+		jobRoutes.HandleFunc("", s.jobHandler.CreateJob).Methods("POST")
+		jobRoutes.HandleFunc("/active", s.jobHandler.GetActiveJobs).Methods("GET")
+		jobRoutes.HandleFunc("/{id}", s.jobHandler.GetJob).Methods("GET")
+		jobRoutes.HandleFunc("/{id}", s.jobHandler.UpdateJob).Methods("PUT")
+		jobRoutes.HandleFunc("/{id}", s.jobHandler.DeleteJob).Methods("DELETE")
+		jobRoutes.HandleFunc("/{id}/status", s.jobHandler.UpdateJobStatus).Methods("PATCH")
+	}
 }
 
 func (s *HTTPServer) Start() error {

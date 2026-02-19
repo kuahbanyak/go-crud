@@ -26,10 +26,12 @@ type WaitingList struct {
 	QueueNumber    int               `gorm:"uniqueIndex:idx_queue_date;not null" json:"queue_number"`
 	VehicleID      types.MSSQLUUID   `gorm:"type:uniqueidentifier;not null" json:"vehicle_id"`
 	CustomerID     types.MSSQLUUID   `gorm:"type:uniqueidentifier;not null" json:"customer_id"`
-	MechanicID     *types.MSSQLUUID  `gorm:"type:uniqueidentifier" json:"mechanic_id,omitempty"` // Mechanic assigned to service
+	MechanicID     *types.MSSQLUUID  `gorm:"type:uniqueidentifier" json:"mechanic_id,omitempty"`     // Mechanic assigned to service
+	ServiceItemID  *types.MSSQLUUID  `gorm:"type:uniqueidentifier" json:"service_item_id,omitempty"` // Selected service item
 	ServiceDate    time.Time         `gorm:"uniqueIndex:idx_queue_date;not null" json:"service_date"`
 	ServiceType    string            `gorm:"type:varchar(100);not null" json:"service_type"`
 	EstimatedTime  int               `json:"estimated_time"` // in minutes, default 0, updated by mechanic
+	EstimatedCost  float64           `json:"estimated_cost"` // estimated cost from service item
 	Status         WaitingListStatus `gorm:"type:varchar(30);default:'waiting'" json:"status"`
 	CalledAt       *time.Time        `json:"called_at,omitempty"`
 	ServiceStartAt *time.Time        `json:"service_start_at,omitempty"`
@@ -38,7 +40,8 @@ type WaitingList struct {
 	MechanicNotes  string            `gorm:"type:text" json:"mechanic_notes"` // Mechanic notes after inspection
 	Vehicle        Vehicle           `gorm:"foreignKey:VehicleID" json:"vehicle,omitempty"`
 	Customer       User              `gorm:"foreignKey:CustomerID" json:"customer,omitempty"`
-	Mechanic       *User             `gorm:"foreignKey:MechanicID" json:"mechanic,omitempty"` // Mechanic who serviced
+	Mechanic       *User             `gorm:"foreignKey:MechanicID" json:"mechanic,omitempty"`        // Mechanic who serviced
+	ServiceItem    *ServiceItem      `gorm:"foreignKey:ServiceItemID" json:"service_item,omitempty"` // Selected service
 }
 
 func (w *WaitingList) BeforeCreate(_ *gorm.DB) error {

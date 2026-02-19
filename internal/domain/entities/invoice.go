@@ -31,6 +31,10 @@ type Invoice struct {
 	DueDate       *time.Time     `json:"due_date,omitempty"`
 	PaidAt        *time.Time     `json:"paid_at,omitempty"`
 	Notes         string         `json:"notes,omitempty"`
+
+	// Relationships
+	WaitingList *WaitingList `gorm:"foreignKey:WaitingListID" json:"waiting_list,omitempty"`
+	Customer    *User        `gorm:"foreignKey:CustomerID" json:"customer,omitempty"`
 }
 
 func (i *Invoice) BeforeCreate(tx *gorm.DB) error {

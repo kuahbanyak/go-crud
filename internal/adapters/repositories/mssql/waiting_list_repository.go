@@ -26,6 +26,7 @@ func (r *waitingListRepository) GetByID(ctx context.Context, id types.MSSQLUUID)
 		Preload("Vehicle").
 		Preload("Customer").
 		Preload("Mechanic").
+		Preload("ServiceItem").
 		Where("id = ?", id).First(&waitingList).Error
 	if err != nil {
 		return nil, err
@@ -40,6 +41,7 @@ func (r *waitingListRepository) GetByQueueNumber(ctx context.Context, queueNumbe
 		Preload("Vehicle").
 		Preload("Customer").
 		Preload("Mechanic").
+		Preload("ServiceItem").
 		Where("queue_number = ? AND service_date >= ? AND service_date < ?", queueNumber, startOfDay, endOfDay).
 		First(&waitingList).Error
 	if err != nil {
@@ -53,6 +55,7 @@ func (r *waitingListRepository) GetByCustomerID(ctx context.Context, customerID 
 		Preload("Vehicle").
 		Preload("Customer").
 		Preload("Mechanic").
+		Preload("ServiceItem").
 		Where("customer_id = ?", customerID.String()).
 		Order("service_date DESC, queue_number ASC").
 		Find(&waitingLists).Error
@@ -66,11 +69,26 @@ func (r *waitingListRepository) GetByServiceDate(ctx context.Context, serviceDat
 		Preload("Vehicle").
 		Preload("Customer").
 		Preload("Mechanic").
+		Preload("ServiceItem").
 		Where("service_date >= ? AND service_date < ?", startOfDay, endOfDay).
 		Order("queue_number ASC").
 		Find(&waitingLists).Error
 	return waitingLists, err
 }
+
+func (r *waitingListRepository) GetByWeekRange(ctx context.Context, weekStart, weekEnd time.Time) ([]*entities.WaitingList, error) {
+	var waitingLists []*entities.WaitingList
+	err := r.db.WithContext(ctx).
+		Preload("Vehicle").
+		Preload("Customer").
+		Preload("Mechanic").
+		Preload("ServiceItem").
+		Where("service_date >= ? AND service_date <= ?", weekStart, weekEnd).
+		Order("service_date ASC, queue_number ASC").
+		Find(&waitingLists).Error
+	return waitingLists, err
+}
+
 func (r *waitingListRepository) GetByStatus(ctx context.Context, status entities.WaitingListStatus, serviceDate time.Time) ([]*entities.WaitingList, error) {
 	var waitingLists []*entities.WaitingList
 	startOfDay := time.Date(serviceDate.Year(), serviceDate.Month(), serviceDate.Day(), 0, 0, 0, 0, serviceDate.Location())
@@ -79,6 +97,7 @@ func (r *waitingListRepository) GetByStatus(ctx context.Context, status entities
 		Preload("Vehicle").
 		Preload("Customer").
 		Preload("Mechanic").
+		Preload("ServiceItem").
 		Where("status = ? AND service_date >= ? AND service_date < ?", status, startOfDay, endOfDay).
 		Order("queue_number ASC").
 		Find(&waitingLists).Error
@@ -106,6 +125,7 @@ func (r *waitingListRepository) List(ctx context.Context, limit, offset int) ([]
 	err := r.db.WithContext(ctx).
 		Preload("Vehicle").
 		Preload("Customer").
+		Preload("ServiceItem").
 		Limit(limit).Offset(offset).
 		Order("service_date DESC, queue_number ASC").
 		Find(&waitingLists).Error
