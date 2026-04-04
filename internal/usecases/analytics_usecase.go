@@ -212,3 +212,127 @@ func (u *AnalyticsUsecase) GetMechanicPerformance(ctx context.Context) ([]dto.Me
 
 	return performances, nil
 }
+
+// GetVisitorStats returns visitor statistics for a specific time period
+func (u *AnalyticsUsecase) GetVisitorStats(ctx context.Context, period string) (*dto.VisitorStatsResponse, error) {
+	stats := &dto.VisitorStatsResponse{
+		Period:            period,
+		ByServiceCategory: []dto.ServiceCategoryVisitorStats{},
+		ByDate:            []dto.VisitorDataPoint{},
+		Timestamp:         time.Now(),
+	}
+
+	// Calculate start date based on period
+	var startDate time.Time
+	switch period {
+	case "7days":
+		startDate = time.Now().AddDate(0, 0, -7)
+	case "30days":
+		startDate = time.Now().AddDate(0, 0, -30)
+	case "3months":
+		startDate = time.Now().AddDate(0, -3, 0)
+	default:
+		startDate = time.Now().AddDate(0, 0, -30) // Default to 30 days
+		stats.Period = "30days"
+	}
+
+	// Get total unique visitors (customers who created tickets)
+	query := `
+		SELECT COUNT(DISTINCT customer_id) 
+		FROM waiting_lists 
+		WHERE created_at >= @p1 AND deleted_at IS NULL
+	`
+	_ = u.db.QueryRowContext(ctx, query, sql.Named("p1", startDate)).Scan(&stats.TotalVisitors)
+
+	// Get total tickets created in period
+	query = `
+		SELECT COUNT(*) 
+		FROM waiting_lists 
+		WHERE created_at >= @p1 AND deleted_at IS NULL
+	`
+	_ = u.db.QueryRowContext(ctx, query, sql.Named("p1", startDate)).Scan(&stats.TotalTickets)
+
+	// Get new customers registered in period
+	query = `
+		SELECT COUNT(*) 
+		FROM users 
+		WHERE created_at >= @p1 AND deleted_at IS NULL
+	`
+	_ = u.db.QueryRowContext(ctx, query, sql.Named("p1", startDate)).Scan(&stats.NewCustomers)
+
+	// Get returning customers (customers with more than 1 ticket in period)
+	query = `
+		SELECT COUNT(*) 
+		FROM (
+			SELECT customer_id 
+			FROM waiting_lists 
+			WHERE created_at >= @p1 AND deleted_at IS NULL
+			GROUP BY customer_id 
+			HAVING COUNT(*) > 1
+		) AS returning
+	`
+	_ = u.db.QueryRowContext(ctx, query, sql.Named("p1", startDate)).Scan(&stats.ReturningCustomers)
+
+	// Get visitor stats grouped by service category
+	query = `
+		SELECT 
+			COALESCE(si.category, 'Uncategorized') as category,
+			COUNT(DISTINCT wl.customer_id) as visitor_count,
+			COUNT(wl.id) as ticket_count
+		FROM waiting_lists wl
+		LEFT JOIN service_items si ON wl.service_item_id = si.id
+		WHERE wl.created_at >= @p1 AND wl.deleted_at IS NULL
+		GROUP BY si.category
+		ORDER BY ticket_count DESC
+	`
+
+	rows, err := u.db.QueryContext(ctx, query, sql.Named("p1", startDate))
+	if err == nil {
+		defer rows.Close()
+		totalTicketsForPercentage := stats.TotalTickets
+		if totalTicketsForPercentage == 0 {
+			totalTicketsForPercentage = 1 // Avoid division by zero
+		}
+
+		for rows.Next() {
+			var categoryStats dto.ServiceCategoryVisitorStats
+			if err := rows.Scan(&categoryStats.Category, &categoryStats.VisitorCount, &categoryStats.TicketCount); err == nil {
+				categoryStats.Percentage = float64(categoryStats.TicketCount) / float64(totalTicketsForPercentage) * 100
+				stats.ByServiceCategory = append(stats.ByServiceCategory, categoryStats)
+			}
+		}
+	}
+
+	// Get daily visitor counts
+	query = `
+		SELECT 
+			CONVERT(VARCHAR, created_at, 23) as date,
+			COUNT(DISTINCT customer_id) as visitor_count,
+			COUNT(*) as ticket_count,
+			0 as new_customers
+		FROM waiting_lists
+		WHERE created_at >= @p1 AND deleted_at IS NULL
+		GROUP BY CONVERT(VARCHAR, created_at, 23)
+		ORDER BY date DESC
+	`
+
+	rows, err = u.db.QueryContext(ctx, query, sql.Named("p1", startDate))
+	if err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var dp dto.VisitorDataPoint
+			if err := rows.Scan(&dp.Date, &dp.VisitorCount, &dp.TicketCount, &dp.NewCustomers); err == nil {
+				// Get new customers for this specific date
+				newCustomerQuery := `
+					SELECT COUNT(*) 
+					FROM users 
+					WHERE CONVERT(VARCHAR, created_at, 23) = @p1 AND deleted_at IS NULL
+				`
+				_ = u.db.QueryRowContext(ctx, newCustomerQuery, sql.Named("p1", dp.Date)).Scan(&dp.NewCustomers)
+				stats.ByDate = append(stats.ByDate, dp)
+			}
+		}
+	}
+
+	return stats, nil
+}

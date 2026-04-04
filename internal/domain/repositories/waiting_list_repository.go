@@ -20,4 +20,12 @@ type WaitingListRepository interface {
 	Update(ctx context.Context, waitingList *entities.WaitingList) error
 	Delete(ctx context.Context, id types.MSSQLUUID) error
 	List(ctx context.Context, limit, offset int) ([]*entities.WaitingList, error)
+	CountByCustomerID(ctx context.Context, customerID types.MSSQLUUID) (int64, error)
+	CountActiveByCustomerID(ctx context.Context, customerID types.MSSQLUUID) (int64, error)
+	CountAll(ctx context.Context) (int64, error)
+	CountActiveAll(ctx context.Context) (int64, error)
+	CountByCustomerIDIncludingDeleted(ctx context.Context, customerID types.MSSQLUUID) (int64, error)
+	CountAllIncludingDeleted(ctx context.Context) (int64, error)
+	CountByStatusAll(ctx context.Context, status entities.WaitingListStatus) (int64, error)
+	CountByStatusCustomer(ctx context.Context, customerID types.MSSQLUUID, status entities.WaitingListStatus) (int64, error)
 }

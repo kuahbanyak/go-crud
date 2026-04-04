@@ -74,3 +74,31 @@ func (h *AnalyticsHandler) GetMechanicPerformance(w http.ResponseWriter, r *http
 
 	response.SuccessWithContext(r.Context(), w, http.StatusOK, "Mechanic performance retrieved successfully", performance)
 }
+
+// GetVisitorStats returns visitor statistics for different time periods
+func (h *AnalyticsHandler) GetVisitorStats(w http.ResponseWriter, r *http.Request) {
+	period := r.URL.Query().Get("period")
+	if period == "" {
+		period = "30days" // Default to 30 days
+	}
+
+	// Validate period parameter
+	validPeriods := map[string]bool{
+		"7days":   true,
+		"30days":  true,
+		"3months": true,
+	}
+
+	if !validPeriods[period] {
+		response.ErrorWithContext(r.Context(), w, http.StatusBadRequest, "Invalid period. Use: 7days, 30days, or 3months", nil)
+		return
+	}
+
+	stats, err := h.usecase.GetVisitorStats(r.Context(), period)
+	if err != nil {
+		response.ErrorWithContext(r.Context(), w, http.StatusInternalServerError, "Failed to get visitor statistics", err.Error())
+		return
+	}
+
+	response.SuccessWithContext(r.Context(), w, http.StatusOK, "Visitor statistics retrieved successfully", stats)
+}

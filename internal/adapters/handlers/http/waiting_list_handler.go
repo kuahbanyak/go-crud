@@ -741,3 +741,124 @@ func (h *WaitingListHandler) buildDetailResponse(wl *entities.WaitingList) dto.W
 	}
 	return resp
 }
+
+// GetMyTicketCount returns the ticket count for the authenticated customer
+func (h *WaitingListHandler) GetMyTicketCount(w http.ResponseWriter, r *http.Request) {
+	customerID, ok := r.Context().Value("id").(types.MSSQLUUID)
+	if !ok {
+		response.Error(w, http.StatusUnauthorized, "Unauthorized", nil)
+		return
+	}
+
+	total, active, deleted, err := h.waitingListUsecase.GetMyTicketCount(r.Context(), customerID)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, "Failed to get ticket count", err)
+		return
+	}
+
+	completed := total - active
+	var message string
+	if deleted > 0 {
+		message = fmt.Sprintf("You have %d active ticket(s), %d completed ticket(s), and %d deleted ticket(s). Total created: %d", active, completed, deleted, total+deleted)
+	} else {
+		message = fmt.Sprintf("You have %d active ticket(s) and %d completed ticket(s)", active, completed)
+	}
+
+	resp := dto.TicketCountResponse{
+		TotalTickets:     total,
+		ActiveTickets:    active,
+		CompletedTickets: completed,
+		DeletedTickets:   deleted,
+		Message:          message,
+	}
+
+	response.Success(w, http.StatusOK, "Ticket count retrieved successfully", resp)
+}
+
+// GetAllTicketCount returns the total ticket count in the system (admin only)
+func (h *WaitingListHandler) GetAllTicketCount(w http.ResponseWriter, r *http.Request) {
+	total, active, deleted, err := h.waitingListUsecase.GetAllTicketCount(r.Context())
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, "Failed to get ticket count", err)
+		return
+	}
+
+	completed := total - active
+
+	// Count tickets by specific status
+	completedOnlyCount, _ := h.waitingListUsecase.GetWaitingListRepo().CountByStatusAll(r.Context(), entities.WaitingListStatusCompleted)
+	canceledCount, _ := h.waitingListUsecase.GetWaitingListRepo().CountByStatusAll(r.Context(), entities.WaitingListStatusCanceled)
+	noShowCount, _ := h.waitingListUsecase.GetWaitingListRepo().CountByStatusAll(r.Context(), entities.WaitingListStatusNoShow)
+
+	// Check if system is accepting bookings
+	systemActive := false
+	acceptingBookings := false
+	if h.jobUsecase != nil {
+		hasActiveJob, err := h.jobUsecase.HasAnyActiveJob(r.Context())
+		if err == nil {
+			systemActive = hasActiveJob
+			acceptingBookings = hasActiveJob
+		}
+	}
+
+	// Get current week availability
+	now := utils.NowWIB()
+	weekStart := h.waitingListUsecase.GetWeekStart(now)
+	weekEnd := h.waitingListUsecase.GetWeekEnd(now)
+
+	available, remaining, _, _, err := h.waitingListUsecase.CheckWeeklyTicketAvailability(r.Context(), now)
+	if err != nil {
+		// If error checking availability, continue without this info
+		available = false
+		remaining = 0
+	}
+
+	maxTicketsPerWeek := 20
+
+	// Build message
+	var message string
+	if deleted > 0 {
+		if systemActive && available {
+			message = fmt.Sprintf("System has %d active ticket(s), %d completed ticket(s) (✅ %d completed, ❌ %d canceled, 🚫 %d no-show), and %d deleted ticket(s). Total created: %d. ✅ System is active. %d tickets remaining for the week of %s to %s.",
+				active, completed, completedOnlyCount, canceledCount, noShowCount, deleted, total+deleted, remaining, weekStart.Format("Jan 02"), weekEnd.Format("Jan 02"))
+		} else if systemActive && !available {
+			message = fmt.Sprintf("System has %d active ticket(s), %d completed ticket(s) (✅ %d completed, ❌ %d canceled, 🚫 %d no-show), and %d deleted ticket(s). Total created: %d. ⚠️ No tickets available for the week of %s to %s (limit reached).",
+				active, completed, completedOnlyCount, canceledCount, noShowCount, deleted, total+deleted, weekStart.Format("Jan 02"), weekEnd.Format("Jan 02"))
+		} else {
+			message = fmt.Sprintf("System has %d active ticket(s), %d completed ticket(s) (✅ %d completed, ❌ %d canceled, 🚫 %d no-show), and %d deleted ticket(s). Total created: %d. ⚠️ System is currently not accepting bookings.",
+				active, completed, completedOnlyCount, canceledCount, noShowCount, deleted, total+deleted)
+		}
+	} else {
+		if systemActive && available {
+			message = fmt.Sprintf("System has %d active ticket(s) and %d completed ticket(s) (✅ %d completed, ❌ %d canceled, 🚫 %d no-show). ✅ System is active. %d tickets remaining for the week of %s to %s.",
+				active, completed, completedOnlyCount, canceledCount, noShowCount, remaining, weekStart.Format("Jan 02"), weekEnd.Format("Jan 02"))
+		} else if systemActive && !available {
+			message = fmt.Sprintf("System has %d active ticket(s) and %d completed ticket(s) (✅ %d completed, ❌ %d canceled, 🚫 %d no-show). ⚠️ No tickets available for the week of %s to %s (limit reached).",
+				active, completed, completedOnlyCount, canceledCount, noShowCount, weekStart.Format("Jan 02"), weekEnd.Format("Jan 02"))
+		} else {
+			message = fmt.Sprintf("System has %d active ticket(s) and %d completed ticket(s) (✅ %d completed, ❌ %d canceled, 🚫 %d no-show). ⚠️ System is currently not accepting bookings.",
+				active, completed, completedOnlyCount, canceledCount, noShowCount)
+		}
+	}
+
+	resp := dto.TicketCountResponse{
+		TotalTickets:         total,
+		ActiveTickets:        active,
+		CompletedTickets:     completed,
+		CompletedOnlyTickets: completedOnlyCount,
+		CanceledTickets:      canceledCount,
+		NoShowTickets:        noShowCount,
+		DeletedTickets:       deleted,
+		SystemActive:         systemActive,
+		AcceptingBookings:    acceptingBookings,
+		Available:            available,
+		RemainingTickets:     remaining,
+		MaxTicketsPerWeek:    maxTicketsPerWeek,
+		WeekStart:            weekStart.Format("2006-01-02"),
+		WeekEnd:              weekEnd.Format("2006-01-02"),
+		CurrentDate:          now.Format("2006-01-02"),
+		Message:              message,
+	}
+
+	response.Success(w, http.StatusOK, "System ticket count retrieved successfully", resp)
+}

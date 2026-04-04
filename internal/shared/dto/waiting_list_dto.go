@@ -122,3 +122,22 @@ type Timeline struct {
 	ServiceStartAt *time.Time `json:"service_start_at,omitempty"`
 	ServiceEndAt   *time.Time `json:"service_end_at,omitempty"`
 }
+
+type TicketCountResponse struct {
+	TotalTickets         int64  `json:"total_tickets"`
+	ActiveTickets        int64  `json:"active_tickets"`
+	CompletedTickets     int64  `json:"completed_tickets"`
+	CompletedOnlyTickets int64  `json:"completed_only_tickets,omitempty"`
+	CanceledTickets      int64  `json:"canceled_tickets,omitempty"`
+	NoShowTickets        int64  `json:"no_show_tickets,omitempty"`
+	DeletedTickets       int64  `json:"deleted_tickets,omitempty"`
+	SystemActive         bool   `json:"system_active,omitempty"`
+	AcceptingBookings    bool   `json:"accepting_bookings,omitempty"`
+	Available            bool   `json:"available,omitempty"`
+	RemainingTickets     int    `json:"remaining_tickets,omitempty"`
+	MaxTicketsPerWeek    int    `json:"max_tickets_per_week,omitempty"`
+	WeekStart            string `json:"week_start,omitempty"`
+	WeekEnd              string `json:"week_end,omitempty"`
+	CurrentDate          string `json:"date,omitempty"`
+	Message              string `json:"message"`
+}

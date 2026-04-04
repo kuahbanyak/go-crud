@@ -1,9 +1,9 @@
 {
 	"info": {
 		"name": "Go-CRUD API - Complete Collection",
-		"description": "Complete API collection with Health, Version, Auth, Users, Products, Vehicles, Waiting List (with Queue Progress & Mechanic Assignment), Service Items (predefined services with auto-pricing), Job Management & Scheduler Control, Invoices, Analytics, Roles & Pagination. Updated Feb 2026 with weekly ticket system, service items, mechanic assignment, and job scheduler with database-driven job management. Admin can create/manage scheduled jobs and control system activation.",
+		"description": "Complete API collection with Health, Version, Auth, Users, Products (including stock management), Vehicles, Waiting List (with Queue Progress, Mechanic Assignment, Detailed Ticket Count & Weekly Availability), Service Items (predefined services with auto-pricing), Job Management & Scheduler Control, Invoices, Analytics (with Visitor Statistics by Time Period & Service Category), Roles & Pagination. Updated Feb 2026 with weekly ticket system, service items, mechanic assignment, job scheduler with database-driven job management, and visitor analytics. Admin can create/manage scheduled jobs and control system activation.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"version": "4.5.0"
+		"version": "5.0.0"
 	},
 	"variable": [
 		{
@@ -706,6 +706,25 @@
 					}
 				},
 				{
+					"name": "Get My Ticket Count",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/waiting-list/my-ticket-count",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "waiting-list", "my-ticket-count"]
+						},
+						"description": "Get ticket count statistics for the authenticated customer. Shows total tickets, active tickets (waiting/called/in_service), and completed tickets."
+					}
+				},
+				{
 					"name": "Get Today's Queue",
 					"request": {
 						"method": "GET",
@@ -1154,6 +1173,55 @@
 						},
 						"description": "Mark customer as no-show - changes status to 'no_show' (Admin & Mechanic only)"
 					}
+				},
+				{
+					"name": "Get All Ticket Count (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/waiting-list/ticket-count",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "waiting-list", "ticket-count"]
+						},
+						"description": "Get system-wide ticket count statistics with weekly availability (Admin only). Shows:\n- Total tickets, active tickets, completed tickets, deleted tickets\n- System status (active/inactive, accepting bookings)\n- Weekly ticket availability (remaining tickets, week range)\n- Current date and comprehensive status message"
+					},
+					"response": [
+						{
+							"name": "Success with Weekly Info",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/admin/waiting-list/ticket-count",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "v1", "admin", "waiting-list", "ticket-count"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n  \"success\": true,\n  \"message\": \"System ticket count retrieved successfully\",\n  \"data\": {\n    \"total_tickets\": 9,\n    \"active_tickets\": 1,\n    \"completed_tickets\": 8,\n    \"deleted_tickets\": 11,\n    \"system_active\": true,\n    \"accepting_bookings\": true,\n    \"available\": true,\n    \"remaining_tickets\": 19,\n    \"max_tickets_per_week\": 20,\n    \"week_start\": \"2026-02-16\",\n    \"week_end\": \"2026-02-22\",\n    \"date\": \"2026-02-21\",\n    \"message\": \"System has 1 active ticket(s), 8 completed ticket(s), and 11 deleted ticket(s). Total created: 20. ✅ System is active. 19 tickets remaining for the week of Feb 16 to Feb 22.\"\n  }\n}"
+						}
+					]
 				}
 			]
 		},
@@ -1750,6 +1818,68 @@
 							"path": ["api", "v1", "admin", "analytics", "mechanic-performance"]
 						}
 					}
+				},
+				{
+					"name": "Visitor Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/analytics/visitor-stats?period=30days",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "analytics", "visitor-stats"],
+							"query": [
+								{
+									"key": "period",
+									"value": "30days",
+									"description": "Time period: 7days, 30days, or 3months"
+								}
+							]
+						},
+						"description": "Get visitor statistics for different time periods (7 days, 30 days, or 3 months). Includes total visitors, new customers, returning customers, and breakdown by service category."
+					},
+					"response": [
+						{
+							"name": "30 Days Stats",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/admin/analytics/visitor-stats?period=30days",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "v1", "admin", "analytics", "visitor-stats"],
+									"query": [
+										{
+											"key": "period",
+											"value": "30days"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n  \"success\": true,\n  \"message\": \"Visitor statistics retrieved successfully\",\n  \"data\": {\n    \"period\": \"30days\",\n    \"total_visitors\": 145,\n    \"total_tickets\": 230,\n    \"new_customers\": 42,\n    \"returning_customers\": 88,\n    \"by_service_category\": [\n      {\n        \"category\": \"Engine\",\n        \"visitor_count\": 65,\n        \"ticket_count\": 95,\n        \"percentage\": 41.3\n      },\n      {\n        \"category\": \"Brakes\",\n        \"visitor_count\": 48,\n        \"ticket_count\": 72,\n        \"percentage\": 31.3\n      },\n      {\n        \"category\": \"Tires\",\n        \"visitor_count\": 35,\n        \"ticket_count\": 43,\n        \"percentage\": 18.7\n      },\n      {\n        \"category\": \"Transmission\",\n        \"visitor_count\": 12,\n        \"ticket_count\": 20,\n        \"percentage\": 8.7\n      }\n    ],\n    \"by_date\": [\n      {\n        \"date\": \"2026-02-21\",\n        \"visitor_count\": 8,\n        \"ticket_count\": 12,\n        \"new_customers\": 2\n      },\n      {\n        \"date\": \"2026-02-20\",\n        \"visitor_count\": 6,\n        \"ticket_count\": 9,\n        \"new_customers\": 1\n      }\n    ],\n    \"timestamp\": \"2026-02-21T10:30:00Z\"\n  }\n}"
+						}
+					]
 				}
 			]
 		},
@@ -2148,6 +2278,33 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "v1", "admin", "products", "{{productId}}"]
 						}
+					}
+				},
+				{
+					"name": "Update Product Stock (Admin)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"stock\": 100\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/products/{{productId}}/stock",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "admin", "products", "{{productId}}", "stock"]
+						},
+						"description": "Update only the stock quantity of a product. Useful for inventory management without modifying other product details."
 					}
 				},
 				{

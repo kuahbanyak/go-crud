@@ -143,6 +143,7 @@ func (s *HTTPServer) setupRoutes() {
 	waitingListRoutes.Use(middleware.Auth)
 	waitingListRoutes.HandleFunc("/take", s.waitingListHandler.TakeQueueNumber).Methods("POST")
 	waitingListRoutes.HandleFunc("/my-queue", s.waitingListHandler.GetMyQueue).Methods("GET")
+	waitingListRoutes.HandleFunc("/my-ticket-count", s.waitingListHandler.GetMyTicketCount).Methods("GET")
 	waitingListRoutes.HandleFunc("/today", s.waitingListHandler.GetTodayQueue).Methods("GET")
 	waitingListRoutes.HandleFunc("/date", s.waitingListHandler.GetQueueByDate).Methods("GET")
 	waitingListRoutes.HandleFunc("/number/{number}", s.waitingListHandler.GetQueueByNumber).Methods("GET")
@@ -162,6 +163,10 @@ func (s *HTTPServer) setupRoutes() {
 	mechanicWaitingListRoutes.HandleFunc("/{id}/start", s.waitingListHandler.StartService).Methods("PUT")
 	mechanicWaitingListRoutes.HandleFunc("/{id}/complete", s.waitingListHandler.CompleteService).Methods("PUT")
 	mechanicWaitingListRoutes.HandleFunc("/{id}/no-show", s.waitingListHandler.MarkNoShow).Methods("PUT")
+
+	// Admin Waiting List Stats
+	adminWaitingListRoutes := adminRoutes.PathPrefix("/waiting-list").Subrouter()
+	adminWaitingListRoutes.HandleFunc("/ticket-count", s.waitingListHandler.GetAllTicketCount).Methods("GET")
 
 	// Vehicle Routes (User can manage their own vehicles)
 	vehicleRoutes := api.PathPrefix("/vehicles").Subrouter()
@@ -215,6 +220,7 @@ func (s *HTTPServer) setupRoutes() {
 	analyticsRoutes.HandleFunc("/service-stats", s.analyticsHandler.GetServiceStats).Methods("GET")
 	analyticsRoutes.HandleFunc("/queue-stats", s.analyticsHandler.GetQueueStats).Methods("GET")
 	analyticsRoutes.HandleFunc("/mechanic-performance", s.analyticsHandler.GetMechanicPerformance).Methods("GET")
+	analyticsRoutes.HandleFunc("/visitor-stats", s.analyticsHandler.GetVisitorStats).Methods("GET")
 
 	// Role Routes (Admin only)
 	roleRoutes := adminRoutes.PathPrefix("/roles").Subrouter()

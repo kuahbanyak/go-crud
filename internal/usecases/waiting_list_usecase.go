@@ -437,3 +437,58 @@ func (u *WaitingListUsecase) GetAvailableQueues(ctx context.Context, serviceDate
 
 	return availableQueues, nil
 }
+
+// GetMyTicketCount returns the ticket count for a specific customer
+func (u *WaitingListUsecase) GetMyTicketCount(ctx context.Context, customerID types.MSSQLUUID) (total int64, active int64, deleted int64, err error) {
+	// Count non-deleted tickets
+	total, err = u.waitingListRepo.CountByCustomerID(ctx, customerID)
+	if err != nil {
+		return 0, 0, 0, fmt.Errorf("failed to count total tickets: %w", err)
+	}
+
+	active, err = u.waitingListRepo.CountActiveByCustomerID(ctx, customerID)
+	if err != nil {
+		return 0, 0, 0, fmt.Errorf("failed to count active tickets: %w", err)
+	}
+
+	// Count all tickets including deleted ones
+	totalIncludingDeleted, err := u.waitingListRepo.CountByCustomerIDIncludingDeleted(ctx, customerID)
+	if err != nil {
+		return 0, 0, 0, fmt.Errorf("failed to count total tickets including deleted: %w", err)
+	}
+
+	// Calculate deleted tickets
+	deleted = totalIncludingDeleted - total
+
+	return total, active, deleted, nil
+}
+
+// GetAllTicketCount returns the total ticket count in the system (admin only)
+func (u *WaitingListUsecase) GetAllTicketCount(ctx context.Context) (total int64, active int64, deleted int64, err error) {
+	// Count non-deleted tickets
+	total, err = u.waitingListRepo.CountAll(ctx)
+	if err != nil {
+		return 0, 0, 0, fmt.Errorf("failed to count total tickets: %w", err)
+	}
+
+	active, err = u.waitingListRepo.CountActiveAll(ctx)
+	if err != nil {
+		return 0, 0, 0, fmt.Errorf("failed to count active tickets: %w", err)
+	}
+
+	// Count all tickets including deleted ones
+	totalIncludingDeleted, err := u.waitingListRepo.CountAllIncludingDeleted(ctx)
+	if err != nil {
+		return 0, 0, 0, fmt.Errorf("failed to count total tickets including deleted: %w", err)
+	}
+
+	// Calculate deleted tickets
+	deleted = totalIncludingDeleted - total
+
+	return total, active, deleted, nil
+}
+
+// GetWaitingListRepo returns the waiting list repository for direct access
+func (u *WaitingListUsecase) GetWaitingListRepo() repositories.WaitingListRepository {
+	return u.waitingListRepo
+}
