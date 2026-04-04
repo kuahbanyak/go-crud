@@ -4,8 +4,8 @@ FROM golang:1.24-alpine AS builder
 # Set working directory
 WORKDIR /app
 
-# Install dependencies for CGO (needed for SQL Server driver)
-RUN apk add --no-cache gcc musl-dev git ca-certificates tzdata
+# Install dependencies
+RUN apk add --no-cache git ca-certificates tzdata
 
 # Copy go mod files
 COPY go.mod go.sum ./

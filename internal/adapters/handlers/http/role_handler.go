@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/shared/utils"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/kuahbanyak/go-crud/pkg/pagination"
@@ -142,7 +142,7 @@ func (h *RoleHandler) GetRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := types.ParseMSSQLUUID(idStr)
+	id, err := uuid.Parse(idStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid role ID", err)
 		return
@@ -176,7 +176,7 @@ func (h *RoleHandler) UpdateRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := types.ParseMSSQLUUID(idStr)
+	id, err := uuid.Parse(idStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid role ID", err)
 		return
@@ -224,7 +224,7 @@ func (h *RoleHandler) DeleteRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := types.ParseMSSQLUUID(idStr)
+	id, err := uuid.Parse(idStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid role ID", err)
 		return
@@ -247,7 +247,7 @@ func (h *RoleHandler) AssignRoleToUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := types.ParseMSSQLUUID(userIDStr)
+	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid user ID", err)
 		return
@@ -260,7 +260,7 @@ func (h *RoleHandler) AssignRoleToUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get admin ID from context
-	adminID, ok := r.Context().Value("id").(types.MSSQLUUID)
+	adminID, ok := r.Context().Value("id").(uuid.UUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "Admin ID not found in context", nil)
 		return
@@ -283,7 +283,7 @@ func (h *RoleHandler) RemoveRoleFromUser(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userID, err := types.ParseMSSQLUUID(userIDStr)
+	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid user ID", err)
 		return
@@ -312,7 +312,7 @@ func (h *RoleHandler) GetUserRoles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := types.ParseMSSQLUUID(userIDStr)
+	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid user ID", err)
 		return
@@ -349,7 +349,7 @@ func (h *RoleHandler) GetUsersByRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	roleID, err := types.ParseMSSQLUUID(roleIDStr)
+	roleID, err := uuid.Parse(roleIDStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid role ID", err)
 		return

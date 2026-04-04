@@ -1,12 +1,12 @@
-package mssql
+package postgres
 
 import (
 	"context"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"gorm.io/gorm"
 )
 
@@ -20,7 +20,7 @@ func NewWaitingListRepository(db *gorm.DB) repositories.WaitingListRepository {
 func (r *waitingListRepository) Create(ctx context.Context, waitingList *entities.WaitingList) error {
 	return r.db.WithContext(ctx).Create(waitingList).Error
 }
-func (r *waitingListRepository) GetByID(ctx context.Context, id types.MSSQLUUID) (*entities.WaitingList, error) {
+func (r *waitingListRepository) GetByID(ctx context.Context, id uuid.UUID) (*entities.WaitingList, error) {
 	var waitingList entities.WaitingList
 	err := r.db.WithContext(ctx).
 		Preload("Vehicle").
@@ -49,14 +49,14 @@ func (r *waitingListRepository) GetByQueueNumber(ctx context.Context, queueNumbe
 	}
 	return &waitingList, nil
 }
-func (r *waitingListRepository) GetByCustomerID(ctx context.Context, customerID types.MSSQLUUID) ([]*entities.WaitingList, error) {
+func (r *waitingListRepository) GetByCustomerID(ctx context.Context, customerID uuid.UUID) ([]*entities.WaitingList, error) {
 	var waitingLists []*entities.WaitingList
 	err := r.db.WithContext(ctx).
 		Preload("Vehicle").
 		Preload("Customer").
 		Preload("Mechanic").
 		Preload("ServiceItem").
-		Where("customer_id = ?", customerID.String()).
+		Where("customer_id = ?", customerID).
 		Order("CASE WHEN status IN ('waiting', 'called', 'in_service') THEN 0 ELSE 1 END, service_date DESC, queue_number ASC").
 		Find(&waitingLists).Error
 	return waitingLists, err
@@ -117,7 +117,7 @@ func (r *waitingListRepository) GetNextQueueNumber(ctx context.Context, serviceD
 func (r *waitingListRepository) Update(ctx context.Context, waitingList *entities.WaitingList) error {
 	return r.db.WithContext(ctx).Save(waitingList).Error
 }
-func (r *waitingListRepository) Delete(ctx context.Context, id types.MSSQLUUID) error {
+func (r *waitingListRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&entities.WaitingList{}).Error
 }
 func (r *waitingListRepository) List(ctx context.Context, limit, offset int) ([]*entities.WaitingList, error) {
@@ -132,21 +132,20 @@ func (r *waitingListRepository) List(ctx context.Context, limit, offset int) ([]
 	return waitingLists, err
 }
 
-func (r *waitingListRepository) CountByCustomerID(ctx context.Context, customerID types.MSSQLUUID) (int64, error) {
+func (r *waitingListRepository) CountByCustomerID(ctx context.Context, customerID uuid.UUID) (int64, error) {
 	var count int64
-	// This will automatically exclude soft-deleted records (DeletedAt IS NULL)
 	err := r.db.WithContext(ctx).
 		Model(&entities.WaitingList{}).
-		Where("customer_id = ?", customerID.String()).
+		Where("customer_id = ?", customerID).
 		Count(&count).Error
 	return count, err
 }
 
-func (r *waitingListRepository) CountActiveByCustomerID(ctx context.Context, customerID types.MSSQLUUID) (int64, error) {
+func (r *waitingListRepository) CountActiveByCustomerID(ctx context.Context, customerID uuid.UUID) (int64, error) {
 	var count int64
 	err := r.db.WithContext(ctx).
 		Model(&entities.WaitingList{}).
-		Where("customer_id = ? AND status IN ('waiting', 'called', 'in_service')", customerID.String()).
+		Where("customer_id = ? AND status IN ('waiting', 'called', 'in_service')", customerID).
 		Count(&count).Error
 	return count, err
 }
@@ -168,28 +167,25 @@ func (r *waitingListRepository) CountActiveAll(ctx context.Context) (int64, erro
 	return count, err
 }
 
-// CountByCustomerIDIncludingDeleted counts all tickets including soft-deleted ones
-func (r *waitingListRepository) CountByCustomerIDIncludingDeleted(ctx context.Context, customerID types.MSSQLUUID) (int64, error) {
+func (r *waitingListRepository) CountByCustomerIDIncludingDeleted(ctx context.Context, customerID uuid.UUID) (int64, error) {
 	var count int64
 	err := r.db.WithContext(ctx).
-		Unscoped(). // Include soft-deleted records
+		Unscoped().
 		Model(&entities.WaitingList{}).
-		Where("customer_id = ?", customerID.String()).
+		Where("customer_id = ?", customerID).
 		Count(&count).Error
 	return count, err
 }
 
-// CountAllIncludingDeleted counts all system tickets including soft-deleted ones
 func (r *waitingListRepository) CountAllIncludingDeleted(ctx context.Context) (int64, error) {
 	var count int64
 	err := r.db.WithContext(ctx).
-		Unscoped(). // Include soft-deleted records
+		Unscoped().
 		Model(&entities.WaitingList{}).
 		Count(&count).Error
 	return count, err
 }
 
-// CountByStatusAll counts tickets with specific status
 func (r *waitingListRepository) CountByStatusAll(ctx context.Context, status entities.WaitingListStatus) (int64, error) {
 	var count int64
 	err := r.db.WithContext(ctx).
@@ -199,12 +195,11 @@ func (r *waitingListRepository) CountByStatusAll(ctx context.Context, status ent
 	return count, err
 }
 
-// CountByStatusCustomer counts tickets with specific status for a customer
-func (r *waitingListRepository) CountByStatusCustomer(ctx context.Context, customerID types.MSSQLUUID, status entities.WaitingListStatus) (int64, error) {
+func (r *waitingListRepository) CountByStatusCustomer(ctx context.Context, customerID uuid.UUID, status entities.WaitingListStatus) (int64, error) {
 	var count int64
 	err := r.db.WithContext(ctx).
 		Model(&entities.WaitingList{}).
-		Where("customer_id = ? AND status = ?", customerID.String(), status).
+		Where("customer_id = ? AND status = ?", customerID, status).
 		Count(&count).Error
 	return count, err
 }

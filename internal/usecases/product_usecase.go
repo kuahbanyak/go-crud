@@ -8,7 +8,7 @@ import (
 
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/shared/utils"
 )
 
@@ -36,7 +36,7 @@ func (uc *ProductUsecase) CreateProduct(ctx context.Context, product *entities.P
 	}
 	return uc.productRepo.Create(ctx, product)
 }
-func (uc *ProductUsecase) GetProductByID(ctx context.Context, id types.MSSQLUUID) (*entities.Product, error) {
+func (uc *ProductUsecase) GetProductByID(ctx context.Context, id uuid.UUID) (*entities.Product, error) {
 	product, err := uc.productRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func (uc *ProductUsecase) GetProducts(ctx context.Context, filter *entities.Prod
 	}
 	return uc.productRepo.GetAll(ctx, filter)
 }
-func (uc *ProductUsecase) UpdateProduct(ctx context.Context, id types.MSSQLUUID, product *entities.Product) (*entities.Product, error) {
+func (uc *ProductUsecase) UpdateProduct(ctx context.Context, id uuid.UUID, product *entities.Product) (*entities.Product, error) {
 	existing, err := uc.productRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -71,7 +71,7 @@ func (uc *ProductUsecase) UpdateProduct(ctx context.Context, id types.MSSQLUUID,
 	}
 	return uc.productRepo.Update(ctx, id, product)
 }
-func (uc *ProductUsecase) DeleteProduct(ctx context.Context, id types.MSSQLUUID) error {
+func (uc *ProductUsecase) DeleteProduct(ctx context.Context, id uuid.UUID) error {
 	existing, err := uc.productRepo.GetByID(ctx, id)
 	if err != nil {
 		return err
@@ -81,7 +81,7 @@ func (uc *ProductUsecase) DeleteProduct(ctx context.Context, id types.MSSQLUUID)
 	}
 	return uc.productRepo.Delete(ctx, id)
 }
-func (uc *ProductUsecase) UpdateProductStock(ctx context.Context, id types.MSSQLUUID, stock int) error {
+func (uc *ProductUsecase) UpdateProductStock(ctx context.Context, id uuid.UUID, stock int) error {
 	if stock < 0 {
 		return errors.New("stock cannot be negative")
 	}

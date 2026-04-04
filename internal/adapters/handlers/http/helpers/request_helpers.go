@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 	apperrors "github.com/kuahbanyak/go-crud/pkg/errors"
 )
 
@@ -27,25 +27,25 @@ func GetPathParam(r *http.Request, key string) (string, bool) {
 }
 
 // GetUUIDFromPath retrieves and parses a UUID from path parameters
-func GetUUIDFromPath(r *http.Request, key string) (types.MSSQLUUID, error) {
+func GetUUIDFromPath(r *http.Request, key string) (uuid.UUID, error) {
 	value, exists := GetPathParam(r, key)
 	if !exists {
-		return types.MSSQLUUID{}, fmt.Errorf("%s is required", key)
+		return uuid.UUID{}, fmt.Errorf("%s is required", key)
 	}
 
-	uuid, err := types.ParseMSSQLUUID(value)
+	parsedUUID, err := uuid.Parse(value)
 	if err != nil {
-		return types.MSSQLUUID{}, fmt.Errorf("invalid %s: %w", key, err)
+		return uuid.Nil, fmt.Errorf("invalid %s: %w", key, err)
 	}
 
-	return uuid, nil
+	return parsedUUID, nil
 }
 
 // GetAuthenticatedUserID retrieves the authenticated user ID from context
-func GetAuthenticatedUserID(r *http.Request) (types.MSSQLUUID, error) {
-	userID, ok := r.Context().Value("id").(types.MSSQLUUID)
+func GetAuthenticatedUserID(r *http.Request) (uuid.UUID, error) {
+	userID, ok := r.Context().Value("id").(uuid.UUID)
 	if !ok {
-		return types.MSSQLUUID{}, apperrors.NewUnauthorizedError("User not authenticated")
+		return uuid.UUID{}, apperrors.NewUnauthorizedError("User not authenticated")
 	}
 	return userID, nil
 }

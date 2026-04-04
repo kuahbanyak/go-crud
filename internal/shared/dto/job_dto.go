@@ -3,7 +3,7 @@ package dto
 import (
 	"time"
 
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 )
 
 type CreateJobRequest struct {
@@ -23,7 +23,7 @@ type UpdateJobStatusRequest struct {
 }
 
 type JobResponse struct {
-	ID        types.MSSQLUUID `json:"id"`
+	ID        uuid.UUID `json:"id"`
 	CronJob   string          `json:"cron_job"`
 	Task      string          `json:"task"`
 	Status    bool            `json:"status"`

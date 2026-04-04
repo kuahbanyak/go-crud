@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/shared/utils"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/kuahbanyak/go-crud/pkg/response"
@@ -37,7 +37,7 @@ func (h *WaitingListHandler) TakeQueueNumber(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	customerID, ok := r.Context().Value("id").(types.MSSQLUUID)
+	customerID, ok := r.Context().Value("id").(uuid.UUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
@@ -50,7 +50,7 @@ func (h *WaitingListHandler) TakeQueueNumber(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var vehicleID types.MSSQLUUID
+	var vehicleID uuid.UUID
 
 	// Handle vehicle selection or creation
 	if req.VehicleID != nil {
@@ -70,7 +70,7 @@ func (h *WaitingListHandler) TakeQueueNumber(w http.ResponseWriter, r *http.Requ
 			response.Error(w, http.StatusBadRequest, "Failed to create new vehicle", err)
 			return
 		}
-		vid, _ := types.ParseMSSQLUUID(newVehicle.ID)
+		vid, _ := uuid.Parse(newVehicle.ID)
 		vehicleID = vid
 	} else if len(userVehicles) == 0 {
 		// No vehicle provided and user has no vehicles
@@ -127,7 +127,7 @@ func (h *WaitingListHandler) TakeQueueNumber(w http.ResponseWriter, r *http.Requ
 	response.Success(w, http.StatusCreated, "Queue number taken successfully", resp)
 }
 func (h *WaitingListHandler) GetMyQueue(w http.ResponseWriter, r *http.Request) {
-	customerID, ok := r.Context().Value("id").(types.MSSQLUUID)
+	customerID, ok := r.Context().Value("id").(uuid.UUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
@@ -204,7 +204,7 @@ func (h *WaitingListHandler) GetQueueByNumber(w http.ResponseWriter, r *http.Req
 }
 func (h *WaitingListHandler) CallCustomer(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, err := types.ParseMSSQLUUID(vars["id"])
+	id, err := uuid.Parse(vars["id"])
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid ID", err)
 		return
@@ -217,7 +217,7 @@ func (h *WaitingListHandler) CallCustomer(w http.ResponseWriter, r *http.Request
 }
 func (h *WaitingListHandler) StartService(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, err := types.ParseMSSQLUUID(vars["id"])
+	id, err := uuid.Parse(vars["id"])
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid ID", err)
 		return
@@ -230,7 +230,7 @@ func (h *WaitingListHandler) StartService(w http.ResponseWriter, r *http.Request
 }
 func (h *WaitingListHandler) CompleteService(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, err := types.ParseMSSQLUUID(vars["id"])
+	id, err := uuid.Parse(vars["id"])
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid ID", err)
 		return
@@ -243,7 +243,7 @@ func (h *WaitingListHandler) CompleteService(w http.ResponseWriter, r *http.Requ
 }
 func (h *WaitingListHandler) CancelQueue(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, err := types.ParseMSSQLUUID(vars["id"])
+	id, err := uuid.Parse(vars["id"])
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid ID", err)
 		return
@@ -257,7 +257,7 @@ func (h *WaitingListHandler) CancelQueue(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Verify ownership - users can only cancel their own tickets
-	customerID, ok := r.Context().Value("id").(types.MSSQLUUID)
+	customerID, ok := r.Context().Value("id").(uuid.UUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
@@ -282,7 +282,7 @@ func (h *WaitingListHandler) CancelQueue(w http.ResponseWriter, r *http.Request)
 }
 func (h *WaitingListHandler) MarkNoShow(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, err := types.ParseMSSQLUUID(vars["id"])
+	id, err := uuid.Parse(vars["id"])
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid ID", err)
 		return
@@ -297,7 +297,7 @@ func (h *WaitingListHandler) MarkNoShow(w http.ResponseWriter, r *http.Request) 
 // UpdateWaitingList allows admin and mechanic to update queue with notes and estimates
 func (h *WaitingListHandler) UpdateWaitingList(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, err := types.ParseMSSQLUUID(vars["id"])
+	id, err := uuid.Parse(vars["id"])
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid ID", err)
 		return
@@ -417,12 +417,12 @@ func (h *WaitingListHandler) CheckAvailability(w http.ResponseWriter, r *http.Re
 func (h *WaitingListHandler) GetServiceProgress(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
-	id, err := types.ParseMSSQLUUID(idStr)
+	id, err := uuid.Parse(idStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid ID format", err)
 		return
 	}
-	customerID, ok := r.Context().Value("id").(types.MSSQLUUID)
+	customerID, ok := r.Context().Value("id").(uuid.UUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
@@ -644,7 +644,7 @@ func (h *WaitingListHandler) GetAvailableQueues(w http.ResponseWriter, r *http.R
 
 // AssignMechanicToQueue allows mechanic to assign themselves to service a queue
 func (h *WaitingListHandler) AssignMechanicToQueue(w http.ResponseWriter, r *http.Request) {
-	mechanicID, ok := r.Context().Value("id").(types.MSSQLUUID)
+	mechanicID, ok := r.Context().Value("id").(uuid.UUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
@@ -744,7 +744,7 @@ func (h *WaitingListHandler) buildDetailResponse(wl *entities.WaitingList) dto.W
 
 // GetMyTicketCount returns the ticket count for the authenticated customer
 func (h *WaitingListHandler) GetMyTicketCount(w http.ResponseWriter, r *http.Request) {
-	customerID, ok := r.Context().Value("id").(types.MSSQLUUID)
+	customerID, ok := r.Context().Value("id").(uuid.UUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return

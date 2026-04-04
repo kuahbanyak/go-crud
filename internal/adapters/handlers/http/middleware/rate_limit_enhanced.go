@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/pkg/response"
 )
 
@@ -126,7 +126,7 @@ func EnhancedRateLimit(limiter *EnhancedRateLimiter) func(http.Handler) http.Han
 			var key string
 			isAuthenticated := false
 
-			if userID, ok := r.Context().Value("id").(types.MSSQLUUID); ok && userID.String() != "00000000-0000-0000-0000-000000000000" {
+			if userID, ok := r.Context().Value("id").(uuid.UUID); ok && userID.String() != "00000000-0000-0000-0000-000000000000" {
 				key = fmt.Sprintf("user:%s", userID.String())
 				isAuthenticated = true
 			} else {

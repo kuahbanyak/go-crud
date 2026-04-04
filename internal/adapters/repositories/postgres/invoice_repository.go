@@ -1,4 +1,4 @@
-package mssql
+package postgres
 
 import (
 	"context"
@@ -21,7 +21,7 @@ func NewInvoiceRepository(db *sql.DB) *InvoiceRepository {
 func (r *InvoiceRepository) Create(ctx context.Context, invoice *entities.Invoice) error {
 	query := `
 		INSERT INTO invoices (id, waiting_list_id, customer_id, amount, tax_amount, total_amount, status, pdf_url, due_date, notes, created_at, updated_at)
-		VALUES (@p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 	`
 
 	now := utils.NowWIB()
@@ -33,18 +33,18 @@ func (r *InvoiceRepository) Create(ctx context.Context, invoice *entities.Invoic
 	}
 
 	_, err := r.db.ExecContext(ctx, query,
-		sql.Named("p1", invoice.ID),
-		sql.Named("p2", invoice.WaitingListID),
-		sql.Named("p3", invoice.CustomerID),
-		sql.Named("p4", invoice.Amount),
-		sql.Named("p5", invoice.TaxAmount),
-		sql.Named("p6", invoice.TotalAmount),
-		sql.Named("p7", invoice.Status),
-		sql.Named("p8", invoice.PDFURL),
-		sql.Named("p9", invoice.DueDate),
-		sql.Named("p10", invoice.Notes),
-		sql.Named("p11", invoice.CreatedAt),
-		sql.Named("p12", invoice.UpdatedAt),
+		invoice.ID,
+		invoice.WaitingListID,
+		invoice.CustomerID,
+		invoice.Amount,
+		invoice.TaxAmount,
+		invoice.TotalAmount,
+		invoice.Status,
+		invoice.PDFURL,
+		invoice.DueDate,
+		invoice.Notes,
+		invoice.CreatedAt,
+		invoice.UpdatedAt,
 	)
 
 	return err
@@ -54,14 +54,14 @@ func (r *InvoiceRepository) GetByID(ctx context.Context, id uuid.UUID) (*entitie
 	query := `
 		SELECT id, waiting_list_id, customer_id, amount, tax_amount, total_amount, status, pdf_url, due_date, paid_at, notes, created_at, updated_at
 		FROM invoices
-		WHERE id = @p1 AND deleted_at IS NULL
+		WHERE id = $1 AND deleted_at IS NULL
 	`
 
 	invoice := &entities.Invoice{}
 	var waitingListID, pdfURL, notes sql.NullString
 	var dueDate, paidAt sql.NullTime
 
-	err := r.db.QueryRowContext(ctx, query, sql.Named("p1", id)).Scan(
+	err := r.db.QueryRowContext(ctx, query, id).Scan(
 		&invoice.ID,
 		&waitingListID,
 		&invoice.CustomerID,
@@ -108,11 +108,11 @@ func (r *InvoiceRepository) GetByBookingID(ctx context.Context, bookingID uuid.U
 	query := `
 		SELECT id, waiting_list_id, customer_id, amount, tax_amount, total_amount, status, pdf_url, due_date, paid_at, notes, created_at, updated_at
 		FROM invoices
-		WHERE waiting_list_id = @p1 AND deleted_at IS NULL
+		WHERE waiting_list_id = $1 AND deleted_at IS NULL
 		ORDER BY created_at DESC
 	`
 
-	rows, err := r.db.QueryContext(ctx, query, sql.Named("p1", bookingID))
+	rows, err := r.db.QueryContext(ctx, query, bookingID)
 	if err != nil {
 		return nil, err
 	}
@@ -170,11 +170,11 @@ func (r *InvoiceRepository) GetByStatus(ctx context.Context, status entities.Inv
 	query := `
 		SELECT id, waiting_list_id, customer_id, amount, tax_amount, total_amount, status, pdf_url, due_date, paid_at, notes, created_at, updated_at
 		FROM invoices
-		WHERE status = @p1 AND deleted_at IS NULL
+		WHERE status = $1 AND deleted_at IS NULL
 		ORDER BY created_at DESC
 	`
 
-	rows, err := r.db.QueryContext(ctx, query, sql.Named("p1", status))
+	rows, err := r.db.QueryContext(ctx, query, status)
 	if err != nil {
 		return nil, err
 	}
@@ -231,27 +231,27 @@ func (r *InvoiceRepository) GetByStatus(ctx context.Context, status entities.Inv
 func (r *InvoiceRepository) Update(ctx context.Context, invoice *entities.Invoice) error {
 	query := `
 		UPDATE invoices
-		SET waiting_list_id = @p1, customer_id = @p2, amount = @p3, tax_amount = @p4, 
-		    total_amount = @p5, status = @p6, pdf_url = @p7, due_date = @p8, 
-		    paid_at = @p9, notes = @p10, updated_at = @p11
-		WHERE id = @p12 AND deleted_at IS NULL
+		SET waiting_list_id = $1, customer_id = $2, amount = $3, tax_amount = $4, 
+		    total_amount = $5, status = $6, pdf_url = $7, due_date = $8, 
+		    paid_at = $9, notes = $10, updated_at = $11
+		WHERE id = $12 AND deleted_at IS NULL
 	`
 
 	invoice.UpdatedAt = utils.NowWIB()
 
 	result, err := r.db.ExecContext(ctx, query,
-		sql.Named("p1", invoice.WaitingListID),
-		sql.Named("p2", invoice.CustomerID),
-		sql.Named("p3", invoice.Amount),
-		sql.Named("p4", invoice.TaxAmount),
-		sql.Named("p5", invoice.TotalAmount),
-		sql.Named("p6", invoice.Status),
-		sql.Named("p7", invoice.PDFURL),
-		sql.Named("p8", invoice.DueDate),
-		sql.Named("p9", invoice.PaidAt),
-		sql.Named("p10", invoice.Notes),
-		sql.Named("p11", invoice.UpdatedAt),
-		sql.Named("p12", invoice.ID),
+		invoice.WaitingListID,
+		invoice.CustomerID,
+		invoice.Amount,
+		invoice.TaxAmount,
+		invoice.TotalAmount,
+		invoice.Status,
+		invoice.PDFURL,
+		invoice.DueDate,
+		invoice.PaidAt,
+		invoice.Notes,
+		invoice.UpdatedAt,
+		invoice.ID,
 	)
 
 	if err != nil {
@@ -273,13 +273,13 @@ func (r *InvoiceRepository) Update(ctx context.Context, invoice *entities.Invoic
 func (r *InvoiceRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	query := `
 		UPDATE invoices
-		SET deleted_at = @p1
-		WHERE id = @p2 AND deleted_at IS NULL
+		SET deleted_at = $1
+		WHERE id = $2 AND deleted_at IS NULL
 	`
 
 	result, err := r.db.ExecContext(ctx, query,
-		sql.Named("p1", utils.NowWIB()),
-		sql.Named("p2", id),
+		utils.NowWIB(),
+		id,
 	)
 
 	if err != nil {
@@ -304,13 +304,10 @@ func (r *InvoiceRepository) List(ctx context.Context, limit, offset int) ([]*ent
 		FROM invoices
 		WHERE deleted_at IS NULL
 		ORDER BY created_at DESC
-		OFFSET @p1 ROWS FETCH NEXT @p2 ROWS ONLY
+		LIMIT $1 OFFSET $2
 	`
 
-	rows, err := r.db.QueryContext(ctx, query,
-		sql.Named("p1", offset),
-		sql.Named("p2", limit),
-	)
+	rows, err := r.db.QueryContext(ctx, query, limit, offset)
 	if err != nil {
 		return nil, err
 	}

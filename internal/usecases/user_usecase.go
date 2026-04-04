@@ -8,7 +8,7 @@ import (
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
 	"github.com/kuahbanyak/go-crud/internal/domain/services"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/pkg/pagination"
 )
 
@@ -46,7 +46,7 @@ func (u *UserUsecase) Register(ctx context.Context, user *entities.User) error {
 	}
 	if customerRole != nil {
 		// Use empty UUID for system-assigned role (self-registration)
-		emptyUUID := types.MSSQLUUID{}
+		emptyUUID := uuid.UUID{}
 		if err := u.roleRepo.AssignRoleToUser(ctx, user.ID, customerRole.ID, emptyUUID); err != nil {
 			return fmt.Errorf("failed to assign customer role: %w", err)
 		}
@@ -75,10 +75,10 @@ func (u *UserUsecase) Login(ctx context.Context, email, password string) (*entit
 	}
 	return user, token, nil
 }
-func (u *UserUsecase) GetUserByID(ctx context.Context, id types.MSSQLUUID) (*entities.User, error) {
+func (u *UserUsecase) GetUserByID(ctx context.Context, id uuid.UUID) (*entities.User, error) {
 	return u.userRepo.GetByID(ctx, id)
 }
-func (u *UserUsecase) UpdateUser(ctx context.Context, id types.MSSQLUUID, updateData *entities.User) (*entities.User, error) {
+func (u *UserUsecase) UpdateUser(ctx context.Context, id uuid.UUID, updateData *entities.User) (*entities.User, error) {
 	existingUser, err := u.userRepo.GetByID(ctx, id)
 	if err != nil || existingUser == nil {
 		return nil, errors.New("user not found")
@@ -103,7 +103,7 @@ func (u *UserUsecase) GetUsersPaginated(ctx context.Context, pagParams paginatio
 	return u.userRepo.GetAllPaginated(ctx, pagParams, filterParams)
 }
 
-func (u *UserUsecase) DeleteUser(ctx context.Context, id types.MSSQLUUID) error {
+func (u *UserUsecase) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	existingUser, err := u.userRepo.GetByID(ctx, id)
 	if err != nil || existingUser == nil {
 		return errors.New("user not found")

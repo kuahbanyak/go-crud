@@ -7,7 +7,7 @@ import (
 
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/constants"
-	"gorm.io/driver/sqlserver"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -21,11 +21,11 @@ type Config struct {
 }
 
 func NewConnection(config Config) (*gorm.DB, error) {
-	dsn := fmt.Sprintf("sqlserver://%s:%s@%s:%s?database=%s&encrypt=true&trustServerCertificate=false",
-		config.User,
-		config.Password,
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		config.Host,
 		config.Port,
+		config.User,
+		config.Password,
 		config.Database,
 	)
 	var logLevel logger.LogLevel
@@ -35,7 +35,7 @@ func NewConnection(config Config) (*gorm.DB, error) {
 	} else {
 		logLevel = logger.Info
 	}
-	db, err := gorm.Open(sqlserver.Open(dsn), &gorm.Config{
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger:                                   logger.Default.LogMode(logLevel),
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})

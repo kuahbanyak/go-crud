@@ -3,7 +3,7 @@ package entities
 import (
 	"time"
 
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -19,15 +19,15 @@ const (
 )
 
 type WaitingList struct {
-	ID             types.MSSQLUUID   `gorm:"type:uniqueidentifier;primary_key;default:newid()" json:"id"`
+	ID             uuid.UUID         `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
 	CreatedAt      time.Time         `json:"created_at"`
 	UpdatedAt      time.Time         `json:"updated_at"`
 	DeletedAt      gorm.DeletedAt    `gorm:"index" json:"-"`
 	QueueNumber    int               `gorm:"uniqueIndex:idx_queue_date;not null" json:"queue_number"`
-	VehicleID      types.MSSQLUUID   `gorm:"type:uniqueidentifier;not null" json:"vehicle_id"`
-	CustomerID     types.MSSQLUUID   `gorm:"type:uniqueidentifier;not null" json:"customer_id"`
-	MechanicID     *types.MSSQLUUID  `gorm:"type:uniqueidentifier" json:"mechanic_id,omitempty"`     // Mechanic assigned to service
-	ServiceItemID  *types.MSSQLUUID  `gorm:"type:uniqueidentifier" json:"service_item_id,omitempty"` // Selected service item
+	VehicleID      uuid.UUID         `gorm:"type:uuid;not null" json:"vehicle_id"`
+	CustomerID     uuid.UUID         `gorm:"type:uuid;not null" json:"customer_id"`
+	MechanicID     *uuid.UUID        `gorm:"type:uuid" json:"mechanic_id,omitempty"`     // Mechanic assigned to service
+	ServiceItemID  *uuid.UUID        `gorm:"type:uuid" json:"service_item_id,omitempty"` // Selected service item
 	ServiceDate    time.Time         `gorm:"uniqueIndex:idx_queue_date;not null" json:"service_date"`
 	ServiceType    string            `gorm:"type:varchar(100);not null" json:"service_type"`
 	EstimatedTime  int               `json:"estimated_time"` // in minutes, default 0, updated by mechanic
@@ -45,8 +45,8 @@ type WaitingList struct {
 }
 
 func (w *WaitingList) BeforeCreate(_ *gorm.DB) error {
-	if w.ID.String() == "00000000-0000-0000-0000-000000000000" {
-		w.ID = types.NewMSSQLUUID()
+	if w.ID == uuid.Nil {
+		w.ID = uuid.New()
 	}
 	return nil
 }

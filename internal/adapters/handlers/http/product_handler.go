@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/kuahbanyak/go-crud/internal/adapters/handlers/http/helpers"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/kuahbanyak/go-crud/pkg/response"
 )
@@ -104,7 +104,7 @@ func (h *ProductHandler) UpdateProductStock(w http.ResponseWriter, r *http.Reque
 		response.Error(w, http.StatusBadRequest, "Product ID is required", nil)
 		return
 	}
-	id, err := types.ParseMSSQLUUID(idStr)
+	id, err := uuid.Parse(idStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid product ID", err)
 		return

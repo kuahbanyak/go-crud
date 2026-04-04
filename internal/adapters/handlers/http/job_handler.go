@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/kuahbanyak/go-crud/pkg/response"
 )
@@ -62,7 +62,7 @@ func (h *JobHandler) GetJob(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 
-	id, err := types.ParseMSSQLUUID(idStr)
+	id, err := uuid.Parse(idStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid ID", err)
 		return
@@ -109,7 +109,7 @@ func (h *JobHandler) UpdateJob(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 
-	id, err := types.ParseMSSQLUUID(idStr)
+	id, err := uuid.Parse(idStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid ID", err)
 		return
@@ -133,7 +133,7 @@ func (h *JobHandler) UpdateJobStatus(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 
-	id, err := types.ParseMSSQLUUID(idStr)
+	id, err := uuid.Parse(idStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid ID", err)
 		return
@@ -162,7 +162,7 @@ func (h *JobHandler) DeleteJob(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 
-	id, err := types.ParseMSSQLUUID(idStr)
+	id, err := uuid.Parse(idStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid ID", err)
 		return

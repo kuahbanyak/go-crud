@@ -1,12 +1,12 @@
-package mssql
+package postgres
 
 import (
 	"context"
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"github.com/kuahbanyak/go-crud/pkg/pagination"
 	"gorm.io/gorm"
 )
@@ -21,7 +21,7 @@ func NewVehicleRepository(db *gorm.DB) repositories.VehicleRepository {
 func (r *vehicleRepository) Create(ctx context.Context, vehicle *entities.Vehicle) error {
 	return r.db.WithContext(ctx).Create(vehicle).Error
 }
-func (r *vehicleRepository) GetByID(ctx context.Context, id types.MSSQLUUID) (*entities.Vehicle, error) {
+func (r *vehicleRepository) GetByID(ctx context.Context, id uuid.UUID) (*entities.Vehicle, error) {
 	var vehicle entities.Vehicle
 	err := r.db.WithContext(ctx).
 		Preload("Owner").
@@ -34,7 +34,7 @@ func (r *vehicleRepository) GetByID(ctx context.Context, id types.MSSQLUUID) (*e
 	}
 	return &vehicle, nil
 }
-func (r *vehicleRepository) GetByOwnerID(ctx context.Context, ownerID types.MSSQLUUID) ([]*entities.Vehicle, error) {
+func (r *vehicleRepository) GetByOwnerID(ctx context.Context, ownerID uuid.UUID) ([]*entities.Vehicle, error) {
 	var vehicles []*entities.Vehicle
 	err := r.db.WithContext(ctx).
 		Where("owner_id = ?", ownerID).
@@ -45,7 +45,7 @@ func (r *vehicleRepository) GetByOwnerID(ctx context.Context, ownerID types.MSSQ
 func (r *vehicleRepository) Update(ctx context.Context, vehicle *entities.Vehicle) error {
 	return r.db.WithContext(ctx).Save(vehicle).Error
 }
-func (r *vehicleRepository) Delete(ctx context.Context, id types.MSSQLUUID) error {
+func (r *vehicleRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&entities.Vehicle{}).Error
 }
 func (r *vehicleRepository) List(ctx context.Context, limit, offset int) ([]*entities.Vehicle, error) {

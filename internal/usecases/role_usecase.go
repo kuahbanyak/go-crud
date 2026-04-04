@@ -7,7 +7,7 @@ import (
 
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/pkg/pagination"
 )
 
@@ -32,7 +32,7 @@ func (u *RoleUsecase) CreateRole(ctx context.Context, role *entities.Role) error
 	}
 	return u.roleRepo.Create(ctx, role)
 }
-func (u *RoleUsecase) GetRoleByID(ctx context.Context, id types.MSSQLUUID) (*entities.Role, error) {
+func (u *RoleUsecase) GetRoleByID(ctx context.Context, id uuid.UUID) (*entities.Role, error) {
 	role, err := u.roleRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -51,7 +51,7 @@ func (u *RoleUsecase) GetAllRolesPaginated(ctx context.Context, pagParams pagina
 func (u *RoleUsecase) GetActiveRoles(ctx context.Context) ([]*entities.Role, error) {
 	return u.roleRepo.GetActive(ctx)
 }
-func (u *RoleUsecase) UpdateRole(ctx context.Context, id types.MSSQLUUID, updateData *entities.Role) (*entities.Role, error) {
+func (u *RoleUsecase) UpdateRole(ctx context.Context, id uuid.UUID, updateData *entities.Role) (*entities.Role, error) {
 	existingRole, err := u.roleRepo.GetByID(ctx, id)
 	if err != nil || existingRole == nil {
 		return nil, errors.New("role not found")
@@ -69,14 +69,14 @@ func (u *RoleUsecase) UpdateRole(ctx context.Context, id types.MSSQLUUID, update
 	}
 	return existingRole, nil
 }
-func (u *RoleUsecase) DeleteRole(ctx context.Context, id types.MSSQLUUID) error {
+func (u *RoleUsecase) DeleteRole(ctx context.Context, id uuid.UUID) error {
 	existingRole, err := u.roleRepo.GetByID(ctx, id)
 	if err != nil || existingRole == nil {
 		return errors.New("role not found")
 	}
 	return u.roleRepo.Delete(ctx, id)
 }
-func (u *RoleUsecase) AssignRoleToUser(ctx context.Context, userID, roleID, assignedBy types.MSSQLUUID) error {
+func (u *RoleUsecase) AssignRoleToUser(ctx context.Context, userID, roleID, assignedBy uuid.UUID) error {
 	user, err := u.userRepo.GetByID(ctx, userID)
 	if err != nil || user == nil {
 		return errors.New("user not found")
@@ -90,7 +90,7 @@ func (u *RoleUsecase) AssignRoleToUser(ctx context.Context, userID, roleID, assi
 	}
 	return u.roleRepo.AssignRoleToUser(ctx, userID, roleID, assignedBy)
 }
-func (u *RoleUsecase) RemoveRoleFromUser(ctx context.Context, userID, roleID types.MSSQLUUID) error {
+func (u *RoleUsecase) RemoveRoleFromUser(ctx context.Context, userID, roleID uuid.UUID) error {
 	user, err := u.userRepo.GetByID(ctx, userID)
 	if err != nil {
 		return err
@@ -107,7 +107,7 @@ func (u *RoleUsecase) RemoveRoleFromUser(ctx context.Context, userID, roleID typ
 	}
 	return u.roleRepo.RemoveRoleFromUser(ctx, userID, roleID)
 }
-func (u *RoleUsecase) GetUserRoles(ctx context.Context, userID types.MSSQLUUID) ([]*entities.Role, error) {
+func (u *RoleUsecase) GetUserRoles(ctx context.Context, userID uuid.UUID) ([]*entities.Role, error) {
 	user, err := u.userRepo.GetByID(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -117,10 +117,10 @@ func (u *RoleUsecase) GetUserRoles(ctx context.Context, userID types.MSSQLUUID) 
 	}
 	return u.roleRepo.GetUserRoles(ctx, userID)
 }
-func (u *RoleUsecase) HasRole(ctx context.Context, userID types.MSSQLUUID, roleName string) (bool, error) {
+func (u *RoleUsecase) HasRole(ctx context.Context, userID uuid.UUID, roleName string) (bool, error) {
 	return u.roleRepo.HasRole(ctx, userID, roleName)
 }
-func (u *RoleUsecase) GetUsersByRole(ctx context.Context, roleID types.MSSQLUUID) ([]*entities.User, error) {
+func (u *RoleUsecase) GetUsersByRole(ctx context.Context, roleID uuid.UUID) ([]*entities.User, error) {
 	role, err := u.roleRepo.GetByID(ctx, roleID)
 	if err != nil || role == nil {
 		return nil, errors.New("role not found")

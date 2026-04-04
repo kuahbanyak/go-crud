@@ -8,7 +8,7 @@ import (
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/pkg/pagination"
 )
 
@@ -39,7 +39,7 @@ func (uc *VehicleUseCase) toVehicleResponse(v *entities.Vehicle) *dto.VehicleRes
 }
 
 // validateOwnership checks if the user owns the vehicle
-func (uc *VehicleUseCase) validateOwnership(ctx context.Context, userID, vehicleID types.MSSQLUUID) (*entities.Vehicle, error) {
+func (uc *VehicleUseCase) validateOwnership(ctx context.Context, userID, vehicleID uuid.UUID) (*entities.Vehicle, error) {
 	vehicle, err := uc.vehicleRepo.GetByID(ctx, vehicleID)
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (uc *VehicleUseCase) validateOwnership(ctx context.Context, userID, vehicle
 	return vehicle, nil
 }
 
-func (uc *VehicleUseCase) CreateVehicle(ctx context.Context, userID types.MSSQLUUID, req *dto.CreateVehicleRequest) (*dto.VehicleResponse, error) {
+func (uc *VehicleUseCase) CreateVehicle(ctx context.Context, userID uuid.UUID, req *dto.CreateVehicleRequest) (*dto.VehicleResponse, error) {
 	vehicle := &entities.Vehicle{
 		OwnerID:      userID,
 		Brand:        req.Brand,
@@ -68,7 +68,7 @@ func (uc *VehicleUseCase) CreateVehicle(ctx context.Context, userID types.MSSQLU
 	}
 	return uc.toVehicleResponse(vehicle), nil
 }
-func (uc *VehicleUseCase) GetMyVehicles(ctx context.Context, userID types.MSSQLUUID) ([]*dto.VehicleResponse, error) {
+func (uc *VehicleUseCase) GetMyVehicles(ctx context.Context, userID uuid.UUID) ([]*dto.VehicleResponse, error) {
 	vehicles, err := uc.vehicleRepo.GetByOwnerID(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -90,7 +90,7 @@ func (uc *VehicleUseCase) GetMyVehicles(ctx context.Context, userID types.MSSQLU
 	}
 	return response, nil
 }
-func (uc *VehicleUseCase) GetVehicleByID(ctx context.Context, userID types.MSSQLUUID, vehicleID types.MSSQLUUID) (*dto.VehicleResponse, error) {
+func (uc *VehicleUseCase) GetVehicleByID(ctx context.Context, userID uuid.UUID, vehicleID uuid.UUID) (*dto.VehicleResponse, error) {
 	vehicle, err := uc.vehicleRepo.GetByID(ctx, vehicleID)
 	if err != nil {
 		return nil, err
@@ -103,7 +103,7 @@ func (uc *VehicleUseCase) GetVehicleByID(ctx context.Context, userID types.MSSQL
 	}
 	return uc.toVehicleResponse(vehicle), nil
 }
-func (uc *VehicleUseCase) UpdateVehicle(ctx context.Context, userID types.MSSQLUUID, vehicleID types.MSSQLUUID, req *dto.UpdateVehicleRequest) (*dto.VehicleResponse, error) {
+func (uc *VehicleUseCase) UpdateVehicle(ctx context.Context, userID uuid.UUID, vehicleID uuid.UUID, req *dto.UpdateVehicleRequest) (*dto.VehicleResponse, error) {
 	vehicle, err := uc.validateOwnership(ctx, userID, vehicleID)
 	if err != nil {
 		return nil, err
@@ -131,7 +131,7 @@ func (uc *VehicleUseCase) UpdateVehicle(ctx context.Context, userID types.MSSQLU
 	}
 	return uc.toVehicleResponse(vehicle), nil
 }
-func (uc *VehicleUseCase) DeleteVehicle(ctx context.Context, userID types.MSSQLUUID, vehicleID types.MSSQLUUID) error {
+func (uc *VehicleUseCase) DeleteVehicle(ctx context.Context, userID uuid.UUID, vehicleID uuid.UUID) error {
 	_, err := uc.validateOwnership(ctx, userID, vehicleID)
 	if err != nil {
 		return err

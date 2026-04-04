@@ -3,17 +3,18 @@ package usecases
 import (
 	"context"
 	"errors"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+
+	"github.com/google/uuid"
 )
 
 // Repository interface for common operations
 type Repository[T any] interface {
-	GetByID(ctx context.Context, id types.MSSQLUUID) (*T, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*T, error)
 }
 
 // ValidateAndGetByID is a helper function to validate UUID and get entity by ID
-func ValidateAndGetByID[T any](ctx context.Context, repo Repository[T], id types.MSSQLUUID, entityName string) (*T, error) {
-	if id.String() == "00000000-0000-0000-0000-000000000000" {
+func ValidateAndGetByID[T any](ctx context.Context, repo Repository[T], id uuid.UUID, entityName string) (*T, error) {
+	if id == uuid.Nil {
 		return nil, errors.New("invalid " + entityName + " ID")
 	}
 

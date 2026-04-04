@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 )
 
 type RegisterRequest struct {
@@ -22,7 +22,7 @@ type UpdateUserRequest struct {
 	Password string `json:"password,omitempty" validate:"omitempty,min=10,max=20"`
 }
 type UserResponse struct {
-	ID    types.MSSQLUUID `json:"id"`
+	ID    uuid.UUID `json:"id"`
 	Email string          `json:"email"`
 	Name  string          `json:"name"`
 	Phone string          `json:"phone"`

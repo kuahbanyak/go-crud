@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -22,12 +22,12 @@ func NewJWTService(secretKey string, expirationHours int) *JwtService {
 }
 
 type Claims struct {
-	UserID types.MSSQLUUID `json:"user_id"`
-	Role   string          `json:"role"`
+	UserID uuid.UUID `json:"user_id"`
+	Role   string    `json:"role"`
 	jwt.RegisteredClaims
 }
 
-func (j *JwtService) GenerateToken(userID types.MSSQLUUID, role string) (string, error) {
+func (j *JwtService) GenerateToken(userID uuid.UUID, role string) (string, error) {
 	claims := &Claims{
 		UserID: userID,
 		Role:   role,
@@ -40,17 +40,17 @@ func (j *JwtService) GenerateToken(userID types.MSSQLUUID, role string) (string,
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(j.secretKey))
 }
-func (j *JwtService) ValidateToken(tokenString string) (types.MSSQLUUID, string, error) {
+func (j *JwtService) ValidateToken(tokenString string) (uuid.UUID, string, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(j.secretKey), nil
 	})
 	if err != nil {
-		return types.MSSQLUUID{}, "", err
+		return uuid.Nil, "", err
 	}
 	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
 		return claims.UserID, claims.Role, nil
 	}
-	return types.MSSQLUUID{}, "", errors.New("invalid token")
+	return uuid.Nil, "", errors.New("invalid token")
 }
 func (j *JwtService) HashPassword(password string) (string, error) {
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)

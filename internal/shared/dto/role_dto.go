@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/kuahbanyak/go-crud/internal/shared/types"
+import "github.com/google/uuid"
 
 // RoleResponse represents role data in API responses
 type RoleResponse struct {
@@ -30,11 +30,11 @@ type UpdateRoleRequest struct {
 
 // AssignRoleRequest represents request to assign role to user
 type AssignRoleRequest struct {
-	RoleID types.MSSQLUUID `json:"role_id" validate:"required"`
+	RoleID uuid.UUID `json:"role_id" validate:"required"`
 }
 
 // RemoveRoleRequest represents request to remove role from user
 type RemoveRoleRequest struct {
-	RoleID types.MSSQLUUID `json:"role_id" validate:"required"`
+	RoleID uuid.UUID `json:"role_id" validate:"required"`
 }
 

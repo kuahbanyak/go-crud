@@ -1,11 +1,11 @@
-package mssql
+package postgres
 
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"gorm.io/gorm"
 )
 
@@ -21,9 +21,9 @@ func (r *serviceItemRepository) Create(ctx context.Context, serviceItem *entitie
 	return r.db.WithContext(ctx).Create(serviceItem).Error
 }
 
-func (r *serviceItemRepository) GetByID(ctx context.Context, id types.MSSQLUUID) (*entities.ServiceItem, error) {
+func (r *serviceItemRepository) GetByID(ctx context.Context, id uuid.UUID) (*entities.ServiceItem, error) {
 	var serviceItem entities.ServiceItem
-	err := r.db.WithContext(ctx).Where("id = ?", id.String()).First(&serviceItem).Error
+	err := r.db.WithContext(ctx).Where("id = ?", id).First(&serviceItem).Error
 	if err != nil {
 		return nil, err
 	}
@@ -58,6 +58,6 @@ func (r *serviceItemRepository) Update(ctx context.Context, serviceItem *entitie
 	return r.db.WithContext(ctx).Save(serviceItem).Error
 }
 
-func (r *serviceItemRepository) Delete(ctx context.Context, id types.MSSQLUUID) error {
-	return r.db.WithContext(ctx).Where("id = ?", id.String()).Delete(&entities.ServiceItem{}).Error
+func (r *serviceItemRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&entities.ServiceItem{}).Error
 }

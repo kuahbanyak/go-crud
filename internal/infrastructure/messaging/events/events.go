@@ -3,7 +3,7 @@ package events
 import (
 	"time"
 
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 )
 
 const (
@@ -30,8 +30,8 @@ type BaseEvent struct {
 
 type QueueNumberAssignedEvent struct {
 	BaseEvent
-	WaitingListID types.MSSQLUUID `json:"waiting_list_id"`
-	CustomerID    types.MSSQLUUID `json:"customer_id"`
+	WaitingListID uuid.UUID `json:"waiting_list_id"`
+	CustomerID    uuid.UUID `json:"customer_id"`
 	CustomerEmail string          `json:"customer_email"`
 	CustomerName  string          `json:"customer_name"`
 	CustomerPhone string          `json:"customer_phone"`
@@ -45,8 +45,8 @@ type QueueNumberAssignedEvent struct {
 
 type ServiceStartedEvent struct {
 	BaseEvent
-	WaitingListID types.MSSQLUUID `json:"waiting_list_id"`
-	CustomerID    types.MSSQLUUID `json:"customer_id"`
+	WaitingListID uuid.UUID `json:"waiting_list_id"`
+	CustomerID    uuid.UUID `json:"customer_id"`
 	CustomerEmail string          `json:"customer_email"`
 	CustomerName  string          `json:"customer_name"`
 	CustomerPhone string          `json:"customer_phone"`
@@ -59,13 +59,13 @@ type ServiceStartedEvent struct {
 
 type IssueDiscoveredEvent struct {
 	BaseEvent
-	WaitingListID    types.MSSQLUUID `json:"waiting_list_id"`
-	ItemID           types.MSSQLUUID `json:"item_id"`
-	CustomerID       types.MSSQLUUID `json:"customer_id"`
+	WaitingListID    uuid.UUID `json:"waiting_list_id"`
+	ItemID           uuid.UUID `json:"item_id"`
+	CustomerID       uuid.UUID `json:"customer_id"`
 	CustomerEmail    string          `json:"customer_email"`
 	CustomerName     string          `json:"customer_name"`
 	CustomerPhone    string          `json:"customer_phone"`
-	MechanicID       types.MSSQLUUID `json:"mechanic_id"`
+	MechanicID       uuid.UUID `json:"mechanic_id"`
 	MechanicName     string          `json:"mechanic_name"`
 	Category         string          `json:"category"`
 	ItemName         string          `json:"item_name"`
@@ -78,8 +78,8 @@ type IssueDiscoveredEvent struct {
 
 type ApprovalNeededEvent struct {
 	BaseEvent
-	WaitingListID types.MSSQLUUID `json:"waiting_list_id"`
-	CustomerID    types.MSSQLUUID `json:"customer_id"`
+	WaitingListID uuid.UUID `json:"waiting_list_id"`
+	CustomerID    uuid.UUID `json:"customer_id"`
 	CustomerEmail string          `json:"customer_email"`
 	CustomerName  string          `json:"customer_name"`
 	CustomerPhone string          `json:"customer_phone"`
@@ -90,8 +90,8 @@ type ApprovalNeededEvent struct {
 
 type ServiceCompletedEvent struct {
 	BaseEvent
-	WaitingListID  types.MSSQLUUID `json:"waiting_list_id"`
-	CustomerID     types.MSSQLUUID `json:"customer_id"`
+	WaitingListID  uuid.UUID `json:"waiting_list_id"`
+	CustomerID     uuid.UUID `json:"customer_id"`
 	CustomerEmail  string          `json:"customer_email"`
 	CustomerName   string          `json:"customer_name"`
 	CustomerPhone  string          `json:"customer_phone"`
@@ -121,7 +121,7 @@ type SMSNotificationEvent struct {
 
 type PushNotificationEvent struct {
 	BaseEvent
-	UserID   types.MSSQLUUID        `json:"user_id"`
+	UserID   uuid.UUID        `json:"user_id"`
 	Title    string                 `json:"title"`
 	Body     string                 `json:"body"`
 	Data     map[string]interface{} `json:"data,omitempty"`
@@ -130,7 +130,7 @@ type PushNotificationEvent struct {
 
 type AuditLogEvent struct {
 	BaseEvent
-	UserID     types.MSSQLUUID        `json:"user_id"`
+	UserID     uuid.UUID        `json:"user_id"`
 	UserRole   string                 `json:"user_role"`
 	Action     string                 `json:"action"`
 	Resource   string                 `json:"resource"`

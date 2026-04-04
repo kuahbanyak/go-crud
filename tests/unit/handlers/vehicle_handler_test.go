@@ -14,7 +14,6 @@ import (
 	handlers "github.com/kuahbanyak/go-crud/internal/adapters/handlers/http"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -160,7 +159,7 @@ func TestVehicleHandler_GetVehicle(t *testing.T) {
 			vehicleID: validID.String(),
 			mockSetup: func(m *MockVehicleUsecase) {
 				vehicle := &entities.Vehicle{
-					ID:           types.FromUUID(validID),
+					ID:           validID,
 					LicensePlate: "ABC123",
 					Brand:        "Toyota",
 					Model:        "Camry",
@@ -360,7 +359,7 @@ func TestVehicleHandler_UpdateVehicle(t *testing.T) {
 				Model:        "Camry Updated",
 			},
 			mockSetup: func(m *MockVehicleUsecase) {
-				existingVehicle := &entities.Vehicle{ID: types.FromUUID(validID)}
+				existingVehicle := &entities.Vehicle{ID: validID}
 				m.On("GetByID", mock.Anything, validID).Return(existingVehicle, nil)
 				m.On("Update", mock.Anything, mock.Anything).Return(nil)
 			},

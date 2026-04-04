@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/kuahbanyak/go-crud/internal/adapters/handlers/http/helpers"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/kuahbanyak/go-crud/pkg/pagination"
 	"github.com/kuahbanyak/go-crud/pkg/response"
@@ -28,7 +28,7 @@ func (h *VehicleHandler) CreateVehicle(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, "Invalid request body", nil)
 		return
 	}
-	userID, ok := r.Context().Value("id").(types.MSSQLUUID)
+	userID, ok := r.Context().Value("id").(uuid.UUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
@@ -41,7 +41,7 @@ func (h *VehicleHandler) CreateVehicle(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, http.StatusCreated, "Vehicle created successfully", vehicle)
 }
 func (h *VehicleHandler) GetMyVehicles(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("id").(types.MSSQLUUID)
+	userID, ok := r.Context().Value("id").(uuid.UUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
@@ -54,13 +54,13 @@ func (h *VehicleHandler) GetMyVehicles(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, http.StatusOK, "Vehicles retrieved successfully", vehicles)
 }
 func (h *VehicleHandler) GetVehicle(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("id").(types.MSSQLUUID)
+	userID, ok := r.Context().Value("id").(uuid.UUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
 	}
 	vars := mux.Vars(r)
-	vehicleID, err := types.ParseMSSQLUUID(vars["id"])
+	vehicleID, err := uuid.Parse(vars["id"])
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid vehicle ID", nil)
 		return
@@ -81,13 +81,13 @@ func (h *VehicleHandler) GetVehicle(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, http.StatusOK, "Vehicle retrieved successfully", vehicle)
 }
 func (h *VehicleHandler) UpdateVehicle(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("id").(types.MSSQLUUID)
+	userID, ok := r.Context().Value("id").(uuid.UUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
 	}
 	vars := mux.Vars(r)
-	vehicleID, err := types.ParseMSSQLUUID(vars["id"])
+	vehicleID, err := uuid.Parse(vars["id"])
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid vehicle ID", nil)
 		return
@@ -113,13 +113,13 @@ func (h *VehicleHandler) UpdateVehicle(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, http.StatusOK, "Vehicle updated successfully", vehicle)
 }
 func (h *VehicleHandler) DeleteVehicle(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("id").(types.MSSQLUUID)
+	userID, ok := r.Context().Value("id").(uuid.UUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
 	}
 	vars := mux.Vars(r)
-	vehicleID, err := types.ParseMSSQLUUID(vars["id"])
+	vehicleID, err := uuid.Parse(vars["id"])
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid vehicle ID", nil)
 		return

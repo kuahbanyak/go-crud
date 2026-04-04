@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/shared/utils"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/kuahbanyak/go-crud/pkg/pagination"
@@ -106,7 +106,7 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, http.StatusOK, "Token refreshed successfully", tokenResponse)
 }
 func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("id").(types.MSSQLUUID)
+	userID, ok := r.Context().Value("id").(uuid.UUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "User ID not found in context", nil)
 		return
@@ -120,7 +120,7 @@ func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, http.StatusOK, "Profile retrieved successfully", userResponse)
 }
 func (h *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("id").(types.MSSQLUUID)
+	userID, ok := r.Context().Value("id").(uuid.UUID)
 	if !ok {
 		response.Error(w, http.StatusUnauthorized, "User ID not found in context", nil)
 		return
@@ -171,7 +171,7 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, "User ID is required", nil)
 		return
 	}
-	id, err := types.ParseMSSQLUUID(idStr)
+	id, err := uuid.Parse(idStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid user ID", err)
 		return
@@ -191,7 +191,7 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, "User ID is required", nil)
 		return
 	}
-	id, err := types.ParseMSSQLUUID(idStr)
+	id, err := uuid.Parse(idStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid user ID", err)
 		return
@@ -220,7 +220,7 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, "User ID is required", nil)
 		return
 	}
-	id, err := types.ParseMSSQLUUID(idStr)
+	id, err := uuid.Parse(idStr)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid user ID", err)
 		return

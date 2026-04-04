@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/shared/utils"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/stretchr/testify/assert"
@@ -26,7 +26,7 @@ func (m *MockProductRepository) Create(ctx context.Context, product *entities.Pr
 	return args.Get(0).(*entities.Product), args.Error(1)
 }
 
-func (m *MockProductRepository) GetByID(ctx context.Context, id types.MSSQLUUID) (*entities.Product, error) {
+func (m *MockProductRepository) GetByID(ctx context.Context, id uuid.UUID) (*entities.Product, error) {
 	args := m.Called(ctx, id)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -50,7 +50,7 @@ func (m *MockProductRepository) GetAll(ctx context.Context, filter *entities.Pro
 	return args.Get(0).([]*entities.Product), args.Error(1)
 }
 
-func (m *MockProductRepository) Update(ctx context.Context, id types.MSSQLUUID, product *entities.Product) (*entities.Product, error) {
+func (m *MockProductRepository) Update(ctx context.Context, id uuid.UUID, product *entities.Product) (*entities.Product, error) {
 	args := m.Called(ctx, id, product)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -58,12 +58,12 @@ func (m *MockProductRepository) Update(ctx context.Context, id types.MSSQLUUID, 
 	return args.Get(0).(*entities.Product), args.Error(1)
 }
 
-func (m *MockProductRepository) Delete(ctx context.Context, id types.MSSQLUUID) error {
+func (m *MockProductRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
 
-func (m *MockProductRepository) UpdateStock(ctx context.Context, id types.MSSQLUUID, stock int) error {
+func (m *MockProductRepository) UpdateStock(ctx context.Context, id uuid.UUID, stock int) error {
 	args := m.Called(ctx, id, stock)
 	return args.Error(0)
 }
@@ -237,7 +237,7 @@ func TestProductUsecase_GetProductByID_Success(t *testing.T) {
 	usecase := usecases.NewProductUsecase(mockRepo, validator)
 	ctx := context.Background()
 
-	productID := types.MSSQLUUID{}
+	productID := uuid.UUID{}
 	product := &entities.Product{
 		ID:    productID,
 		Name:  "Test Product",
@@ -260,7 +260,7 @@ func TestProductUsecase_GetProductByID_NotFound(t *testing.T) {
 	usecase := usecases.NewProductUsecase(mockRepo, validator)
 	ctx := context.Background()
 
-	productID := types.MSSQLUUID{}
+	productID := uuid.UUID{}
 
 	mockRepo.On("GetByID", ctx, productID).Return(nil, nil)
 
@@ -278,7 +278,7 @@ func TestProductUsecase_GetProductByID_Error(t *testing.T) {
 	usecase := usecases.NewProductUsecase(mockRepo, validator)
 	ctx := context.Background()
 
-	productID := types.MSSQLUUID{}
+	productID := uuid.UUID{}
 
 	mockRepo.On("GetByID", ctx, productID).Return(nil, errors.New("database error"))
 
@@ -361,7 +361,7 @@ func TestProductUsecase_UpdateProduct_Success(t *testing.T) {
 	usecase := usecases.NewProductUsecase(mockRepo, validator)
 	ctx := context.Background()
 
-	productID := types.MSSQLUUID{}
+	productID := uuid.UUID{}
 	existingProduct := &entities.Product{
 		ID:    productID,
 		Name:  "Old Product",
@@ -390,7 +390,7 @@ func TestProductUsecase_UpdateProduct_NotFound(t *testing.T) {
 	usecase := usecases.NewProductUsecase(mockRepo, validator)
 	ctx := context.Background()
 
-	productID := types.MSSQLUUID{}
+	productID := uuid.UUID{}
 	product := &entities.Product{Name: "Test", Price: 100}
 
 	mockRepo.On("GetByID", ctx, productID).Return(nil, nil)
@@ -409,7 +409,7 @@ func TestProductUsecase_UpdateProduct_ValidationError(t *testing.T) {
 	usecase := usecases.NewProductUsecase(mockRepo, validator)
 	ctx := context.Background()
 
-	productID := types.MSSQLUUID{}
+	productID := uuid.UUID{}
 	existingProduct := &entities.Product{ID: productID}
 
 	invalidProduct := &entities.Product{
@@ -432,7 +432,7 @@ func TestProductUsecase_DeleteProduct_Success(t *testing.T) {
 	usecase := usecases.NewProductUsecase(mockRepo, validator)
 	ctx := context.Background()
 
-	productID := types.MSSQLUUID{}
+	productID := uuid.UUID{}
 	product := &entities.Product{ID: productID}
 
 	mockRepo.On("GetByID", ctx, productID).Return(product, nil)
@@ -450,7 +450,7 @@ func TestProductUsecase_DeleteProduct_NotFound(t *testing.T) {
 	usecase := usecases.NewProductUsecase(mockRepo, validator)
 	ctx := context.Background()
 
-	productID := types.MSSQLUUID{}
+	productID := uuid.UUID{}
 
 	mockRepo.On("GetByID", ctx, productID).Return(nil, nil)
 
@@ -467,7 +467,7 @@ func TestProductUsecase_DeleteProduct_Error(t *testing.T) {
 	usecase := usecases.NewProductUsecase(mockRepo, validator)
 	ctx := context.Background()
 
-	productID := types.MSSQLUUID{}
+	productID := uuid.UUID{}
 	product := &entities.Product{ID: productID}
 
 	mockRepo.On("GetByID", ctx, productID).Return(product, nil)
@@ -485,7 +485,7 @@ func TestProductUsecase_UpdateProductStock_Success(t *testing.T) {
 	usecase := usecases.NewProductUsecase(mockRepo, validator)
 	ctx := context.Background()
 
-	productID := types.MSSQLUUID{}
+	productID := uuid.UUID{}
 	product := &entities.Product{ID: productID, Stock: 10}
 
 	mockRepo.On("GetByID", ctx, productID).Return(product, nil)
@@ -503,7 +503,7 @@ func TestProductUsecase_UpdateProductStock_NegativeStock(t *testing.T) {
 	usecase := usecases.NewProductUsecase(mockRepo, validator)
 	ctx := context.Background()
 
-	productID := types.MSSQLUUID{}
+	productID := uuid.UUID{}
 
 	err := usecase.UpdateProductStock(ctx, productID, -10)
 
@@ -517,7 +517,7 @@ func TestProductUsecase_UpdateProductStock_NotFound(t *testing.T) {
 	usecase := usecases.NewProductUsecase(mockRepo, validator)
 	ctx := context.Background()
 
-	productID := types.MSSQLUUID{}
+	productID := uuid.UUID{}
 
 	mockRepo.On("GetByID", ctx, productID).Return(nil, nil)
 
@@ -534,7 +534,7 @@ func TestProductUsecase_UpdateProductStock_UpdateError(t *testing.T) {
 	usecase := usecases.NewProductUsecase(mockRepo, validator)
 	ctx := context.Background()
 
-	productID := types.MSSQLUUID{}
+	productID := uuid.UUID{}
 	product := &entities.Product{ID: productID}
 
 	mockRepo.On("GetByID", ctx, productID).Return(product, nil)

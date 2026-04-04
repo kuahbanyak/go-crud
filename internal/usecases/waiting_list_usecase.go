@@ -8,7 +8,7 @@ import (
 
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/shared/utils"
 )
 
@@ -167,13 +167,13 @@ func (u *WaitingListUsecase) IsInCurrentOrFutureWeek(checkDate time.Time, refere
 	return !checkWeekStart.Before(referenceWeekStart)
 }
 
-func (u *WaitingListUsecase) GetWaitingList(ctx context.Context, id types.MSSQLUUID) (*entities.WaitingList, error) {
+func (u *WaitingListUsecase) GetWaitingList(ctx context.Context, id uuid.UUID) (*entities.WaitingList, error) {
 	return u.waitingListRepo.GetByID(ctx, id)
 }
 func (u *WaitingListUsecase) GetByQueueNumber(ctx context.Context, queueNumber int, serviceDate time.Time) (*entities.WaitingList, error) {
 	return u.waitingListRepo.GetByQueueNumber(ctx, queueNumber, serviceDate)
 }
-func (u *WaitingListUsecase) GetCustomerWaitingLists(ctx context.Context, customerID types.MSSQLUUID) ([]*entities.WaitingList, error) {
+func (u *WaitingListUsecase) GetCustomerWaitingLists(ctx context.Context, customerID uuid.UUID) ([]*entities.WaitingList, error) {
 	return u.waitingListRepo.GetByCustomerID(ctx, customerID)
 }
 func (u *WaitingListUsecase) GetTodayQueue(ctx context.Context) ([]*entities.WaitingList, error) {
@@ -183,7 +183,7 @@ func (u *WaitingListUsecase) GetTodayQueue(ctx context.Context) ([]*entities.Wai
 func (u *WaitingListUsecase) GetQueueByDate(ctx context.Context, serviceDate time.Time) ([]*entities.WaitingList, error) {
 	return u.waitingListRepo.GetByServiceDate(ctx, serviceDate)
 }
-func (u *WaitingListUsecase) CheckServiceProgress(ctx context.Context, id types.MSSQLUUID) (*ServiceProgressResponse, error) {
+func (u *WaitingListUsecase) CheckServiceProgress(ctx context.Context, id uuid.UUID) (*ServiceProgressResponse, error) {
 	waitingList, err := u.waitingListRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, errors.New("ticket not found")
@@ -245,7 +245,7 @@ func (u *WaitingListUsecase) generateProgressMessage(status entities.WaitingList
 }
 
 type ServiceProgressResponse struct {
-	ID                   types.MSSQLUUID `json:"id"`
+	ID                   uuid.UUID `json:"id"`
 	QueueNumber          int             `json:"queue_number"`
 	Status               string          `json:"status"`
 	ServiceDate          time.Time       `json:"service_date"`
@@ -260,7 +260,7 @@ type ServiceProgressResponse struct {
 	Message              string          `json:"message"`
 }
 
-func (u *WaitingListUsecase) CallCustomer(ctx context.Context, id types.MSSQLUUID) error {
+func (u *WaitingListUsecase) CallCustomer(ctx context.Context, id uuid.UUID) error {
 	waitingList, err := u.waitingListRepo.GetByID(ctx, id)
 	if err != nil {
 		return err
@@ -273,7 +273,7 @@ func (u *WaitingListUsecase) CallCustomer(ctx context.Context, id types.MSSQLUUI
 	waitingList.CalledAt = &now
 	return u.waitingListRepo.Update(ctx, waitingList)
 }
-func (u *WaitingListUsecase) StartService(ctx context.Context, id types.MSSQLUUID) error {
+func (u *WaitingListUsecase) StartService(ctx context.Context, id uuid.UUID) error {
 	waitingList, err := u.waitingListRepo.GetByID(ctx, id)
 	if err != nil {
 		return err
@@ -286,7 +286,7 @@ func (u *WaitingListUsecase) StartService(ctx context.Context, id types.MSSQLUUI
 	waitingList.ServiceStartAt = &now
 	return u.waitingListRepo.Update(ctx, waitingList)
 }
-func (u *WaitingListUsecase) CompleteService(ctx context.Context, id types.MSSQLUUID) error {
+func (u *WaitingListUsecase) CompleteService(ctx context.Context, id uuid.UUID) error {
 	waitingList, err := u.waitingListRepo.GetByID(ctx, id)
 	if err != nil {
 		return err
@@ -299,7 +299,7 @@ func (u *WaitingListUsecase) CompleteService(ctx context.Context, id types.MSSQL
 	waitingList.ServiceEndAt = &now
 	return u.waitingListRepo.Update(ctx, waitingList)
 }
-func (u *WaitingListUsecase) CancelQueue(ctx context.Context, id types.MSSQLUUID) error {
+func (u *WaitingListUsecase) CancelQueue(ctx context.Context, id uuid.UUID) error {
 	waitingList, err := u.waitingListRepo.GetByID(ctx, id)
 	if err != nil {
 		return err
@@ -345,7 +345,7 @@ func (u *WaitingListUsecase) CancelQueue(ctx context.Context, id types.MSSQLUUID
 
 	return nil
 }
-func (u *WaitingListUsecase) MarkNoShow(ctx context.Context, id types.MSSQLUUID) error {
+func (u *WaitingListUsecase) MarkNoShow(ctx context.Context, id uuid.UUID) error {
 	waitingList, err := u.waitingListRepo.GetByID(ctx, id)
 	if err != nil {
 		return err
@@ -363,7 +363,7 @@ func (u *WaitingListUsecase) GetWaitingCount(ctx context.Context, serviceDate ti
 	}
 	return len(waitingLists), nil
 }
-func (u *WaitingListUsecase) UpdateWaitingList(ctx context.Context, id types.MSSQLUUID, updates *entities.WaitingList) error {
+func (u *WaitingListUsecase) UpdateWaitingList(ctx context.Context, id uuid.UUID, updates *entities.WaitingList) error {
 	existing, err := u.waitingListRepo.GetByID(ctx, id)
 	if err != nil || existing == nil {
 		return errors.New("waiting list entry not found")
@@ -390,7 +390,7 @@ func (u *WaitingListUsecase) UpdateWaitingList(ctx context.Context, id types.MSS
 }
 
 // AssignMechanicToQueue assigns a mechanic to service a queue entry
-func (u *WaitingListUsecase) AssignMechanicToQueue(ctx context.Context, queueID types.MSSQLUUID, mechanicID types.MSSQLUUID) error {
+func (u *WaitingListUsecase) AssignMechanicToQueue(ctx context.Context, queueID uuid.UUID, mechanicID uuid.UUID) error {
 	// Get the waiting list entry
 	waitingList, err := u.waitingListRepo.GetByID(ctx, queueID)
 	if err != nil {
@@ -439,7 +439,7 @@ func (u *WaitingListUsecase) GetAvailableQueues(ctx context.Context, serviceDate
 }
 
 // GetMyTicketCount returns the ticket count for a specific customer
-func (u *WaitingListUsecase) GetMyTicketCount(ctx context.Context, customerID types.MSSQLUUID) (total int64, active int64, deleted int64, err error) {
+func (u *WaitingListUsecase) GetMyTicketCount(ctx context.Context, customerID uuid.UUID) (total int64, active int64, deleted int64, err error) {
 	// Count non-deleted tickets
 	total, err = u.waitingListRepo.CountByCustomerID(ctx, customerID)
 	if err != nil {

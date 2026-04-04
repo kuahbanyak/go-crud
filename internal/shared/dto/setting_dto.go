@@ -1,7 +1,7 @@
 package dto
 import (
 	"time"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 )
 type CreateSettingRequest struct {
 	Key         string `json:"key" validate:"required"`
@@ -16,7 +16,7 @@ type UpdateSettingRequest struct {
 	Value string `json:"value" validate:"required"`
 }
 type SettingResponse struct {
-	ID          types.MSSQLUUID `json:"id"`
+	ID          uuid.UUID `json:"id"`
 	Key         string          `json:"key"`
 	Value       string          `json:"value"`
 	Type        string          `json:"type"`

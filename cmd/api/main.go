@@ -12,7 +12,7 @@ import (
 	"github.com/joho/godotenv"
 	handlers "github.com/kuahbanyak/go-crud/internal/adapters/handlers/http"
 	"github.com/kuahbanyak/go-crud/internal/adapters/handlers/http/middleware"
-	"github.com/kuahbanyak/go-crud/internal/adapters/repositories/mssql"
+	"github.com/kuahbanyak/go-crud/internal/adapters/repositories/postgres"
 	"github.com/kuahbanyak/go-crud/internal/infrastructure/config"
 	"github.com/kuahbanyak/go-crud/internal/infrastructure/database"
 	"github.com/kuahbanyak/go-crud/internal/infrastructure/jobs"
@@ -57,14 +57,14 @@ func main() {
 	validator := utils.NewValidator()
 	authService := utils.NewJWTService(cfg.JWT.Secret, cfg.JWT.Expiration)
 	middleware.SetAuthService(authService)
-	userRepo := mssql.NewUserRepository(db)
-	productRepo := mssql.NewProductRepository(db)
-	vehicleRepo := mssql.NewVehicleRepository(db)
-	waitingListRepo := mssql.NewWaitingListRepository(db)
-	serviceItemRepo := mssql.NewServiceItemRepository(db)
-	invoiceRepo := mssql.NewInvoiceRepository(sqlDB)
-	roleRepo := mssql.NewRoleRepository(db)
-	jobRepo := mssql.NewJobRepository(db)
+	userRepo := postgres.NewUserRepository(db)
+	productRepo := postgres.NewProductRepository(db)
+	vehicleRepo := postgres.NewVehicleRepository(db)
+	waitingListRepo := postgres.NewWaitingListRepository(db)
+	serviceItemRepo := postgres.NewServiceItemRepository(db)
+	invoiceRepo := postgres.NewInvoiceRepository(sqlDB)
+	roleRepo := postgres.NewRoleRepository(db)
+	jobRepo := postgres.NewJobRepository(db)
 
 	jobUsecase := usecases.NewJobUsecase(jobRepo)
 	userUsecase := usecases.NewUserUsecase(userRepo, roleRepo, authService)

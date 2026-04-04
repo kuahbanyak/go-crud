@@ -7,7 +7,7 @@ import (
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 )
 
 type ServiceItemUsecase struct {
@@ -39,7 +39,7 @@ func (u *ServiceItemUsecase) CreateServiceItem(ctx context.Context, req *dto.Cre
 	return serviceItem, nil
 }
 
-func (u *ServiceItemUsecase) GetServiceItem(ctx context.Context, id types.MSSQLUUID) (*entities.ServiceItem, error) {
+func (u *ServiceItemUsecase) GetServiceItem(ctx context.Context, id uuid.UUID) (*entities.ServiceItem, error) {
 	return u.serviceItemRepo.GetByID(ctx, id)
 }
 
@@ -78,7 +78,7 @@ func (u *ServiceItemUsecase) GetServiceItemsGroupedByCategory(ctx context.Contex
 	return grouped, nil
 }
 
-func (u *ServiceItemUsecase) UpdateServiceItem(ctx context.Context, id types.MSSQLUUID, req *dto.UpdateServiceItemRequest) error {
+func (u *ServiceItemUsecase) UpdateServiceItem(ctx context.Context, id uuid.UUID, req *dto.UpdateServiceItemRequest) error {
 	serviceItem, err := u.serviceItemRepo.GetByID(ctx, id)
 	if err != nil {
 		return errors.New("service item not found")
@@ -112,6 +112,6 @@ func (u *ServiceItemUsecase) UpdateServiceItem(ctx context.Context, id types.MSS
 	return u.serviceItemRepo.Update(ctx, serviceItem)
 }
 
-func (u *ServiceItemUsecase) DeleteServiceItem(ctx context.Context, id types.MSSQLUUID) error {
+func (u *ServiceItemUsecase) DeleteServiceItem(ctx context.Context, id uuid.UUID) error {
 	return u.serviceItemRepo.Delete(ctx, id)
 }

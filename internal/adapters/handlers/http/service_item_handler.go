@@ -6,7 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/kuahbanyak/go-crud/pkg/response"
 )
@@ -39,7 +39,7 @@ func (h *ServiceItemHandler) CreateServiceItem(w http.ResponseWriter, r *http.Re
 
 func (h *ServiceItemHandler) GetServiceItem(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, err := types.ParseMSSQLUUID(vars["id"])
+	id, err := uuid.Parse(vars["id"])
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid ID", err)
 		return
@@ -86,7 +86,7 @@ func (h *ServiceItemHandler) GetServiceItemsGroupedByCategory(w http.ResponseWri
 
 func (h *ServiceItemHandler) UpdateServiceItem(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, err := types.ParseMSSQLUUID(vars["id"])
+	id, err := uuid.Parse(vars["id"])
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid ID", err)
 		return
@@ -108,7 +108,7 @@ func (h *ServiceItemHandler) UpdateServiceItem(w http.ResponseWriter, r *http.Re
 
 func (h *ServiceItemHandler) DeleteServiceItem(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, err := types.ParseMSSQLUUID(vars["id"])
+	id, err := uuid.Parse(vars["id"])
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid ID", err)
 		return

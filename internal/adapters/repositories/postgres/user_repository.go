@@ -1,12 +1,12 @@
-package mssql
+package postgres
 
 import (
 	"context"
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"github.com/kuahbanyak/go-crud/pkg/pagination"
 	"gorm.io/gorm"
 )
@@ -21,7 +21,7 @@ func NewUserRepository(db *gorm.DB) repositories.UserRepository {
 func (r *userRepository) Create(ctx context.Context, user *entities.User) error {
 	return r.db.WithContext(ctx).Create(user).Error
 }
-func (r *userRepository) GetByID(ctx context.Context, id types.MSSQLUUID) (*entities.User, error) {
+func (r *userRepository) GetByID(ctx context.Context, id uuid.UUID) (*entities.User, error) {
 	var user entities.User
 	err := r.db.WithContext(ctx).
 		Preload("Roles").
@@ -46,7 +46,7 @@ func (r *userRepository) GetByEmail(ctx context.Context, email string) (*entitie
 func (r *userRepository) Update(ctx context.Context, user *entities.User) error {
 	return r.db.WithContext(ctx).Save(user).Error
 }
-func (r *userRepository) Delete(ctx context.Context, id types.MSSQLUUID) error {
+func (r *userRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&entities.User{}).Error
 }
 func (r *userRepository) GetByUsername(ctx context.Context, username string) (*entities.User, error) {

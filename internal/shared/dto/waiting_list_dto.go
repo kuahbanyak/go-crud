@@ -3,13 +3,13 @@ package dto
 import (
 	"time"
 
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 )
 
 type TakeQueueRequest struct {
-	VehicleID     *types.MSSQLUUID      `json:"vehicle_id,omitempty"`
+	VehicleID     *uuid.UUID      `json:"vehicle_id,omitempty"`
 	NewVehicle    *CreateVehicleRequest `json:"new_vehicle,omitempty"`
-	ServiceItemID *types.MSSQLUUID      `json:"service_item_id,omitempty"` // Selected service item from list
+	ServiceItemID *uuid.UUID      `json:"service_item_id,omitempty"` // Selected service item from list
 	ServiceType   string                `json:"service_type" validate:"required"`
 	ServiceDate   string                `json:"service_date" validate:"required"` // Changed to string for date-only format (YYYY-MM-DD)
 	EstimatedTime int                   `json:"estimated_time"`                   // in minutes, default 0
@@ -25,15 +25,15 @@ type UpdateWaitingListRequest struct {
 }
 
 type AssignMechanicRequest struct {
-	QueueID types.MSSQLUUID `json:"queue_id" validate:"required"`
+	QueueID uuid.UUID `json:"queue_id" validate:"required"`
 }
 
 type WaitingListResponse struct {
-	ID             types.MSSQLUUID  `json:"id"`
+	ID             uuid.UUID  `json:"id"`
 	QueueNumber    int              `json:"queue_number"`
-	VehicleID      types.MSSQLUUID  `json:"vehicle_id"`
-	CustomerID     types.MSSQLUUID  `json:"customer_id"`
-	MechanicID     *types.MSSQLUUID `json:"mechanic_id,omitempty"`
+	VehicleID      uuid.UUID  `json:"vehicle_id"`
+	CustomerID     uuid.UUID  `json:"customer_id"`
+	MechanicID     *uuid.UUID `json:"mechanic_id,omitempty"`
 	ServiceDate    time.Time        `json:"service_date"`
 	ServiceType    string           `json:"service_type"`
 	EstimatedTime  int              `json:"estimated_time"`
@@ -48,16 +48,16 @@ type WaitingListResponse struct {
 }
 
 type WaitingListWithDetailsResponse struct {
-	ID             types.MSSQLUUID  `json:"id"`
+	ID             uuid.UUID  `json:"id"`
 	QueueNumber    int              `json:"queue_number"`
-	VehicleID      types.MSSQLUUID  `json:"vehicle_id"`
+	VehicleID      uuid.UUID  `json:"vehicle_id"`
 	VehicleBrand   string           `json:"vehicle_brand,omitempty"`
 	VehicleModel   string           `json:"vehicle_model,omitempty"`
 	LicensePlate   string           `json:"license_plate,omitempty"`
-	CustomerID     types.MSSQLUUID  `json:"customer_id"`
+	CustomerID     uuid.UUID  `json:"customer_id"`
 	CustomerName   string           `json:"customer_name,omitempty"`
 	CustomerPhone  string           `json:"customer_phone,omitempty"`
-	MechanicID     *types.MSSQLUUID `json:"mechanic_id,omitempty"`
+	MechanicID     *uuid.UUID `json:"mechanic_id,omitempty"`
 	MechanicName   string           `json:"mechanic_name,omitempty"`
 	ServiceDate    time.Time        `json:"service_date"`
 	ServiceType    string           `json:"service_type"`
@@ -96,7 +96,7 @@ type QueueAvailabilityResponse struct {
 }
 
 type ServiceProgressResponse struct {
-	ID            types.MSSQLUUID `json:"id"`
+	ID            uuid.UUID `json:"id"`
 	QueueNumber   int             `json:"queue_number"`
 	Status        string          `json:"status"`
 	StatusMessage string          `json:"status_message"`

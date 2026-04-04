@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/kuahbanyak/go-crud/pkg/pagination"
 	"github.com/stretchr/testify/assert"
@@ -23,7 +23,7 @@ func (m *MockUserRepository) Create(ctx context.Context, user *entities.User) er
 	return args.Error(0)
 }
 
-func (m *MockUserRepository) GetByID(ctx context.Context, id types.MSSQLUUID) (*entities.User, error) {
+func (m *MockUserRepository) GetByID(ctx context.Context, id uuid.UUID) (*entities.User, error) {
 	args := m.Called(ctx, id)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -68,7 +68,7 @@ func (m *MockUserRepository) Update(ctx context.Context, user *entities.User) er
 	return args.Error(0)
 }
 
-func (m *MockUserRepository) Delete(ctx context.Context, id types.MSSQLUUID) error {
+func (m *MockUserRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
@@ -99,7 +99,7 @@ func (m *MockRoleRepository) GetByName(ctx context.Context, name string) (*entit
 	return args.Get(0).(*entities.Role), args.Error(1)
 }
 
-func (m *MockRoleRepository) GetByID(ctx context.Context, id types.MSSQLUUID) (*entities.Role, error) {
+func (m *MockRoleRepository) GetByID(ctx context.Context, id uuid.UUID) (*entities.Role, error) {
 	args := m.Called(ctx, id)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -107,7 +107,7 @@ func (m *MockRoleRepository) GetByID(ctx context.Context, id types.MSSQLUUID) (*
 	return args.Get(0).(*entities.Role), args.Error(1)
 }
 
-func (m *MockRoleRepository) AssignRoleToUser(ctx context.Context, userID, roleID, assignedBy types.MSSQLUUID) error {
+func (m *MockRoleRepository) AssignRoleToUser(ctx context.Context, userID, roleID, assignedBy uuid.UUID) error {
 	args := m.Called(ctx, userID, roleID, assignedBy)
 	return args.Error(0)
 }
@@ -146,17 +146,17 @@ func (m *MockRoleRepository) Update(ctx context.Context, role *entities.Role) er
 	return args.Error(0)
 }
 
-func (m *MockRoleRepository) Delete(ctx context.Context, id types.MSSQLUUID) error {
+func (m *MockRoleRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
 
-func (m *MockRoleRepository) RemoveRoleFromUser(ctx context.Context, userID, roleID types.MSSQLUUID) error {
+func (m *MockRoleRepository) RemoveRoleFromUser(ctx context.Context, userID, roleID uuid.UUID) error {
 	args := m.Called(ctx, userID, roleID)
 	return args.Error(0)
 }
 
-func (m *MockRoleRepository) GetUserRoles(ctx context.Context, userID types.MSSQLUUID) ([]*entities.Role, error) {
+func (m *MockRoleRepository) GetUserRoles(ctx context.Context, userID uuid.UUID) ([]*entities.Role, error) {
 	args := m.Called(ctx, userID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -164,12 +164,12 @@ func (m *MockRoleRepository) GetUserRoles(ctx context.Context, userID types.MSSQ
 	return args.Get(0).([]*entities.Role), args.Error(1)
 }
 
-func (m *MockRoleRepository) HasRole(ctx context.Context, userID types.MSSQLUUID, roleName string) (bool, error) {
+func (m *MockRoleRepository) HasRole(ctx context.Context, userID uuid.UUID, roleName string) (bool, error) {
 	args := m.Called(ctx, userID, roleName)
 	return args.Bool(0), args.Error(1)
 }
 
-func (m *MockRoleRepository) GetUsersByRole(ctx context.Context, roleID types.MSSQLUUID) ([]*entities.User, error) {
+func (m *MockRoleRepository) GetUsersByRole(ctx context.Context, roleID uuid.UUID) ([]*entities.User, error) {
 	args := m.Called(ctx, roleID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -192,17 +192,17 @@ func (m *MockAuthService) ComparePassword(hashedPassword, password string) error
 	return args.Error(0)
 }
 
-func (m *MockAuthService) GenerateToken(userID types.MSSQLUUID, role string) (string, error) {
+func (m *MockAuthService) GenerateToken(userID uuid.UUID, role string) (string, error) {
 	args := m.Called(userID, role)
 	return args.String(0), args.Error(1)
 }
 
-func (m *MockAuthService) ValidateToken(token string) (types.MSSQLUUID, string, error) {
+func (m *MockAuthService) ValidateToken(token string) (uuid.UUID, string, error) {
 	args := m.Called(token)
 	if args.Get(0) == nil {
-		return types.MSSQLUUID{}, "", args.Error(2)
+		return uuid.UUID{}, "", args.Error(2)
 	}
-	return args.Get(0).(types.MSSQLUUID), args.String(1), args.Error(2)
+	return args.Get(0).(uuid.UUID), args.String(1), args.Error(2)
 }
 
 func TestUserUsecase_Register_Success(t *testing.T) {
@@ -219,7 +219,7 @@ func TestUserUsecase_Register_Success(t *testing.T) {
 	}
 
 	customerRole := &entities.Role{
-		ID:   types.MSSQLUUID{},
+		ID:   uuid.UUID{},
 		Name: "customer",
 	}
 
@@ -227,7 +227,7 @@ func TestUserUsecase_Register_Success(t *testing.T) {
 	mockAuthService.On("HashPassword", "password123").Return("hashed_password", nil)
 	mockUserRepo.On("Create", ctx, mock.AnythingOfType("*entities.User")).Return(nil)
 	mockRoleRepo.On("GetByName", ctx, "customer").Return(customerRole, nil)
-	mockRoleRepo.On("AssignRoleToUser", ctx, mock.AnythingOfType("types.MSSQLUUID"), customerRole.ID, mock.AnythingOfType("types.MSSQLUUID")).Return(nil)
+	mockRoleRepo.On("AssignRoleToUser", ctx, mock.AnythingOfType("uuid.UUID"), customerRole.ID, mock.AnythingOfType("uuid.UUID")).Return(nil)
 
 	err := usecase.Register(ctx, user)
 
@@ -290,7 +290,7 @@ func TestUserUsecase_Login_Success(t *testing.T) {
 	ctx := context.Background()
 
 	user := &entities.User{
-		ID:       types.MSSQLUUID{},
+		ID:       uuid.UUID{},
 		Email:    "test@example.com",
 		Password: "hashed_password",
 		Roles: []entities.Role{
@@ -361,7 +361,7 @@ func TestUserUsecase_GetUserByID_Success(t *testing.T) {
 	usecase := usecases.NewUserUsecase(mockUserRepo, mockRoleRepo, mockAuthService)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
 	user := &entities.User{
 		ID:    userID,
 		Email: "test@example.com",
@@ -385,7 +385,7 @@ func TestUserUsecase_UpdateUser_Success(t *testing.T) {
 	usecase := usecases.NewUserUsecase(mockUserRepo, mockRoleRepo, mockAuthService)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
 	existingUser := &entities.User{
 		ID:    userID,
 		Email: "test@example.com",
@@ -417,7 +417,7 @@ func TestUserUsecase_UpdateUser_NotFound(t *testing.T) {
 	usecase := usecases.NewUserUsecase(mockUserRepo, mockRoleRepo, mockAuthService)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
 	updateData := &entities.User{Name: "New Name"}
 
 	mockUserRepo.On("GetByID", ctx, userID).Return(nil, nil)
@@ -437,7 +437,7 @@ func TestUserUsecase_DeleteUser_Success(t *testing.T) {
 	usecase := usecases.NewUserUsecase(mockUserRepo, mockRoleRepo, mockAuthService)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
 	user := &entities.User{ID: userID}
 
 	mockUserRepo.On("GetByID", ctx, userID).Return(user, nil)
@@ -456,7 +456,7 @@ func TestUserUsecase_DeleteUser_NotFound(t *testing.T) {
 	usecase := usecases.NewUserUsecase(mockUserRepo, mockRoleRepo, mockAuthService)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
 
 	mockUserRepo.On("GetByID", ctx, userID).Return(nil, nil)
 
@@ -519,7 +519,7 @@ func TestUserUsecase_RefreshToken_Success(t *testing.T) {
 	usecase := usecases.NewUserUsecase(mockUserRepo, mockRoleRepo, mockAuthService)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
 	refreshToken := "old_token"
 
 	mockAuthService.On("ValidateToken", refreshToken).Return(userID, "customer", nil)

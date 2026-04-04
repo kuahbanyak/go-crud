@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/kuahbanyak/go-crud/pkg/pagination"
 	"github.com/stretchr/testify/assert"
@@ -58,7 +58,7 @@ func TestRoleUsecase_GetRoleByID_Success(t *testing.T) {
 	usecase := usecases.NewRoleUsecase(mockRoleRepo, mockUserRepo)
 	ctx := context.Background()
 
-	roleID := types.MSSQLUUID{}
+	roleID := uuid.UUID{}
 	role := &entities.Role{
 		ID:   roleID,
 		Name: "admin",
@@ -80,7 +80,7 @@ func TestRoleUsecase_GetRoleByID_NotFound(t *testing.T) {
 	usecase := usecases.NewRoleUsecase(mockRoleRepo, mockUserRepo)
 	ctx := context.Background()
 
-	roleID := types.MSSQLUUID{}
+	roleID := uuid.UUID{}
 
 	mockRoleRepo.On("GetByID", ctx, roleID).Return(nil, nil)
 
@@ -160,7 +160,7 @@ func TestRoleUsecase_UpdateRole_Success(t *testing.T) {
 	usecase := usecases.NewRoleUsecase(mockRoleRepo, mockUserRepo)
 	ctx := context.Background()
 
-	roleID := types.MSSQLUUID{}
+	roleID := uuid.UUID{}
 	existingRole := &entities.Role{
 		ID:          roleID,
 		Name:        "admin",
@@ -193,7 +193,7 @@ func TestRoleUsecase_UpdateRole_NotFound(t *testing.T) {
 	usecase := usecases.NewRoleUsecase(mockRoleRepo, mockUserRepo)
 	ctx := context.Background()
 
-	roleID := types.MSSQLUUID{}
+	roleID := uuid.UUID{}
 	updateData := &entities.Role{DisplayName: "New Name"}
 
 	mockRoleRepo.On("GetByID", ctx, roleID).Return(nil, nil)
@@ -212,7 +212,7 @@ func TestRoleUsecase_DeleteRole_Success(t *testing.T) {
 	usecase := usecases.NewRoleUsecase(mockRoleRepo, mockUserRepo)
 	ctx := context.Background()
 
-	roleID := types.MSSQLUUID{}
+	roleID := uuid.UUID{}
 	role := &entities.Role{ID: roleID}
 
 	mockRoleRepo.On("GetByID", ctx, roleID).Return(role, nil)
@@ -230,7 +230,7 @@ func TestRoleUsecase_DeleteRole_NotFound(t *testing.T) {
 	usecase := usecases.NewRoleUsecase(mockRoleRepo, mockUserRepo)
 	ctx := context.Background()
 
-	roleID := types.MSSQLUUID{}
+	roleID := uuid.UUID{}
 
 	mockRoleRepo.On("GetByID", ctx, roleID).Return(nil, nil)
 
@@ -247,9 +247,9 @@ func TestRoleUsecase_AssignRoleToUser_Success(t *testing.T) {
 	usecase := usecases.NewRoleUsecase(mockRoleRepo, mockUserRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
-	roleID := types.MSSQLUUID{}
-	assignedBy := types.MSSQLUUID{}
+	userID := uuid.UUID{}
+	roleID := uuid.UUID{}
+	assignedBy := uuid.UUID{}
 
 	user := &entities.User{ID: userID}
 	role := &entities.Role{ID: roleID, IsActive: true}
@@ -271,9 +271,9 @@ func TestRoleUsecase_AssignRoleToUser_UserNotFound(t *testing.T) {
 	usecase := usecases.NewRoleUsecase(mockRoleRepo, mockUserRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
-	roleID := types.MSSQLUUID{}
-	assignedBy := types.MSSQLUUID{}
+	userID := uuid.UUID{}
+	roleID := uuid.UUID{}
+	assignedBy := uuid.UUID{}
 
 	mockUserRepo.On("GetByID", ctx, userID).Return(nil, nil)
 
@@ -290,9 +290,9 @@ func TestRoleUsecase_AssignRoleToUser_RoleNotFound(t *testing.T) {
 	usecase := usecases.NewRoleUsecase(mockRoleRepo, mockUserRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
-	roleID := types.MSSQLUUID{}
-	assignedBy := types.MSSQLUUID{}
+	userID := uuid.UUID{}
+	roleID := uuid.UUID{}
+	assignedBy := uuid.UUID{}
 
 	user := &entities.User{ID: userID}
 
@@ -313,9 +313,9 @@ func TestRoleUsecase_AssignRoleToUser_InactiveRole(t *testing.T) {
 	usecase := usecases.NewRoleUsecase(mockRoleRepo, mockUserRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
-	roleID := types.MSSQLUUID{}
-	assignedBy := types.MSSQLUUID{}
+	userID := uuid.UUID{}
+	roleID := uuid.UUID{}
+	assignedBy := uuid.UUID{}
 
 	user := &entities.User{ID: userID}
 	role := &entities.Role{ID: roleID, IsActive: false}
@@ -337,8 +337,8 @@ func TestRoleUsecase_RemoveRoleFromUser_Success(t *testing.T) {
 	usecase := usecases.NewRoleUsecase(mockRoleRepo, mockUserRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
-	roleID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
+	roleID := uuid.UUID{}
 
 	user := &entities.User{ID: userID}
 	role := &entities.Role{ID: roleID}
@@ -360,8 +360,8 @@ func TestRoleUsecase_RemoveRoleFromUser_UserNotFound(t *testing.T) {
 	usecase := usecases.NewRoleUsecase(mockRoleRepo, mockUserRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
-	roleID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
+	roleID := uuid.UUID{}
 
 	mockUserRepo.On("GetByID", ctx, userID).Return(nil, nil)
 
@@ -378,7 +378,7 @@ func TestRoleUsecase_GetUserRoles_Success(t *testing.T) {
 	usecase := usecases.NewRoleUsecase(mockRoleRepo, mockUserRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
 	user := &entities.User{ID: userID}
 	roles := []*entities.Role{
 		{Name: "admin"},
@@ -402,7 +402,7 @@ func TestRoleUsecase_GetUserRoles_UserNotFound(t *testing.T) {
 	usecase := usecases.NewRoleUsecase(mockRoleRepo, mockUserRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
 
 	mockUserRepo.On("GetByID", ctx, userID).Return(nil, nil)
 
@@ -420,7 +420,7 @@ func TestRoleUsecase_HasRole_Success(t *testing.T) {
 	usecase := usecases.NewRoleUsecase(mockRoleRepo, mockUserRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
 
 	mockRoleRepo.On("HasRole", ctx, userID, "admin").Return(true, nil)
 
@@ -437,7 +437,7 @@ func TestRoleUsecase_GetUsersByRole_Success(t *testing.T) {
 	usecase := usecases.NewRoleUsecase(mockRoleRepo, mockUserRepo)
 	ctx := context.Background()
 
-	roleID := types.MSSQLUUID{}
+	roleID := uuid.UUID{}
 	role := &entities.Role{ID: roleID}
 	users := []*entities.User{
 		{Email: "user1@example.com"},
@@ -460,7 +460,7 @@ func TestRoleUsecase_GetUsersByRole_RoleNotFound(t *testing.T) {
 	usecase := usecases.NewRoleUsecase(mockRoleRepo, mockUserRepo)
 	ctx := context.Background()
 
-	roleID := types.MSSQLUUID{}
+	roleID := uuid.UUID{}
 
 	mockRoleRepo.On("GetByID", ctx, roleID).Return(nil, nil)
 

@@ -1,12 +1,12 @@
-package mssql
+package postgres
 
 import (
 	"context"
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"github.com/kuahbanyak/go-crud/internal/shared/utils"
 	"github.com/kuahbanyak/go-crud/pkg/pagination"
 	"gorm.io/gorm"
@@ -24,7 +24,7 @@ func (r *roleRepository) Create(ctx context.Context, role *entities.Role) error 
 	return r.db.WithContext(ctx).Create(role).Error
 }
 
-func (r *roleRepository) GetByID(ctx context.Context, id types.MSSQLUUID) (*entities.Role, error) {
+func (r *roleRepository) GetByID(ctx context.Context, id uuid.UUID) (*entities.Role, error) {
 	var role entities.Role
 	err := r.db.WithContext(ctx).Where("id = ?", id).First(&role).Error
 	if err != nil {
@@ -67,9 +67,10 @@ func (r *roleRepository) GetAllPaginated(ctx context.Context, pagParams paginati
 	}
 
 	if filterParams.Status != "" {
-		if filterParams.Status == "active" {
+		switch filterParams.Status {
+case "active":
 			query = query.Where("is_active = ?", true)
-		} else if filterParams.Status == "inactive" {
+		case "inactive":
 			query = query.Where("is_active = ?", false)
 		}
 	}
@@ -100,12 +101,12 @@ func (r *roleRepository) Update(ctx context.Context, role *entities.Role) error 
 	return r.db.WithContext(ctx).Save(role).Error
 }
 
-func (r *roleRepository) Delete(ctx context.Context, id types.MSSQLUUID) error {
+func (r *roleRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&entities.Role{}).Error
 }
 
 // AssignRoleToUser assigns a role to a user
-func (r *roleRepository) AssignRoleToUser(ctx context.Context, userID, roleID, assignedBy types.MSSQLUUID) error {
+func (r *roleRepository) AssignRoleToUser(ctx context.Context, userID, roleID, assignedBy uuid.UUID) error {
 	// Check if already assigned
 	var count int64
 	err := r.db.WithContext(ctx).Model(&entities.UserRole{}).
@@ -131,14 +132,14 @@ func (r *roleRepository) AssignRoleToUser(ctx context.Context, userID, roleID, a
 }
 
 // RemoveRoleFromUser removes a role from a user
-func (r *roleRepository) RemoveRoleFromUser(ctx context.Context, userID, roleID types.MSSQLUUID) error {
+func (r *roleRepository) RemoveRoleFromUser(ctx context.Context, userID, roleID uuid.UUID) error {
 	return r.db.WithContext(ctx).
 		Where("user_id = ? AND role_id = ?", userID, roleID).
 		Delete(&entities.UserRole{}).Error
 }
 
 // GetUserRoles gets all roles assigned to a user
-func (r *roleRepository) GetUserRoles(ctx context.Context, userID types.MSSQLUUID) ([]*entities.Role, error) {
+func (r *roleRepository) GetUserRoles(ctx context.Context, userID uuid.UUID) ([]*entities.Role, error) {
 	var roles []*entities.Role
 	err := r.db.WithContext(ctx).
 		Table("roles").
@@ -150,7 +151,7 @@ func (r *roleRepository) GetUserRoles(ctx context.Context, userID types.MSSQLUUI
 }
 
 // HasRole checks if a user has a specific role
-func (r *roleRepository) HasRole(ctx context.Context, userID types.MSSQLUUID, roleName string) (bool, error) {
+func (r *roleRepository) HasRole(ctx context.Context, userID uuid.UUID, roleName string) (bool, error) {
 	var count int64
 	err := r.db.WithContext(ctx).
 		Table("user_roles").
@@ -161,7 +162,7 @@ func (r *roleRepository) HasRole(ctx context.Context, userID types.MSSQLUUID, ro
 }
 
 // GetUsersByRole gets all users with a specific role
-func (r *roleRepository) GetUsersByRole(ctx context.Context, roleID types.MSSQLUUID) ([]*entities.User, error) {
+func (r *roleRepository) GetUsersByRole(ctx context.Context, roleID uuid.UUID) ([]*entities.User, error) {
 	var users []*entities.User
 	err := r.db.WithContext(ctx).
 		Preload("Roles").

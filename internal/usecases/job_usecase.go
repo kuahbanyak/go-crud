@@ -6,7 +6,7 @@ import (
 
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 )
 
 type JobUsecase struct {
@@ -19,7 +19,7 @@ func NewJobUsecase(jobRepo repositories.JobRepository) *JobUsecase {
 	}
 }
 
-func (u *JobUsecase) GetJob(ctx context.Context, id types.MSSQLUUID) (*entities.Job, error) {
+func (u *JobUsecase) GetJob(ctx context.Context, id uuid.UUID) (*entities.Job, error) {
 	return u.jobRepo.GetByID(ctx, id)
 }
 
@@ -46,7 +46,7 @@ func (u *JobUsecase) CreateJob(ctx context.Context, job *entities.Job) error {
 	return u.jobRepo.Create(ctx, job)
 }
 
-func (u *JobUsecase) UpdateJob(ctx context.Context, id types.MSSQLUUID, cronJob, task string, status bool) error {
+func (u *JobUsecase) UpdateJob(ctx context.Context, id uuid.UUID, cronJob, task string, status bool) error {
 	job, err := u.jobRepo.GetByID(ctx, id)
 	if err != nil || job == nil {
 		return errors.New("job not found")
@@ -70,7 +70,7 @@ func (u *JobUsecase) UpdateJob(ctx context.Context, id types.MSSQLUUID, cronJob,
 	return u.jobRepo.Update(ctx, job)
 }
 
-func (u *JobUsecase) UpdateJobStatus(ctx context.Context, id types.MSSQLUUID, status bool) error {
+func (u *JobUsecase) UpdateJobStatus(ctx context.Context, id uuid.UUID, status bool) error {
 	job, err := u.jobRepo.GetByID(ctx, id)
 	if err != nil || job == nil {
 		return errors.New("job not found")
@@ -80,7 +80,7 @@ func (u *JobUsecase) UpdateJobStatus(ctx context.Context, id types.MSSQLUUID, st
 	return u.jobRepo.Update(ctx, job)
 }
 
-func (u *JobUsecase) DeleteJob(ctx context.Context, id types.MSSQLUUID) error {
+func (u *JobUsecase) DeleteJob(ctx context.Context, id uuid.UUID) error {
 	job, err := u.jobRepo.GetByID(ctx, id)
 	if err != nil || job == nil {
 		return errors.New("job not found")

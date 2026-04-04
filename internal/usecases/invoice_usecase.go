@@ -9,7 +9,6 @@ import (
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
 )
 
 type InvoiceUsecase struct {
@@ -32,14 +31,14 @@ func NewInvoiceUsecase(
 
 func (u *InvoiceUsecase) CreateInvoice(ctx context.Context, req *dto.CreateInvoiceRequest) (*dto.InvoiceResponse, error) {
 	// Verify customer exists
-	_, err := u.userRepo.GetByID(ctx, types.FromUUID(req.CustomerID))
+	_, err := u.userRepo.GetByID(ctx, req.CustomerID)
 	if err != nil {
 		return nil, errors.New("customer not found")
 	}
 
 	// If waiting list ID provided, verify it exists
 	if req.WaitingListID != nil {
-		_, err := u.waitingListRepo.GetByID(ctx, types.FromUUID(*req.WaitingListID))
+		_, err := u.waitingListRepo.GetByID(ctx, *req.WaitingListID)
 		if err != nil {
 			return nil, errors.New("waiting list not found")
 		}
@@ -82,7 +81,7 @@ func (u *InvoiceUsecase) GetInvoice(ctx context.Context, id uuid.UUID) (*dto.Inv
 	response := dto.ToInvoiceResponse(invoice)
 
 	// Get customer name
-	customer, err := u.userRepo.GetByID(ctx, types.FromUUID(invoice.CustomerID))
+	customer, err := u.userRepo.GetByID(ctx, invoice.CustomerID)
 	if err == nil {
 		response.CustomerName = customer.Name
 	}
@@ -132,7 +131,7 @@ func (u *InvoiceUsecase) ListInvoices(ctx context.Context, page, pageSize int, s
 		resp := dto.ToInvoiceResponse(invoice)
 
 		// Get customer name
-		customer, err := u.userRepo.GetByID(ctx, types.FromUUID(invoice.CustomerID))
+		customer, err := u.userRepo.GetByID(ctx, invoice.CustomerID)
 		if err == nil {
 			resp.CustomerName = customer.Name
 		}

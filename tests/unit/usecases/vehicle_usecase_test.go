@@ -8,7 +8,7 @@ import (
 
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/shared/dto"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/usecases"
 	"github.com/kuahbanyak/go-crud/pkg/pagination"
 	"github.com/stretchr/testify/assert"
@@ -25,7 +25,7 @@ func (m *MockVehicleRepository) Create(ctx context.Context, vehicle *entities.Ve
 	return args.Error(0)
 }
 
-func (m *MockVehicleRepository) GetByID(ctx context.Context, id types.MSSQLUUID) (*entities.Vehicle, error) {
+func (m *MockVehicleRepository) GetByID(ctx context.Context, id uuid.UUID) (*entities.Vehicle, error) {
 	args := m.Called(ctx, id)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -33,7 +33,7 @@ func (m *MockVehicleRepository) GetByID(ctx context.Context, id types.MSSQLUUID)
 	return args.Get(0).(*entities.Vehicle), args.Error(1)
 }
 
-func (m *MockVehicleRepository) GetByOwnerID(ctx context.Context, ownerID types.MSSQLUUID) ([]*entities.Vehicle, error) {
+func (m *MockVehicleRepository) GetByOwnerID(ctx context.Context, ownerID uuid.UUID) ([]*entities.Vehicle, error) {
 	args := m.Called(ctx, ownerID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -46,7 +46,7 @@ func (m *MockVehicleRepository) Update(ctx context.Context, vehicle *entities.Ve
 	return args.Error(0)
 }
 
-func (m *MockVehicleRepository) Delete(ctx context.Context, id types.MSSQLUUID) error {
+func (m *MockVehicleRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
@@ -72,7 +72,7 @@ func TestVehicleUseCase_CreateVehicle_Success(t *testing.T) {
 	usecase := usecases.NewVehicleUseCase(mockRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
 	req := &dto.CreateVehicleRequest{
 		Brand:        "Toyota",
 		Model:        "Camry",
@@ -99,7 +99,7 @@ func TestVehicleUseCase_CreateVehicle_Error(t *testing.T) {
 	usecase := usecases.NewVehicleUseCase(mockRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
 	req := &dto.CreateVehicleRequest{Brand: "Toyota"}
 
 	mockRepo.On("Create", ctx, mock.AnythingOfType("*entities.Vehicle")).Return(errors.New("database error"))
@@ -117,10 +117,10 @@ func TestVehicleUseCase_GetMyVehicles_Success(t *testing.T) {
 	usecase := usecases.NewVehicleUseCase(mockRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
 	vehicles := []*entities.Vehicle{
 		{
-			ID:           types.MSSQLUUID{},
+			ID:           uuid.UUID{},
 			OwnerID:      userID,
 			Brand:        "Toyota",
 			Model:        "Camry",
@@ -130,7 +130,7 @@ func TestVehicleUseCase_GetMyVehicles_Success(t *testing.T) {
 			UpdatedAt:    time.Now(),
 		},
 		{
-			ID:           types.MSSQLUUID{UUID: [16]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}},
+			ID:           uuid.UUID{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
 			OwnerID:      userID,
 			Brand:        "Honda",
 			Model:        "Accord",
@@ -158,7 +158,7 @@ func TestVehicleUseCase_GetMyVehicles_Error(t *testing.T) {
 	usecase := usecases.NewVehicleUseCase(mockRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
 
 	mockRepo.On("GetByOwnerID", ctx, userID).Return(nil, errors.New("database error"))
 
@@ -174,8 +174,8 @@ func TestVehicleUseCase_GetVehicleByID_Success(t *testing.T) {
 	usecase := usecases.NewVehicleUseCase(mockRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
-	vehicleID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
+	vehicleID := uuid.UUID{}
 	vehicle := &entities.Vehicle{
 		ID:           vehicleID,
 		OwnerID:      userID,
@@ -203,8 +203,8 @@ func TestVehicleUseCase_GetVehicleByID_NotFound(t *testing.T) {
 	usecase := usecases.NewVehicleUseCase(mockRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
-	vehicleID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
+	vehicleID := uuid.UUID{}
 
 	mockRepo.On("GetByID", ctx, vehicleID).Return(nil, nil)
 
@@ -221,9 +221,9 @@ func TestVehicleUseCase_GetVehicleByID_Unauthorized(t *testing.T) {
 	usecase := usecases.NewVehicleUseCase(mockRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
-	differentUserID := types.MSSQLUUID{UUID: [16]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}}
-	vehicleID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
+	differentUserID := uuid.UUID{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}
+	vehicleID := uuid.UUID{}
 	vehicle := &entities.Vehicle{
 		ID:      vehicleID,
 		OwnerID: differentUserID,
@@ -245,8 +245,8 @@ func TestVehicleUseCase_GetVehicleByID_RepoError(t *testing.T) {
 	usecase := usecases.NewVehicleUseCase(mockRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
-	vehicleID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
+	vehicleID := uuid.UUID{}
 
 	mockRepo.On("GetByID", ctx, vehicleID).Return(nil, errors.New("database error"))
 
@@ -262,8 +262,8 @@ func TestVehicleUseCase_UpdateVehicle_Success(t *testing.T) {
 	usecase := usecases.NewVehicleUseCase(mockRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
-	vehicleID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
+	vehicleID := uuid.UUID{}
 	vehicle := &entities.Vehicle{
 		ID:           vehicleID,
 		OwnerID:      userID,
@@ -301,8 +301,8 @@ func TestVehicleUseCase_UpdateVehicle_PartialUpdate(t *testing.T) {
 	usecase := usecases.NewVehicleUseCase(mockRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
-	vehicleID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
+	vehicleID := uuid.UUID{}
 	vehicle := &entities.Vehicle{
 		ID:      vehicleID,
 		OwnerID: userID,
@@ -330,9 +330,9 @@ func TestVehicleUseCase_UpdateVehicle_Unauthorized(t *testing.T) {
 	usecase := usecases.NewVehicleUseCase(mockRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
-	differentUserID := types.MSSQLUUID{UUID: [16]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}}
-	vehicleID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
+	differentUserID := uuid.UUID{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}
+	vehicleID := uuid.UUID{}
 	vehicle := &entities.Vehicle{
 		ID:      vehicleID,
 		OwnerID: differentUserID,
@@ -355,8 +355,8 @@ func TestVehicleUseCase_UpdateVehicle_UpdateError(t *testing.T) {
 	usecase := usecases.NewVehicleUseCase(mockRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
-	vehicleID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
+	vehicleID := uuid.UUID{}
 	vehicle := &entities.Vehicle{
 		ID:      vehicleID,
 		OwnerID: userID,
@@ -380,8 +380,8 @@ func TestVehicleUseCase_DeleteVehicle_Success(t *testing.T) {
 	usecase := usecases.NewVehicleUseCase(mockRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
-	vehicleID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
+	vehicleID := uuid.UUID{}
 	vehicle := &entities.Vehicle{
 		ID:      vehicleID,
 		OwnerID: userID,
@@ -402,9 +402,9 @@ func TestVehicleUseCase_DeleteVehicle_Unauthorized(t *testing.T) {
 	usecase := usecases.NewVehicleUseCase(mockRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
-	differentUserID := types.MSSQLUUID{UUID: [16]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}}
-	vehicleID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
+	differentUserID := uuid.UUID{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}
+	vehicleID := uuid.UUID{}
 	vehicle := &entities.Vehicle{
 		ID:      vehicleID,
 		OwnerID: differentUserID,
@@ -424,8 +424,8 @@ func TestVehicleUseCase_DeleteVehicle_NotFound(t *testing.T) {
 	usecase := usecases.NewVehicleUseCase(mockRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
-	vehicleID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
+	vehicleID := uuid.UUID{}
 
 	mockRepo.On("GetByID", ctx, vehicleID).Return(nil, nil)
 
@@ -440,8 +440,8 @@ func TestVehicleUseCase_DeleteVehicle_DeleteError(t *testing.T) {
 	usecase := usecases.NewVehicleUseCase(mockRepo)
 	ctx := context.Background()
 
-	userID := types.MSSQLUUID{}
-	vehicleID := types.MSSQLUUID{}
+	userID := uuid.UUID{}
+	vehicleID := uuid.UUID{}
 	vehicle := &entities.Vehicle{
 		ID:      vehicleID,
 		OwnerID: userID,

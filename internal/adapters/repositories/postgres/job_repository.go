@@ -1,12 +1,12 @@
-package mssql
+package postgres
 
 import (
 	"context"
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/kuahbanyak/go-crud/internal/domain/entities"
 	"github.com/kuahbanyak/go-crud/internal/domain/repositories"
-	"github.com/kuahbanyak/go-crud/internal/shared/types"
 	"gorm.io/gorm"
 )
 
@@ -22,7 +22,7 @@ func (r *jobRepository) Create(ctx context.Context, job *entities.Job) error {
 	return r.db.WithContext(ctx).Create(job).Error
 }
 
-func (r *jobRepository) GetByID(ctx context.Context, id types.MSSQLUUID) (*entities.Job, error) {
+func (r *jobRepository) GetByID(ctx context.Context, id uuid.UUID) (*entities.Job, error) {
 	var job entities.Job
 	err := r.db.WithContext(ctx).Where("id = ?", id).First(&job).Error
 	if err != nil {
@@ -67,7 +67,7 @@ func (r *jobRepository) Update(ctx context.Context, job *entities.Job) error {
 	return r.db.WithContext(ctx).Save(job).Error
 }
 
-func (r *jobRepository) Delete(ctx context.Context, id types.MSSQLUUID) error {
+func (r *jobRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&entities.Job{}).Error
 }
 

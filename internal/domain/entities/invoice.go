@@ -17,12 +17,12 @@ const (
 )
 
 type Invoice struct {
-	ID            uuid.UUID      `gorm:"type:uniqueidentifier;primary_key;default:newid()" json:"id"`
+	ID            uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
 	CreatedAt     time.Time      `json:"created_at"`
 	UpdatedAt     time.Time      `json:"updated_at"`
 	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`
-	WaitingListID *uuid.UUID     `gorm:"type:uniqueidentifier" json:"waiting_list_id,omitempty"`
-	CustomerID    uuid.UUID      `gorm:"type:uniqueidentifier;not null" json:"customer_id"`
+	WaitingListID *uuid.UUID     `gorm:"type:uuid" json:"waiting_list_id,omitempty"`
+	CustomerID    uuid.UUID      `gorm:"type:uuid;not null" json:"customer_id"`
 	Amount        int            `json:"amount"`
 	TaxAmount     int            `json:"tax_amount"`
 	TotalAmount   int            `json:"total_amount"`
